@@ -70,5 +70,5 @@ export const seo = {
    * Canonical origin. Drives metadataBase, Open Graph, sitemap and robots.
    * Set NEXT_PUBLIC_SITE_URL at deploy time, or edit the fallback below.
    */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://dhanushkonduru.vercel.app",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://dhanush-konduru.vercel.app",
 } as const;
