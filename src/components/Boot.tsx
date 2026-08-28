@@ -10,7 +10,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
  *
  * It waits on things that are actually happening (fonts resolving, the WebGL
  * context coming up) rather than animating a fake percentage, and it is capped
- * hard at 1.1s so it can never become a gate. Under reduced motion it never
+ * hard at 550ms so it can never become a gate. Under reduced motion it never
  * renders at all. The page content is in the DOM the whole time; this is an
  * overlay, so nothing here costs anything at crawl time.
  */
@@ -44,13 +44,13 @@ export function Boot() {
         setTimeout(() => {
           obs.disconnect();
           res();
-        }, 1000);
+        }, 500);
       }),
     ]);
 
     // Whichever comes first: genuinely ready, or the cap.
     ready.then(finish);
-    const cap = setTimeout(finish, 1100);
+    const cap = setTimeout(finish, 550);
 
     return () => {
       cancelled = true;
@@ -67,7 +67,7 @@ export function Boot() {
           className="fixed inset-0 z-[95] flex items-end bg-void"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="frame rail pb-10">
             <p className="t-mark text-ink-4">{profile.name}</p>
@@ -76,7 +76,7 @@ export function Boot() {
                 className="h-full origin-left bg-mint"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
-                transition={{ duration: 1.1, ease: [0.22, 0.61, 0.36, 1] }}
+                transition={{ duration: 0.55, ease: [0.22, 0.61, 0.36, 1] }}
               />
             </div>
             <p className="t-note mt-4">Initialising system</p>
