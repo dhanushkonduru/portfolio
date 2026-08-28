@@ -1,0 +1,320 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   THE INSTRUMENT — design system
+   ----------------------------------------------------------------------------
+   Two voices, held in tension:
+     · Instrument Serif  — the thinking voice. Statements, arguments, findings.
+     · JetBrains Mono    — the measuring voice. Indices, data, annotations, IDs.
+   Inter Tight carries reading copy and nothing else.
+
+   Colour is POSITIONAL, not decorative. Each stage of the page owns one accent,
+   so the temperature of the page tells you where you are in the argument.
+   ========================================================================= */
+
+@theme {
+  /* ---- ground ---- */
+  --color-void: #060709;
+  --color-pit: #000000;
+  --color-panel: #0b0d10;
+  --color-panel-2: #101317;
+
+  /* ---- rules: three weights, used deliberately ---- */
+  --color-rule: #171a1f; /* structural division */
+  --color-rule-2: #262b32; /* active / emphasised */
+  --color-rule-3: #3a414b; /* interactive boundary */
+
+  /* ---- type ramp (all ≥ AA on every ground above) ---- */
+  --color-ink: #f2f3f5;
+  --color-ink-2: #a5acb6;
+  --color-ink-3: #8c94a0;
+  --color-ink-4: #767f8c;
+
+  /* ---- semantic accents ---- */
+  --color-mint: #5ee9c0; /* engineering · identity · verified */
+  --color-cyan: #56c6f5; /* systems · infrastructure · time */
+  --color-iris: #a79bff; /* AI · models · research (text-safe) */
+  --color-iris-deep: #7c6bff; /* the same hue for fields and graphics */
+  --color-amber: #ffb454; /* evidence · marked · awarded */
+
+  /* ---- type ---- */
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo,
+    monospace;
+
+  /* ---- motion ---- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-entry: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ============================ base ============================ */
+
+html {
+  /* No scroll-behavior. The inertial smoother in src/system/scroll.ts animates
+     anchors itself; leaving this on made the browser run a second, competing
+     animation on every frame. */
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  background: var(--color-void);
+}
+
+body {
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* transparent: the fixed system field renders beneath every section */
+  background: transparent;
+}
+
+::selection {
+  background: var(--color-mint);
+  color: var(--color-void);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-mint);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-rule-2);
+  border: 3px solid var(--color-void);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-rule-3);
+}
+
+/* ========================= typography =========================
+   Display sizes are named by ROLE, not by size, so a section can only
+   pick the voice appropriate to what it is saying.                */
+
+/* A statement that owns the viewport. Used at most three times on the page. */
+@utility t-monument {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(3.25rem, 12vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: -0.03em;
+}
+
+/* The voice of an argument — section openers, project theses. */
+@utility t-statement {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 5.6vw, 4.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.021em;
+}
+
+@utility t-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+
+/* Large measured numbers. The instrument speaking. */
+@utility t-figure {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility t-figure-sm {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 2.9vw, 2.5rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility t-read {
+  font-size: clamp(1.125rem, 1.35vw, 1.375rem);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+@utility t-read-sm {
+  font-size: 1.0625rem;
+  line-height: 1.62;
+  letter-spacing: -0.006em;
+}
+
+/* The instrument's small voice: indices, IDs, units, annotations. */
+@utility t-mark {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+@utility t-meta {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.005em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Marginalia — set small, hung off the edge of a column. */
+@utility t-note {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  letter-spacing: 0.005em;
+  color: var(--color-ink-3);
+}
+
+/* ========================== layout ==========================
+   No single "container". A page gutter, plus an editorial 12-column
+   grid that sections opt into so composition can differ per section. */
+
+@utility frame {
+  padding-inline: clamp(1.25rem, 4.5vw, 4.5rem);
+
+  /* On desktop the right margin belongs to the instrument's register, so the
+     page is deliberately asymmetric rather than accidentally colliding. */
+  @media (width >= 64rem) {
+    padding-right: clamp(7rem, 9vw, 10rem);
+  }
+}
+
+@utility rail {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+}
+
+@utility grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1rem, 2vw, 2rem);
+}
+
+@utility measure {
+  max-width: 62ch;
+}
+@utility measure-tight {
+  max-width: 46ch;
+}
+
+/* Display face as a standalone utility, for the few places that need the
+   serif voice without a full size token. */
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+/* While a record sheet is open, the fixed header and the section register
+   are removed rather than dimmed. At 95% opacity they still read through the
+   backdrop and cut across the panel. */
+[data-overlay] header,
+[data-overlay] nav[aria-label="Sections"] {
+  display: none;
+}
+
+/* ========================== detail ========================== */
+
+/* Hairline that fades at both ends — reads as drawn, not as a border. */
+@utility rule-fade {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-rule-2) 10%,
+    var(--color-rule-2) 90%,
+    transparent
+  );
+}
+
+/* Grain, to kill banding across the large dark fields. */
+@utility grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@utility link-rule {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease-out-expo);
+  }
+  &:hover::after,
+  &:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/* ========================= keyframes ========================= */
+
+@keyframes probe-drift {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-probe {
+  animation: probe-drift 3s var(--ease-inout) infinite;
+}
+.animate-marquee-x {
+  animation: marquee-x 60s linear infinite;
+}
+
+/* ====================== reduced motion ====================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
