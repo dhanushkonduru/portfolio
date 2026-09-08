@@ -35,7 +35,7 @@ const record: [string, string][] = [
 
 export function About() {
   return (
-    <section id="about" className="relative scroll-mt-24 py-32 md:py-48">
+    <section id="about" className="stratum relative scroll-mt-24 py-32 md:py-48">
       <div className="frame rail">
         <StageMark index={S.index} label={S.label} state={S.state} tone="mint" />
 

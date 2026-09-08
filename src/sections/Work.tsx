@@ -19,7 +19,7 @@ export function Work() {
   const [open, setOpen] = useState<Project | null>(null);
 
   return (
-    <section id="work" className="relative scroll-mt-24 py-32 md:py-48">
+    <section id="work" className="stratum stratum-deep relative scroll-mt-24 py-32 md:py-48">
       <div className="frame rail">
         <StageMark index={S.index} label={S.label} state={S.state} tone="iris" />
 

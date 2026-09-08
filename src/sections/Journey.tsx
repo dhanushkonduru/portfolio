@@ -14,7 +14,7 @@ const path = [...experience].reverse();
 
 export function Journey() {
   return (
-    <section id="journey" className="relative scroll-mt-24 py-32 md:py-48">
+    <section id="journey" className="stratum relative scroll-mt-24 py-32 md:py-48">
       <div className="frame rail">
         <StageMark index={S.index} label={S.label} state={S.state} tone="cyan" />
 

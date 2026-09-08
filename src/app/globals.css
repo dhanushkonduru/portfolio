@@ -255,6 +255,52 @@ body {
   }
 }
 
+/* ========================== strata ==========================
+   The page alternates two states of ground. In the open field the system
+   layer reads through at full strength; on a stratum a translucent plane
+   sits over it. Alternating the two is what gives the scroll a pulse —
+   without it every section resolves to the same near-black and the
+   positional accents are left carrying the whole burden alone.
+
+   Translucent rather than opaque, and deliberately no backdrop-filter: a
+   blur across a ten-viewport element composited over the WebGL canvas is
+   expensive, and letting the field tint the plane directly reads the same. */
+
+@utility stratum {
+  position: relative;
+  background: color-mix(in oklab, var(--color-panel) 90%, transparent);
+
+  /* Edged, not bordered — hairlines that fade at both ends, so a section
+     reads as a surface laid over the field rather than as a boxed div. */
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-rule-2) 12%,
+      var(--color-rule-2) 88%,
+      transparent
+    );
+  }
+  &::before {
+    top: 0;
+  }
+  &::after {
+    bottom: 0;
+  }
+}
+
+/* The deeper plane, for the densest stretch of the page. Pairs with
+   .stratum, which supplies the edges. */
+@utility stratum-deep {
+  background: color-mix(in oklab, var(--color-panel-2) 92%, transparent);
+}
+
 @utility link-rule {
   position: relative;
   &::after {
