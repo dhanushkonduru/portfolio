@@ -1,27 +1,43 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { startStageDriver } from "./stageStore";
 import { startScroll } from "./scroll";
 
+/** three.js loads only after the page is interactive, and never on the server. */
+const InkField = dynamic(() => import("./InkField").then((m) => m.InkField), {
+  ssr: false,
+});
+
 /**
- * The field is gone.
+ * Behaviour plus the plotter.
  *
- * On paper there is nothing behind the page to light up, so this renders no
- * visual layer at all. It still runs the two things the rest of the site reads
- * from — the stage driver that tells the register which section is active, and
- * the inertial scroll — so removing the canvas cost the page none of its
- * behaviour.
+ * The stage driver and the inertial scroll run regardless; the drawing is
+ * additive and is skipped entirely where it would be a liability — no WebGL,
+ * or a viewer who has asked for reduced motion.
  */
 export function SystemLayer() {
+  const [draw, setDraw] = useState(false);
+
   useEffect(() => {
     const stopStage = startStageDriver();
     const stopScroll = startScroll();
+
+    let ok = false;
+    try {
+      const c = document.createElement("canvas");
+      ok = !!(c.getContext("webgl2") || c.getContext("webgl"));
+    } catch {
+      ok = false;
+    }
+    setDraw(ok);
+
     return () => {
       stopStage();
       stopScroll();
     };
   }, []);
 
-  return null;
+  return draw ? <InkField /> : null;
 }
