@@ -93,3 +93,101 @@ export function strutGeo(r0: number, r1: number) {
   g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
   return g;
 }
+
+/* ---------------------------------------------------------------- reactor --
+ * A compact annular device. The silhouette is the one everybody recognises;
+ * the execution is a stator drawing — graduated containment, radial coil
+ * poles with winding detail, and a polygonal core. Hexagonal rather than
+ * triangular on purpose: the triangle is the film prop, the hexagon is a part.
+ * ------------------------------------------------------------------------ */
+
+/** Containment: two concentric circles with radial graduations between them. */
+export function annulusGeo(r0: number, r1: number, seg = 120, tickEvery = 5) {
+  const v: number[] = [];
+  const ring = (r: number) => {
+    for (let i = 0; i < seg; i++) {
+      const a0 = (i / seg) * Math.PI * 2;
+      const a1 = ((i + 1) / seg) * Math.PI * 2;
+      v.push(Math.cos(a0) * r, Math.sin(a0) * r, 0, Math.cos(a1) * r, Math.sin(a1) * r, 0);
+    }
+  };
+  ring(r0);
+  ring(r1);
+  for (let i = 0; i < seg; i += tickEvery) {
+    const a = (i / seg) * Math.PI * 2;
+    const long = i % (tickEvery * 4) === 0;
+    const inner = long ? r0 : r1 - (r1 - r0) * 0.4;
+    v.push(Math.cos(a) * inner, Math.sin(a) * inner, 0, Math.cos(a) * r1, Math.sin(a) * r1, 0);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+  return g;
+}
+
+/** One coil pole: an annular sector with winding turns drawn inside it. */
+export function coilGeo(r0: number, r1: number, a0: number, a1: number, turns = 3, seg = 10) {
+  const v: number[] = [];
+  const arc = (r: number, from: number, to: number) => {
+    for (let i = 0; i < seg; i++) {
+      const t0 = from + ((to - from) * i) / seg;
+      const t1 = from + ((to - from) * (i + 1)) / seg;
+      v.push(Math.cos(t0) * r, Math.sin(t0) * r, 0, Math.cos(t1) * r, Math.sin(t1) * r, 0);
+    }
+  };
+  arc(r0, a0, a1);
+  arc(r1, a0, a1);
+  v.push(Math.cos(a0) * r0, Math.sin(a0) * r0, 0, Math.cos(a0) * r1, Math.sin(a0) * r1, 0);
+  v.push(Math.cos(a1) * r0, Math.sin(a1) * r0, 0, Math.cos(a1) * r1, Math.sin(a1) * r1, 0);
+  // Windings: concentric turns inside the pole, inset from both ends.
+  const pad = (a1 - a0) * 0.16;
+  for (let k = 1; k <= turns; k++) {
+    arc(r0 + ((r1 - r0) * k) / (turns + 1), a0 + pad, a1 - pad);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+  return g;
+}
+
+/** Core: nested hexagons with spokes. */
+export function hexCoreGeo(r: number) {
+  const v: number[] = [];
+  const hex = (rr: number, rot = 0) => {
+    for (let i = 0; i < 6; i++) {
+      const a0 = rot + (i / 6) * Math.PI * 2;
+      const a1 = rot + ((i + 1) / 6) * Math.PI * 2;
+      v.push(Math.cos(a0) * rr, Math.sin(a0) * rr, 0, Math.cos(a1) * rr, Math.sin(a1) * rr, 0);
+    }
+  };
+  hex(r);
+  hex(r * 0.62, Math.PI / 6);
+  hex(r * 0.3);
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    v.push(Math.cos(a) * r * 0.3, Math.sin(a) * r * 0.3, 0, Math.cos(a) * r, Math.sin(a) * r, 0);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+  return g;
+}
+
+/** A filled hexagon — the one solid in the whole scene, for the live core. */
+export function hexFillGeo(r: number) {
+  const g = new THREE.CircleGeometry(r, 6);
+  return g;
+}
+
+/** Circulation: broken arcs suggesting flow around the ring. */
+export function circulationGeo(r: number, arcs = 5, span = 0.62, seg = 16) {
+  const v: number[] = [];
+  for (let k = 0; k < arcs; k++) {
+    const base = (k / arcs) * Math.PI * 2;
+    for (let i = 0; i < seg; i++) {
+      const t0 = base + (span * i) / seg;
+      const t1 = base + (span * (i + 1)) / seg;
+      v.push(Math.cos(t0) * r, Math.sin(t0) * r, 0, Math.cos(t1) * r, Math.sin(t1) * r, 0);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+  return g;
+}

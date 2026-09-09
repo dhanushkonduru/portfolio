@@ -6,7 +6,15 @@ import * as THREE from "three";
 import { stage, readings } from "./stageStore";
 import { signal } from "./audio";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { coreGeo, ringGeo, panelGeo, sensorGeo, plateGeo, strutGeo } from "./machineParts";
+import {
+  annulusGeo,
+  coilGeo,
+  hexCoreGeo,
+  hexFillGeo,
+  circulationGeo,
+  sensorGeo,
+  plateGeo,
+} from "./machineParts";
 
 /* ============================================================================
  * THE VERIFIER
@@ -44,7 +52,7 @@ type Config = {
 const CONFIGS: Config[] = [
   // 00 index · IDLE — closed, compact, one clean form
   { label: "IDLE", shellOpen: 0, shellOp: 0.9, ringSpread: 0, ringTilt: 0, explode: 0,
-    sensorOut: 0, sensorOp: 0.3, coreScale: 1, coreOp: 0.85, plateOp: 0.2, plateDrop: 0, signal: 0, guideOp: 0 },
+    sensorOut: 0, sensorOp: 0, coreScale: 1, coreOp: 0.9, plateOp: 0.2, plateDrop: 0, signal: 0, guideOp: 0 },
   // 01 approach · STARTUP — the shell parts, structure becomes visible
   { label: "STARTUP", shellOpen: 0.35, shellOp: 1, ringSpread: 0.18, ringTilt: 0.1, explode: 0.05,
     sensorOut: 0.2, sensorOp: 0.7, coreScale: 1.05, coreOp: 0.95, plateOp: 0.5, plateDrop: 0.15, signal: 0.1, guideOp: 0.15 },
@@ -138,70 +146,74 @@ const lerp = THREE.MathUtils.lerp;
 
 function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: number; reduced: boolean }) {
   const root = useRef<THREE.Group>(null);
-  const coreRef = useRef<THREE.LineSegments>(null);
+  const coreRef = useRef<THREE.Group>(null);
+  const containRef = useRef<THREE.LineSegments>(null);
+  const innerRef = useRef<THREE.LineSegments>(null);
+  const flowRef = useRef<THREE.LineSegments>(null);
   const plateRef = useRef<THREE.LineSegments>(null);
-  const ringRefs = useRef<(THREE.LineSegments | null)[]>([]);
-  const panelRefs = useRef<(THREE.LineSegments | null)[]>([]);
+  const coilRefs = useRef<(THREE.LineSegments | null)[]>([]);
   const sensorRefs = useRef<(THREE.LineSegments | null)[]>([]);
+  const inspRef = useRef(0);
 
-  const PANELS = 6;
+  const COILS = 10;
   const SENSORS = 4;
 
   const built = useMemo(() => {
-    const core = coreGeo(0.82, detail);
-    const rings = [ringGeo(1.5), ringGeo(1.72, 96, 12), ringGeo(1.28, 72, 6)];
-    const panels = Array.from({ length: PANELS }, (_, i) =>
-      panelGeo(1.95, 2.35, (i / PANELS) * Math.PI * 2 + 0.04, ((i + 1) / PANELS) * Math.PI * 2 - 0.04),
+    const gap = 0.055;
+    const coils = Array.from({ length: COILS }, (_, i) =>
+      coilGeo(
+        1.34,
+        1.9,
+        (i / COILS) * Math.PI * 2 + gap,
+        ((i + 1) / COILS) * Math.PI * 2 - gap,
+        detail > 0 ? 3 : 2,
+      ),
     );
-    const sensor = sensorGeo();
-    const plate = plateGeo(1.05, 4);
-    const struts = strutGeo(0.9, 1.45);
-    // Signal paths: sensor → core, rewritten each frame.
     const signalGeo = new THREE.BufferGeometry();
     signalGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(SENSORS * 6), 3));
-    return { core, rings, panels, sensor, plate, struts, signalGeo };
+    return {
+      contain: annulusGeo(2.02, 2.36),
+      inner: annulusGeo(1.02, 1.2, 96, 8),
+      core: hexCoreGeo(0.66),
+      coreFill: hexFillGeo(0.52),
+      flow: circulationGeo(2.62, 5),
+      coils,
+      sensor: sensorGeo(),
+      plate: plateGeo(1.05, 4),
+      signalGeo,
+    };
   }, [detail]);
 
-  const mats = useMemo(
-    () => ({
-      // Colour is positional here too, but positional by COMPONENT rather
-      // than by scroll: each subsystem wears the accent that names what it
-      // does, so several are on screen at once and each one means something.
-      core: inkMaterial(token("--color-iris", "#a79bff"), 0.3), // computation
-      ring: inkMaterial(token("--color-ink", "#f2f3f5"), 0.22), // structure
-      panel: inkMaterial(token("--color-ink", "#f2f3f5"), 0.2), // shell
-      sensor: inkMaterial(token("--color-cyan", "#56c6f5"), 0.3), // sensing
-      plate: inkMaterial(token("--color-mint", "#5ee9c0"), 0.16), // control
-      signal: inkMaterial(token("--color-amber", "#ffb454"), 0), // evidence
-      strut: inkMaterial(token("--color-ink", "#f2f3f5"), 0.18),
-    }),
-    [],
-  );
+  const mats = useMemo(() => {
+    const m = {
+      contain: inkMaterial(token("--color-ink", "#f2f3f5"), 0.3),
+      coil: inkMaterial(token("--color-cyan", "#56c6f5"), 0.24),
+      inner: inkMaterial(token("--color-ink", "#f2f3f5"), 0.24),
+      core: inkMaterial(token("--color-iris", "#a79bff"), 0.3),
+      flow: inkMaterial(token("--color-mint", "#5ee9c0"), 0.12),
+      sensor: inkMaterial(token("--color-cyan", "#56c6f5"), 0),
+      plate: inkMaterial(token("--color-ink-4", "#767f8c"), 0.14),
+      signal: inkMaterial(token("--color-amber", "#ffb454"), 0),
+    };
+    // The one solid in the entire scene. A fill, not a glow: no additive
+    // blending and no bloom, so the core reads as live without the page
+    // turning into science fiction.
+    const fill = inkMaterial(token("--color-iris", "#a79bff"), 0.05);
+    fill.side = THREE.DoubleSide;
+    return { ...m, fill };
+  }, []);
 
-  useEffect(
-    () => () => {
-      Object.values(mats).forEach((m) => m.dispose());
-      built.core.dispose();
-      built.rings.forEach((g) => g.dispose());
-      built.panels.forEach((g) => g.dispose());
-      built.sensor.dispose();
-      built.plate.dispose();
-      built.struts.dispose();
-      built.signalGeo.dispose();
-    },
-    [built, mats],
-  );
-
-  const tmp = useMemo(() => ({ c: new THREE.Color(), c2: new THREE.Color() }), []);
   const accents = useMemo(
-    () => ACCENT_VARS.map((v, i) => token(v, ["#5ee9c0", "#5ee9c0", "#56c6f5", "#a79bff", "#ffb454", "#a79bff", "#5ee9c0"][i])),
+    () =>
+      ACCENT_VARS.map((v, i) =>
+        token(v, ["#5ee9c0", "#5ee9c0", "#56c6f5", "#a79bff", "#ffb454", "#a79bff", "#5ee9c0"][i]),
+      ),
     [],
   );
-  const inspRef = useRef(0);
+  const tmp = useMemo(() => ({ c: new THREE.Color(), c2: new THREE.Color() }), []);
 
   useFrame((_, rawDt) => {
     const g = root.current;
-    readings.config = g ? 'HASREF' : 'NOREF';
     if (!g) return;
     let insp = inspRef.current;
     const dt = Math.min(rawDt, 1 / 30);
@@ -215,90 +227,76 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
     const B = CONFIGS[i1];
     const m = (k: keyof Config) => lerp(A[k] as number, B[k] as number, t);
 
+    insp += (stage.inspect - insp) * Math.min(1, dt * 2);
     const shellOpen = m("shellOpen");
     const ringSpread = m("ringSpread");
-    const ringTilt = m("ringTilt");
-    // Inspection opens the assembly beyond its scroll configuration and slows
-    // the resting motion, so a held pointer can actually examine it.
-    insp += (stage.inspect - insp) * Math.min(1, dt * 2);
     const explode = Math.min(1.35, m("explode") + insp * 0.45);
     const sensorOut = m("sensorOut");
     const coreScale = m("coreScale");
     const plateDrop = m("plateDrop");
     const sig = signal.level;
     const now = performance.now() * 0.001;
-
-    // Resting motion: the instrument is powered, never inert, but the movement
-    // is at the threshold of noticeable. Audio adds a few percent on top.
     const idle = (reduced ? 0 : 1) * (1 - insp * 0.75);
-    const vib = (reduced ? 0 : 1) * (0.006 + sig * 0.02);
+    const vib = (reduced ? 0 : 1) * (0.004 + sig * 0.016);
 
     // ---- core ----
     if (coreRef.current) {
       const c = coreRef.current;
-      c.scale.setScalar(coreScale * (1 + Math.sin(now * 0.9) * 0.006 * idle + sig * 0.05));
-      c.rotation.y = now * 0.12 * idle;
-      c.rotation.x = Math.sin(now * 0.4) * 0.06 * idle;
+      c.scale.setScalar(coreScale * (1 + Math.sin(now * 0.9) * 0.008 * idle + sig * 0.05));
+      c.rotation.z = now * 0.16 * idle;
       c.position.set(Math.sin(now * 7) * vib, Math.cos(now * 6.3) * vib, 0);
     }
 
-    // ---- structural rings: spread along their own normals, then tilt ----
-    const NORMALS: [number, number, number][] = [
-      [0, 0, 1],
-      [1, 0, 0],
-      [0, 1, 0],
-    ];
-    for (let i = 0; i < 3; i++) {
-      const r = ringRefs.current[i];
-      if (!r) continue;
-      const dirv = NORMALS[i];
-      const off = (i - 1) * (ringSpread * 1.15 + explode * 0.75);
-      r.position.set(dirv[0] * off, dirv[1] * off, dirv[2] * off);
-      // Base orientation puts each ring on its own plane; tilt opens the gimbal.
-      r.rotation.set(
-        i === 2 ? Math.PI / 2 : 0,
-        i === 1 ? Math.PI / 2 : 0,
-        0,
-      );
-      r.rotateZ(ringTilt * (0.35 + i * 0.22) + now * 0.05 * idle * (i % 2 ? -1 : 1));
-      r.scale.setScalar(1 + explode * 0.12);
+    // ---- containment and inner ring, counter-rotating ----
+    if (containRef.current) {
+      containRef.current.rotation.z = now * 0.045 * idle;
+      containRef.current.scale.setScalar(1 + explode * 0.16);
+    }
+    if (innerRef.current) {
+      innerRef.current.rotation.z = -now * 0.09 * idle;
+      innerRef.current.scale.setScalar(1 - ringSpread * 0.08 + explode * 0.1);
+    }
+    if (flowRef.current) {
+      flowRef.current.rotation.z = now * 0.22 * idle;
+      flowRef.current.scale.setScalar(1 + explode * 0.2);
     }
 
-    // ---- shell: panels swing outward on their own radius ----
-    for (let i = 0; i < PANELS; i++) {
-      const q = panelRefs.current[i];
+    // ---- coil poles: seated at rest, swung out as the device opens ----
+    for (let i = 0; i < COILS; i++) {
+      const q = coilRefs.current[i];
       if (!q) continue;
-      const a = ((i + 0.5) / PANELS) * Math.PI * 2;
-      const push = shellOpen * 1.15 + explode * 1.5;
-      q.position.set(Math.cos(a) * push, Math.sin(a) * push, shellOpen * 0.25 - explode * 0.4);
-      q.rotation.set(shellOpen * 0.55, 0, 0);
-      q.rotation.z = shellOpen * 0.12;
+      const a = ((i + 0.5) / COILS) * Math.PI * 2;
+      const push = shellOpen * 0.85 + explode * 1.25;
+      q.position.set(Math.cos(a) * push, Math.sin(a) * push, shellOpen * 0.18 - explode * 0.3);
+      // Each pole tips about its own tangent, so the array fans rather than
+      // sliding as one piece.
+      q.rotation.set(Math.sin(a) * shellOpen * 0.5, -Math.cos(a) * shellOpen * 0.5, 0);
     }
 
-    // ---- sensor pods: ride outward, always aimed at the core ----
+    // ---- probes: absent while the device is closed ----
     for (let i = 0; i < SENSORS; i++) {
-      const s = sensorRefs.current[i];
-      if (!s) continue;
+      const sN = sensorRefs.current[i];
+      if (!sN) continue;
       const a = (i / SENSORS) * Math.PI * 2 + Math.PI / 4;
-      const d = 1.2 + sensorOut * 1.0 + explode * 1.1;
-      s.position.set(Math.cos(a) * d, Math.sin(a) * d * 0.55, Math.sin(a * 2) * 0.35);
-      s.lookAt(0, 0, 0);
-      const sArr = built.signalGeo.getAttribute("position").array as Float32Array;
-      sArr[i * 6] = s.position.x;
-      sArr[i * 6 + 1] = s.position.y;
-      sArr[i * 6 + 2] = s.position.z;
-      sArr[i * 6 + 3] = 0;
-      sArr[i * 6 + 4] = 0;
-      sArr[i * 6 + 5] = 0;
+      const d = 1.3 + sensorOut * 1.05 + explode * 1.05;
+      sN.position.set(Math.cos(a) * d, Math.sin(a) * d * 0.62, Math.sin(a * 2) * 0.3);
+      sN.lookAt(0, 0, 0);
+      const arr = built.signalGeo.getAttribute("position").array as Float32Array;
+      arr[i * 6] = sN.position.x;
+      arr[i * 6 + 1] = sN.position.y;
+      arr[i * 6 + 2] = sN.position.z;
+      arr[i * 6 + 3] = 0;
+      arr[i * 6 + 4] = 0;
+      arr[i * 6 + 5] = 0;
     }
     built.signalGeo.getAttribute("position").needsUpdate = true;
 
     if (plateRef.current) {
-      plateRef.current.position.y = -1.35 - plateDrop * 1.4;
+      plateRef.current.position.y = -1.5 - plateDrop * 1.4;
       plateRef.current.rotation.y = now * 0.04 * idle;
     }
 
-    // ---- placement on the sheet ----
+    // ---- placement ----
     const stages = [
       [0, 0, 9.6, 1.3],
       [1.5, 0.35, 7.6, 1.05],
@@ -314,20 +312,22 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
     const oy = -lerp(c0[1], c1[1], t) * 0.85;
     const depth = lerp(c0[2], c1[2], t);
     const size = lerp(c0[3], c1[3], t);
-    const sc = (9.6 / depth) * size * 1.1;
+    const sc = (9.6 / depth) * size * 1.05;
     const ease = Math.min(1, dt * 2.4);
     g.position.x += (ox + stage.px * 0.1 - g.position.x) * ease;
     g.position.y += (oy + stage.py * 0.07 - g.position.y) * ease;
     g.scale.setScalar(g.scale.x + (sc - g.scale.x) * ease);
     if (!reduced) {
-      const spin = stage.progress * Math.PI * 0.9;
-      g.rotation.y += (spin - g.rotation.y) * Math.min(1, dt * 3) + dt * stage.speed * 0.06;
-      g.rotation.x += (stage.py * 0.06 + 0.26 - g.rotation.x) * Math.min(1, dt * 2);
-      g.rotation.z += (stage.px * 0.03 - g.rotation.z) * Math.min(1, dt * 2);
+      // Held at a shallow tilt so it reads as a disc in space rather than a
+      // badge stamped on the page, and turns slowly with the scroll.
+      const spin = stage.progress * Math.PI * 0.55;
+      g.rotation.y += (spin - g.rotation.y) * Math.min(1, dt * 3) + dt * stage.speed * 0.05;
+      g.rotation.x += (0.28 + stage.py * 0.05 - g.rotation.x) * Math.min(1, dt * 2);
+      g.rotation.z += (stage.px * 0.025 - g.rotation.z) * Math.min(1, dt * 2);
     }
 
     // ---- ink ----
-    const base = 0.46 * inkScale;
+    const base = 0.58 * inkScale;
     const setA = (mat: THREE.ShaderMaterial, target: number) => {
       const u = mat.uniforms;
       u.uAlpha.value += (target - u.uAlpha.value) * Math.min(1, dt * 2.5);
@@ -338,21 +338,22 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
       u.uClearCount.value = stage.clearCount;
       u.uClearAmt.value += (stage.clearAmount - u.uClearAmt.value) * Math.min(1, dt * 4);
     };
-    setA(mats.core, base * m("coreOp") * 1.1);
-    setA(mats.ring, base * 0.72);
-    setA(mats.panel, base * m("shellOp") * 0.68);
-    setA(mats.sensor, base * m("sensorOp") * 0.9);
-    setA(mats.plate, base * m("plateOp") * 0.6);
-    setA(mats.signal, base * m("signal") * 0.85);
-    setA(mats.strut, base * 0.5);
+    setA(mats.contain, base * 1.0);
+    setA(mats.coil, base * m("shellOp") * 0.88);
+    setA(mats.inner, base * 0.85);
+    setA(mats.core, base * m("coreOp") * 1.35);
+    setA(mats.fill, base * m("coreOp") * (0.17 + sig * 0.08));
+    setA(mats.flow, base * (0.26 + m("signal") * 0.34));
+    setA(mats.sensor, base * m("sensorOp") * 0.85);
+    setA(mats.plate, base * m("plateOp") * 0.55);
+    setA(mats.signal, base * m("signal") * 0.8);
     tmp.c.set(accents[i0]).lerp(tmp.c2.set(accents[i1]), t);
     (mats.signal.uniforms.uInk.value as THREE.Color).copy(tmp.c);
 
-    // ---- readings + label anchors ----
-    readings.nodes = SENSORS + 3 + PANELS + 2;
+    readings.nodes = COILS + SENSORS + 3;
     readings.links = Math.round(SENSORS * m("signal"));
     readings.segments = Math.round(shellOpen * 100);
-    readings.load = mats.core.uniforms.uAlpha.value;
+    readings.load = mats.contain.uniforms.uAlpha.value;
     readings.state = i0;
     readings.signal = sig;
     readings.config = A.label;
@@ -360,21 +361,27 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
     inspRef.current = insp;
   });
 
-  const reg = (arr: React.RefObject<(THREE.LineSegments | null)[]>, i: number) => (el: THREE.LineSegments | null) => {
-    arr.current[i] = el;
-  };
+  const reg =
+    (arr: React.RefObject<(THREE.LineSegments | null)[]>, i: number) =>
+    (el: THREE.LineSegments | null) => {
+      arr.current[i] = el;
+    };
 
   return (
     <group ref={root}>
-      <lineSegments ref={coreRef} geometry={built.core} material={mats.core} frustumCulled={false} />
+      <lineSegments ref={containRef} geometry={built.contain} material={mats.contain} frustumCulled={false} />
+      <lineSegments ref={innerRef} geometry={built.inner} material={mats.inner} frustumCulled={false} />
+      <lineSegments ref={flowRef} geometry={built.flow} material={mats.flow} frustumCulled={false} />
       <lineSegments ref={plateRef} geometry={built.plate} material={mats.plate} frustumCulled={false} />
-      <lineSegments geometry={built.struts} material={mats.strut} frustumCulled={false} />
       <lineSegments geometry={built.signalGeo} material={mats.signal} frustumCulled={false} />
-      {built.rings.map((geo, i) => (
-        <lineSegments key={`r${i}`} ref={reg(ringRefs, i)} geometry={geo} material={mats.ring} frustumCulled={false} />
-      ))}
-      {built.panels.map((geo, i) => (
-        <lineSegments key={`p${i}`} ref={reg(panelRefs, i)} geometry={geo} material={mats.panel} frustumCulled={false} />
+
+      <group ref={coreRef}>
+        <mesh geometry={built.coreFill} material={mats.fill} frustumCulled={false} />
+        <lineSegments geometry={built.core} material={mats.core} frustumCulled={false} />
+      </group>
+
+      {built.coils.map((geo, i) => (
+        <lineSegments key={`c${i}`} ref={reg(coilRefs, i)} geometry={geo} material={mats.coil} frustumCulled={false} />
       ))}
       {Array.from({ length: SENSORS }, (_, i) => (
         <lineSegments key={`s${i}`} ref={reg(sensorRefs, i)} geometry={built.sensor} material={mats.sensor} frustumCulled={false} />
@@ -382,7 +389,6 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
     </group>
   );
 }
-
 
 /* ---------------------------------------------------------------- field ---
  * A sparse accent field across the whole sheet. The machine is the subject;
@@ -395,16 +401,24 @@ const FIELD_VERT = /* glsl */ `
   attribute vec3 aColor;
   attribute float aSize;
   attribute float aPhase;
+  attribute float aDepth;
   uniform float uTime;
+  uniform float uScroll;
   varying vec3 vColor;
+  varying float vDim;
   void main() {
     vec3 p = position;
-    p.y += sin(uTime * 0.13 + aPhase) * 0.16;
-    p.x += cos(uTime * 0.09 + aPhase * 1.7) * 0.13;
+    // Three depth layers. Near stars drift faster and shift more with scroll,
+    // far ones barely move — that difference is the parallax.
+    float near = 1.0 - aDepth;
+    p.y += sin(uTime * (0.08 + near * 0.12) + aPhase) * (0.06 + near * 0.16);
+    p.x += cos(uTime * (0.06 + near * 0.08) + aPhase * 1.7) * (0.05 + near * 0.12);
+    p.y += uScroll * (0.6 + near * 2.4);
     vec4 clip = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     vAtt = clearAtt(clip.xy / clip.w);
     vColor = aColor;
-    gl_PointSize = aSize;
+    vDim = 0.45 + near * 0.55;
+    gl_PointSize = aSize * (0.6 + near * 0.7);
     gl_Position = clip;
   }
 `;
@@ -413,10 +427,11 @@ const FIELD_FRAG = /* glsl */ `
   uniform float uAlpha;
   varying vec3 vColor;
   varying float vAtt;
+  varying float vDim;
   void main() {
     float d = length(gl_PointCoord - 0.5);
-    float a = smoothstep(0.5, 0.12, d);
-    gl_FragColor = vec4(vColor, uAlpha * vAtt * a);
+    float a = smoothstep(0.5, 0.16, d);
+    gl_FragColor = vec4(vColor, uAlpha * vAtt * a * vDim);
   }
 `;
 
@@ -428,6 +443,7 @@ function Field({ count, inkScale }: { count: number; inkScale: number }) {
     const col = new Float32Array(count * 3);
     const size = new Float32Array(count);
     const phase = new Float32Array(count);
+    const depth = new Float32Array(count);
     const palette = [
       new THREE.Color(token("--color-mint", "#5ee9c0")),
       new THREE.Color(token("--color-cyan", "#56c6f5")),
@@ -438,14 +454,16 @@ function Field({ count, inkScale }: { count: number; inkScale: number }) {
     // Weighted so the field reads as neutral with colour in it, not as confetti.
     const pick = [0, 1, 2, 3, 4, 4, 4, 4];
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 20;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 15;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 8;
+      const layer = i % 3; // 0 near, 1 mid, 2 far
+      depth[i] = layer / 2;
+      pos[i * 3] = (Math.random() - 0.5) * 22;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 17;
+      pos[i * 3 + 2] = -2 - layer * 2.5;
       const c = palette[pick[i % pick.length]];
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
-      size[i] = 1.1 + Math.random() * 2.4;
+      size[i] = 0.9 + Math.random() * 1.9;
       phase[i] = Math.random() * Math.PI * 2;
     }
     const geo = new THREE.BufferGeometry();
@@ -453,6 +471,7 @@ function Field({ count, inkScale }: { count: number; inkScale: number }) {
     geo.setAttribute("aColor", new THREE.BufferAttribute(col, 3));
     geo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
     geo.setAttribute("aPhase", new THREE.BufferAttribute(phase, 1));
+    geo.setAttribute("aDepth", new THREE.BufferAttribute(depth, 1));
     const material = new THREE.ShaderMaterial({
       vertexShader: FIELD_VERT,
       fragmentShader: FIELD_FRAG,
@@ -460,8 +479,9 @@ function Field({ count, inkScale }: { count: number; inkScale: number }) {
       depthWrite: false,
       depthTest: false,
       uniforms: {
-        uAlpha: { value: 0.42 * inkScale },
+        uAlpha: { value: 0.46 * inkScale },
         uTime: { value: 0 },
+        uScroll: { value: 0 },
         uClear: { value: [new THREE.Vector4(), new THREE.Vector4()] },
         uClearCount: { value: 0 },
         uClearAmt: { value: 0 },
@@ -473,6 +493,7 @@ function Field({ count, inkScale }: { count: number; inkScale: number }) {
   useFrame((_, dt) => {
     const u = material.uniforms;
     u.uTime.value += Math.min(dt, 1 / 30);
+    u.uScroll.value = stage.progress;
     const rects = u.uClear.value as THREE.Vector4[];
     for (let k = 0; k < 2; k++) {
       rects[k].set(stage.clear[k * 4], stage.clear[k * 4 + 1], stage.clear[k * 4 + 2], stage.clear[k * 4 + 3]);
