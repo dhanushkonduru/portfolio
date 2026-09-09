@@ -97,7 +97,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.85, ease: EASE }}
-            className="col-span-12 md:col-span-6"
+            className="col-span-12 md:col-span-5"
           >
             <p className="t-mark text-mint">{profile.role}</p>
             <p className="t-read mt-4 max-w-[46ch] text-balance text-ink-2">
@@ -110,14 +110,16 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1 }}
-            className="col-span-12 grid grid-cols-3 gap-x-4 gap-y-3 md:col-span-3 md:flex md:flex-wrap md:gap-x-8"
+            className="col-span-12 grid grid-cols-3 gap-x-6 gap-y-3 md:col-span-4"
           >
             {profile.markers.slice(0, 3).map((m) => (
               <div key={m.label}>
                 <dt className="sr-only">{m.label}</dt>
                 <dd>
-                  <span className="t-meta block text-ink">{m.value}</span>
-                  <span className="t-note mt-0.5 block">{m.label}</span>
+                  <span className="t-figure-sm block text-ink">{m.value}</span>
+                  <span className="t-note mt-1 block max-w-[14ch] leading-snug">
+                    {m.label}
+                  </span>
                 </dd>
               </div>
             ))}
@@ -127,11 +129,20 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.1 }}
-            className="col-span-12 flex flex-wrap items-center gap-x-7 gap-y-3 md:col-span-3 md:justify-end"
+            className="col-span-12 flex flex-wrap items-center gap-x-6 gap-y-3 md:col-span-3 md:justify-end"
           >
-            <TextLink href="#work" tone="mint" className="t-meta">
+            <a
+              href="#work"
+              className="t-mark group inline-flex items-center gap-3 border border-rule-3 px-5 py-3 text-ink transition-colors duration-300 hover:border-ink hover:bg-ink hover:text-void"
+            >
               See the work
-            </TextLink>
+              <span
+                aria-hidden="true"
+                className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
+              >
+                →
+              </span>
+            </a>
             <TextLink href={profile.resume.href} download className="t-meta">
               Résumé ↓
             </TextLink>

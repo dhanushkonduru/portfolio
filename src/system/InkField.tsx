@@ -100,11 +100,11 @@ const VERT = /* glsl */ `
     // type rather than being cut along a hard edge.
     float att = 1.0;
     for (int i = 0; i < 2; i++) {
-      float active = step(float(i), uClearCount - 0.5);
+      float on = step(float(i), uClearCount - 0.5);
       vec4 r = uClear[i];
       vec2 d = abs(ndc - r.xy) / max(r.zw, vec2(1e-4));
       float inside = 1.0 - smoothstep(0.70, 1.45, max(d.x, d.y));
-      att *= mix(1.0, mix(1.0, 0.10, inside * uClearAmt), active);
+      att *= mix(1.0, mix(1.0, 0.10, inside * uClearAmt), on);
     }
 
     vAtt = att;
@@ -246,8 +246,8 @@ function Plot({ detail, reduced }: { detail: number; reduced: boolean }) {
       STAGES[i0].presence + (STAGES[i1].presence - STAGES[i0].presence) * t;
     const transition = 4 * raw * (1 - raw); // 0 at rest, 1 mid-morph
     const target = THREE.MathUtils.clamp(
-      0.045 + presence * 0.085 + transition * 0.05,
-      0.04,
+      0.055 + presence * 0.115 + transition * 0.04,
+      0.05,
       0.2,
     );
 
