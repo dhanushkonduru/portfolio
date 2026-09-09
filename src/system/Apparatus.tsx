@@ -134,7 +134,17 @@ function clearUniforms() {
   };
 }
 
-function Diagram({ detail, nodeCount, reduced }: { detail: number; nodeCount: number; reduced: boolean }) {
+function Diagram({
+  detail,
+  nodeCount,
+  reduced,
+  inkScale,
+}: {
+  detail: number;
+  nodeCount: number;
+  reduced: boolean;
+  inkScale: number;
+}) {
   const group = useRef<THREE.Group>(null);
   const guides = useRef<THREE.LineSegments>(null);
 
@@ -350,7 +360,11 @@ function Diagram({ detail, nodeCount, reduced }: { detail: number; nodeCount: nu
     // ---- ink load per layer ----
     const presence = STAGES[i0].presence + (STAGES[i1].presence - STAGES[i0].presence) * t;
     const transition = 4 * raw * (1 - raw);
-    const load = THREE.MathUtils.clamp(0.2 + presence * 0.14 + transition * 0.06, 0.18, 0.42);
+    // On a small screen the diagram shares the column with the reading, so it
+    // gives way — the page is the document, the apparatus is the annotation.
+    const load =
+      THREE.MathUtils.clamp(0.2 + presence * 0.14 + transition * 0.06, 0.18, 0.42) *
+      inkScale;
 
     // Connections belong to the parts of the argument about systems and
     // interconnection; elsewhere they recede almost completely.
@@ -411,13 +425,14 @@ export function Apparatus() {
   const [awake, setAwake] = useState(true);
 
   const cfg = useMemo(() => {
-    if (typeof window === "undefined") return { detail: 2, dpr: 1, span: 7.2, nodes: 30 };
+    if (typeof window === "undefined")
+      return { detail: 2, dpr: 1, span: 7.2, nodes: 30, ink: 1 };
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     const narrow = window.innerWidth < 900;
     const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-    if (coarse || narrow) return { detail: 2, dpr: 1, span: 9.4, nodes: 24 };
-    if (mem !== undefined && mem <= 4) return { detail: 2, dpr: 1.5, span: 7.2, nodes: 34 };
-    return { detail: 3, dpr: 2, span: 7.2, nodes: 46 };
+    if (coarse || narrow) return { detail: 2, dpr: 1, span: 9.4, nodes: 24, ink: 0.55 };
+    if (mem !== undefined && mem <= 4) return { detail: 2, dpr: 1.5, span: 7.2, nodes: 34, ink: 1 };
+    return { detail: 3, dpr: 2, span: 7.2, nodes: 46, ink: 1 };
   }, []);
 
   useEffect(() => {
@@ -436,7 +451,12 @@ export function Apparatus() {
         gl={{ antialias: true, alpha: true, depth: false, stencil: false }}
       >
         <Fit span={cfg.span} />
-        <Diagram detail={cfg.detail} nodeCount={cfg.nodes} reduced={reduced} />
+        <Diagram
+          detail={cfg.detail}
+          nodeCount={cfg.nodes}
+          reduced={reduced}
+          inkScale={cfg.ink}
+        />
       </Canvas>
     </div>
   );
