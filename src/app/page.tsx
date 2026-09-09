@@ -1,4 +1,6 @@
 import { Nav } from "@/components/Nav";
+import { Pointer } from "@/components/Cursor";
+import { Registration } from "@/components/Registration";
 import { SystemLayer } from "@/system/SystemLayer";
 import { Hero } from "@/sections/Hero";
 import { About } from "@/sections/About";
@@ -14,6 +16,8 @@ export default function Page() {
       {/* No field and no boot gate. SystemLayer is behaviour only now:
           the stage driver and the inertial scroll. */}
       <SystemLayer />
+      <Pointer />
+      <Registration />
       <Nav />
 
       <main className="relative z-10">

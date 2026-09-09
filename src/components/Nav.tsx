@@ -33,6 +33,7 @@ export function Nav() {
   );
   const [open, setOpen] = useState(false);
   const bar = useRef<HTMLDivElement>(null);
+  const head = useRef<HTMLElement>(null);
 
   /* The progress rule is written directly to the DOM — a state update per
      scroll frame on a page this tall would be indefensible. */
@@ -41,6 +42,11 @@ export function Nav() {
     const paint = () => {
       raf = 0;
       if (bar.current) bar.current.style.transform = `scaleX(${stage.progress})`;
+      // The masthead tightens once the reader has left the top, the way a
+      // running head is set smaller than the title page it follows.
+      if (head.current) {
+        head.current.dataset.compact = window.scrollY > 80 ? "true" : "false";
+      }
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(paint);
@@ -87,7 +93,11 @@ export function Nav() {
       </div>
 
       {/* Header: identity and the two profiles worth clicking. */}
-      <header className="frame rail pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-6 pt-5">
+      <header
+        ref={head}
+        data-compact="false"
+        className="frame rail pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-6 pt-5 transition-[padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] data-[compact=true]:pt-3"
+      >
         {/* The header is fixed and the page runs beneath it. Without this the
             two sets of type collide on every scroll. */}
         <div

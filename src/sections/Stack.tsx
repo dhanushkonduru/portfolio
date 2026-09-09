@@ -27,7 +27,7 @@ export function Stack() {
   };
 
   return (
-    <section id="stack" className="relative scroll-mt-24 py-32 md:py-48">
+    <section id="stack" className="stratum stratum-raised relative scroll-mt-24 py-32 md:py-48">
       <div className="frame rail">
         <StageMark index={S.index} label={S.label} state={S.state} tone="cyan" />
 

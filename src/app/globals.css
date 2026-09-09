@@ -333,6 +333,12 @@ body::after {
   }
 }
 
+/* The raised sheet — lifted above the page rather than pressed into it.
+   Pairs with .stratum for the edges. */
+@utility stratum-raised {
+  background: color-mix(in oklab, var(--color-pit) 94%, transparent);
+}
+
 /* The deeper plane, for the densest stretch of the page. Pairs with
    .stratum, which supplies the edges. */
 @utility stratum-deep {
