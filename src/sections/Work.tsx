@@ -38,11 +38,16 @@ export function Work() {
 
       {/* ── Plates: each flagship gets its own composition ── */}
       <PlateOne project={flagshipProjects[0]} onOpen={() => setOpen(flagshipProjects[0])} />
+      <Dossier project={flagshipProjects[0]} n={1} />
+
       <PlateTwo project={flagshipProjects[1]} onOpen={() => setOpen(flagshipProjects[1])} />
+      <Dossier project={flagshipProjects[1]} n={2} />
+
       <PlateThree
         project={flagshipProjects[2]}
         onOpen={() => setOpen(flagshipProjects[2])}
       />
+      <Dossier project={flagshipProjects[2]} n={3} />
 
       {/* ── The register: an index, not a card grid ── */}
       <div className="frame rail mt-32 md:mt-48">
@@ -411,6 +416,108 @@ function RegisterRow({
 }
 
 /* ---------------------------------------------------------------- shared */
+
+
+/* ============================================================================
+ * DOSSIER
+ *
+ * The record behind a plate. A plate makes the argument; this is the sheet an
+ * interviewer reads afterwards — problem, system, ownership, the decisions
+ * worth defending, and only results that were actually measured.
+ *
+ * Every field here comes from the project record. Where a project measured
+ * nothing, the result block is absent rather than padded.
+ * ========================================================================= */
+
+function Record({
+  label,
+  body,
+  className,
+}: {
+  label: string;
+  body: string;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <dt className="t-mark text-ink-4">{label}</dt>
+      <dd className="t-read-sm mt-3 text-pretty text-ink-2">{body}</dd>
+    </div>
+  );
+}
+
+function Dossier({ project, n }: { project: Project; n: number }) {
+  const num = String(n).padStart(2, "0");
+  return (
+    <Enter>
+      <div id={`case-${num}`} className="frame rail mt-16 scroll-mt-28 md:mt-24">
+        <div className="flex flex-wrap items-baseline gap-x-7 gap-y-2 border-t border-rule-2 pt-4">
+          <span className="t-mark text-iris">Case {num}</span>
+          <span className="t-note text-ink-3">{project.category}</span>
+          <span className="t-note text-ink-4">{project.year}</span>
+          {project.associated ? (
+            <span className="t-note text-amber">{project.associated}</span>
+          ) : null}
+          {project.note ? (
+            <span className="t-note ml-auto text-ink-4">{project.note}</span>
+          ) : null}
+        </div>
+
+        {/* The record proper. Deliberately asymmetric: the problem sits in the
+            left column, the system answers it across the wider right. */}
+        <dl className="grid-12 mt-9 gap-y-9">
+          <Record
+            label="Problem"
+            body={project.problem}
+            className="col-span-12 md:col-span-5"
+          />
+          <Record
+            label="System"
+            body={project.solution}
+            className="col-span-12 md:col-span-6 md:col-start-7"
+          />
+          <Record
+            label="Role"
+            body={project.contribution}
+            className="col-span-12 md:col-span-5"
+          />
+        </dl>
+
+        <div className="mt-12 border-t border-rule pt-6">
+          <h4 className="t-mark text-ink-4">Approach</h4>
+          <ol className="mt-5 grid gap-x-12 gap-y-4 md:grid-cols-2">
+            {project.technical.map((line, i) => (
+              <li key={line} className="flex gap-4">
+                <span className="t-note shrink-0 tabular-nums text-ink-4">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="t-read-sm text-pretty text-ink-2">{line}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {project.metrics.length > 0 ? (
+          <div className="mt-12 border-t border-rule pt-6">
+            <h4 className="t-mark text-ink-4">Result — measured</h4>
+            <div className="mt-6 flex flex-wrap gap-x-16 gap-y-7">
+              {project.metrics.map((m) => (
+                <div key={m.label}>
+                  <p className="t-figure-sm text-ink">{m.value}</p>
+                  <p className="t-note mt-1.5 max-w-[24ch] leading-snug">
+                    {m.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <StackLine items={project.stack} />
+      </div>
+    </Enter>
+  );
+}
 
 function Field({ label, body }: { label: string; body: string }) {
   return (

@@ -83,19 +83,18 @@ export function Readout() {
   return (
     <div
       ref={box}
-      className={`t-note pointer-events-none fixed bottom-8 left-[clamp(1.25rem,4.5vw,4.5rem)] z-20 hidden w-[13.5rem] transition-opacity duration-700 lg:block ${
+      className={`t-note pointer-events-none fixed bottom-6 left-[clamp(1.25rem,4.5vw,4.5rem)] z-20 hidden w-[11.5rem] border border-rule bg-void/92 p-2.5 backdrop-blur-sm transition-opacity duration-700 lg:block ${
         shown ? "opacity-100" : "opacity-0"
       }`}
       aria-hidden={!shown}
     >
-      <div className="mb-2 h-px w-full bg-rule" />
       <div className="flex flex-col gap-[3px] text-[0.7rem] leading-relaxed">
-        <Row label="COMPONENTS" id="nodes" />
-        <Row label="SIGNAL PATHS" id="links" />
-        <Row label="SHELL" id="segments" />
-        <Row label="INK" id="load" />
+        {/* Only the readings that actually move. A static component count and
+            an internal ink value were costing three lines of the reader's
+            page for nothing. */}
         <Row label="CONFIG" id="state" />
-        <Row label="AUDIO IN" id="signal" />
+        <Row label="SHELL" id="segments" />
+        <Row label="PATHS" id="links" />
       </div>
 
       {/* Two controls, both opt-in. Inspection opens the machine for

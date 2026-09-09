@@ -179,9 +179,12 @@ export function Nav() {
                   <span
                     className={cn(
                       "t-note whitespace-nowrap transition-all duration-500",
+                      // The register is a table of contents, not a hover
+                      // easter egg: every label stays legible and the active
+                      // one takes the accent that names its category.
                       isOn
                         ? cn("opacity-100", TEXT_TONE[i])
-                        : "translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100",
+                        : "text-ink-4 opacity-55 group-hover:opacity-100",
                     )}
                   >
                     {s.label}
