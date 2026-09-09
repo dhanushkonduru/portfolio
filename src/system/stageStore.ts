@@ -41,9 +41,21 @@ export type StageState = {
    */
   speed: number;
   direction: number;
+  /** Inspection mode, 0..1: the machine slows and opens for examination. */
+  inspect: number;
 };
 
-export const stage: StageState = {
+/* The scene is a dynamically imported chunk, and the bundler does not
+   guarantee it resolves this module to the same instance the main chunk got.
+   A duplicated store means the driver updates one object while the scene reads
+   another, so both of these are pinned to a single instance on globalThis. */
+type Global = typeof globalThis & {
+  __dkStage?: StageState;
+  __dkReadings?: typeof readingsInit;
+};
+const G = globalThis as Global;
+
+const stageInit: StageState = {
   p: 0,
   progress: 0,
   px: 0,
@@ -56,20 +68,29 @@ export const stage: StageState = {
   speed: 0,
   direction: 1,
   lastMoveAt: 0,
+  inspect: 0,
 };
+
+export const stage: StageState = G.__dkStage ?? (G.__dkStage = stageInit);
 
 /* ---- live readings from the apparatus ----
    Every field is an actual property of the running system: node and link
    counts are real buffer contents, load is the exact alpha the material is
    using. Nothing here is decorative. */
-export const readings = {
+const readingsInit = {
   nodes: 0,
   links: 0,
   segments: 0,
   load: 0,
   state: 0,
   signal: 0,
+  /** The machine's current configuration name. */
+  config: "IDLE",
+  /** How far the assembly is exploded, 0..1. */
+  explode: 0,
 };
+
+export const readings = G.__dkReadings ?? (G.__dkReadings = readingsInit);
 
 /** The apparatus' own vocabulary for what it is doing at each stage. */
 export const STATE_LABELS = [
@@ -241,6 +262,10 @@ export function setClearAmount(v: number) {
 }
 
 /** The Stack section hands the field the domain the pointer is over. */
+export function setInspect(on: boolean) {
+  stage.inspect = on ? 1 : 0;
+}
+
 export function setFocus(index: number) {
   stage.focus = index;
   stage.focusAmt = index >= 0 ? 1 : 0;

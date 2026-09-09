@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { readings, STATE_LABELS } from "@/system/stageStore";
+import { readings, setInspect } from "@/system/stageStore";
 import { enableSignal, disableSignal, signal } from "@/system/audio";
 
 /* ============================================================================
@@ -32,6 +32,7 @@ export function Readout() {
   const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
   const [shown, setShown] = useState(false);
+  const [inspecting, setInspecting] = useState(false);
 
   /* The hero is a cover page and carries no instrumentation. The panel fades
      in once the reader is inside the document. */
@@ -53,8 +54,8 @@ export function Readout() {
     const id = window.setInterval(() => {
       if (nodes) nodes.textContent = pad(readings.nodes);
       if (links) links.textContent = pad(readings.links);
-      if (segs) segs.textContent = pad(readings.segments);
-      if (state) state.textContent = `${pad(readings.state + 1, 2)} ${STATE_LABELS[readings.state] ?? ""}`;
+      if (segs) segs.textContent = `${pad(readings.segments)}%`;
+      if (state) state.textContent = `${pad(readings.state + 1, 2)} ${readings.config}`;
       if (load) load.textContent = readings.load.toFixed(2);
       if (sig) sig.textContent = signal.live ? `${pad(readings.signal * 100)}%` : "OFF";
     }, 140);
@@ -74,7 +75,10 @@ export function Readout() {
     setBusy(false);
   }
 
-  useEffect(() => () => disableSignal(), []);
+  useEffect(() => () => {
+    disableSignal();
+    setInspect(false);
+  }, []);
 
   return (
     <div
@@ -86,21 +90,37 @@ export function Readout() {
     >
       <div className="mb-2 h-px w-full bg-rule" />
       <div className="flex flex-col gap-[3px] text-[0.7rem] leading-relaxed">
-        <Row label="NODES" id="nodes" />
-        <Row label="LINKS" id="links" />
-        <Row label="SEGMENTS" id="segments" />
-        <Row label="LOAD" id="load" />
-        <Row label="STATE" id="state" />
-        <Row label="SIGNAL" id="signal" />
+        <Row label="COMPONENTS" id="nodes" />
+        <Row label="SIGNAL PATHS" id="links" />
+        <Row label="SHELL" id="segments" />
+        <Row label="INK" id="load" />
+        <Row label="CONFIG" id="state" />
+        <Row label="AUDIO IN" id="signal" />
       </div>
 
-      {/* The only control on the page. Microphone access is requested here and
-          nowhere else, and only on an explicit press. */}
+      {/* Two controls, both opt-in. Inspection opens the machine for
+          examination; the microphone is requested here and nowhere else. */}
+      <button
+        type="button"
+        onClick={() => {
+          const next = !inspecting;
+          setInspecting(next);
+          setInspect(next);
+        }}
+        aria-pressed={inspecting}
+        className="pointer-events-auto mt-3 flex w-full items-center justify-between gap-4 border border-rule px-2.5 py-1.5 text-[0.7rem] text-ink-3 transition-colors hover:border-rule-3 hover:text-ink"
+      >
+        <span>INSPECT</span>
+        <span className={inspecting ? "text-mint" : "text-ink-4"}>
+          {inspecting ? "● OPEN" : "OFF"}
+        </span>
+      </button>
+
       <button
         type="button"
         onClick={toggle}
         aria-pressed={live}
-        className="pointer-events-auto mt-3 flex w-full items-center justify-between gap-4 border border-rule px-2.5 py-1.5 text-[0.7rem] text-ink-3 transition-colors hover:border-rule-3 hover:text-ink"
+        className="pointer-events-auto mt-1.5 flex w-full items-center justify-between gap-4 border border-rule px-2.5 py-1.5 text-[0.7rem] text-ink-3 transition-colors hover:border-rule-3 hover:text-ink"
       >
         <span>AUDIO</span>
         <span className={live ? "text-mint" : "text-ink-4"}>

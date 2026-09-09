@@ -6,7 +6,7 @@ import { startStageDriver } from "./stageStore";
 import { startScroll } from "./scroll";
 
 /** three.js loads only after the page is interactive, and never on the server. */
-const Apparatus = dynamic(() => import("./Apparatus").then((m) => m.Apparatus), {
+const Machine = dynamic(() => import("./Machine").then((m) => m.Machine), {
   ssr: false,
 });
 
@@ -39,5 +39,5 @@ export function SystemLayer() {
     };
   }, []);
 
-  return draw ? <Apparatus /> : null;
+  return draw ? <Machine /> : null;
 }
