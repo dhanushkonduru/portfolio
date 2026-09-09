@@ -11,11 +11,19 @@
  * and each one is a few hundred bytes on the wire.
  * ========================================================================= */
 
-const SIGNAL = "#5ee9c0";
-const IRIS = "#a79bff";
-const AMBER = "#ffb454";
-const LINE = "#262b32";
-const INK_MUTE = "#767f8c";
+/* The diagrams read from the design tokens rather than carrying their own
+   palette, so they follow the sheet instead of having to be re-drawn whenever
+   the ground changes. Inline SVG resolves CSS custom properties normally. */
+const SIGNAL = "var(--color-mint)";
+const IRIS = "var(--color-iris)";
+const AMBER = "var(--color-amber)";
+const LINE = "var(--color-rule-2)";
+const INK_MUTE = "var(--color-ink-3)";
+
+/* A track or well is paper pressed deeper, never a dark box cut into it. */
+const WELL = "var(--color-panel-2)";
+const WELL_SIGNAL = "color-mix(in oklab, var(--color-mint) 14%, var(--color-pit))";
+const WELL_AMBER = "color-mix(in oklab, var(--color-amber) 14%, var(--color-pit))";
 
 function Frame({
   children,
@@ -73,13 +81,13 @@ function UnlearningChart() {
             <text
               x={X - 12}
               y={y + 11}
-              fill={r.tone === SIGNAL ? SIGNAL : "#a5acb6"}
+              fill={r.tone === SIGNAL ? SIGNAL : INK_MUTE}
               fontSize="11"
               textAnchor="end"
             >
               {r.label}
             </text>
-            <rect x={X} y={y} width={W} height="15" fill="#12151a" rx="2" />
+            <rect x={X} y={y} width={W} height="15" fill={WELL} rx="2" />
             <rect
               x={X}
               y={y}
@@ -142,14 +150,14 @@ function RagPipeline() {
         width={w}
         height={h}
         rx="4"
-        fill={accent ? "#0d1f1b" : "#12151a"}
+        fill={accent ? WELL_SIGNAL : WELL}
         stroke={accent ? SIGNAL : LINE}
         strokeOpacity={accent ? 0.5 : 1}
       />
       <text
         x={x + w / 2}
         y={y + h / 2 + 3.5}
-        fill={accent ? SIGNAL : "#a5acb6"}
+        fill={accent ? SIGNAL : INK_MUTE}
         fontSize="9.5"
         textAnchor="middle"
       >
@@ -218,7 +226,7 @@ function RagPipeline() {
         <text x="20" y="218" fill={INK_MUTE} fontSize="9" letterSpacing="1.2">
           FAITHFULNESS · 50-QUESTION RAGAS SET
         </text>
-        <rect x="20" y="228" width="180" height="8" rx="2" fill="#12151a" />
+        <rect x="20" y="228" width="180" height="8" rx="2" fill={WELL} />
         <rect
           x="20"
           y="228"
@@ -234,7 +242,7 @@ function RagPipeline() {
         <text x="248" y="235" fill={INK_MUTE} fontSize="9">
           →
         </text>
-        <rect x="268" y="228" width="180" height="8" rx="2" fill="#12151a" />
+        <rect x="268" y="228" width="180" height="8" rx="2" fill={WELL} />
         <rect
           x="268"
           y="228"
@@ -266,15 +274,15 @@ function VerificationGate() {
         </marker>
       </defs>
 
-      <rect x="20" y="106" width="86" height="34" rx="4" fill="#12151a" stroke={LINE} />
-      <text x="63" y="127" fill="#a5acb6" fontSize="9.5" textAnchor="middle">
+      <rect x="20" y="106" width="86" height="34" rx="4" fill={WELL} stroke={LINE} />
+      <text x="63" y="127" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
         Erasure request
       </text>
 
       <path d="M108 123 L128 123" stroke={LINE} markerEnd="url(#h2)" />
 
-      <rect x="130" y="96" width="86" height="54" rx="4" fill="#12151a" stroke={LINE} />
-      <text x="173" y="116" fill="#a5acb6" fontSize="9.5" textAnchor="middle">
+      <rect x="130" y="96" width="86" height="54" rx="4" fill={WELL} stroke={LINE} />
+      <text x="173" y="116" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
         Provenance
       </text>
       <text x="173" y="130" fill={INK_MUTE} fontSize="8" textAnchor="middle">
@@ -286,8 +294,8 @@ function VerificationGate() {
 
       <path d="M218 123 L238 123" stroke={LINE} markerEnd="url(#h2)" />
 
-      <rect x="240" y="88" width="86" height="70" rx="4" fill="#12151a" stroke={LINE} />
-      <text x="283" y="107" fill="#a5acb6" fontSize="9.5" textAnchor="middle">
+      <rect x="240" y="88" width="86" height="70" rx="4" fill={WELL} stroke={LINE} />
+      <text x="283" y="107" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
         Unlearn
       </text>
       <text x="283" y="122" fill={INK_MUTE} fontSize="8" textAnchor="middle">
@@ -330,12 +338,12 @@ function VerificationGate() {
       <path d="M366 104 L390 92" stroke={SIGNAL} strokeOpacity="0.55" markerEnd="url(#h2)" />
       <path d="M366 142 L390 154" stroke={AMBER} strokeOpacity="0.45" strokeDasharray="3 3" />
 
-      <rect x="392" y="76" width="68" height="30" rx="4" fill="#0d1f1b" stroke={SIGNAL} strokeOpacity="0.5" />
+      <rect x="392" y="76" width="68" height="30" rx="4" fill={WELL_SIGNAL} stroke={SIGNAL} strokeOpacity="0.5" />
       <text x="426" y="95" fill={SIGNAL} fontSize="9.5" textAnchor="middle">
         Deploy
       </text>
 
-      <rect x="392" y="140" width="68" height="30" rx="4" fill="#1f1608" stroke={AMBER} strokeOpacity="0.4" />
+      <rect x="392" y="140" width="68" height="30" rx="4" fill={WELL_AMBER} stroke={AMBER} strokeOpacity="0.4" />
       <text x="426" y="159" fill={AMBER} fontSize="9.5" textAnchor="middle">
         Withheld
       </text>
@@ -367,7 +375,7 @@ function AgentGraph() {
       viewBox="0 0 480 260"
       caption="Five agents over one typed state graph, with checkpointed resume"
     >
-      <circle cx="228" cy="128" r="40" fill="#0d1f1b" stroke={SIGNAL} strokeOpacity="0.4" />
+      <circle cx="228" cy="128" r="40" fill={WELL_SIGNAL} stroke={SIGNAL} strokeOpacity="0.4" />
       <text x="228" y="124" fill={SIGNAL} fontSize="9.5" textAnchor="middle">
         Pydantic
       </text>
@@ -391,17 +399,17 @@ function AgentGraph() {
             width="88"
             height="26"
             rx="13"
-            fill="#12151a"
+            fill={WELL}
             stroke={LINE}
           />
-          <text x={a.x} y={a.y + 3.5} fill="#a5acb6" fontSize="9" textAnchor="middle">
+          <text x={a.x} y={a.y + 3.5} fill={INK_MUTE} fontSize="9" textAnchor="middle">
             {a.label}
           </text>
         </g>
       ))}
 
       <g>
-        <rect x="20" y="106" width="14" height="44" rx="2" fill="#12151a" stroke={AMBER} strokeOpacity="0.4" />
+        <rect x="20" y="106" width="14" height="44" rx="2" fill={WELL} stroke={AMBER} strokeOpacity="0.4" />
         <text x="27" y="98" fill={AMBER} fontSize="7.5" letterSpacing="1.2" textAnchor="middle">
           CKPT
         </text>
@@ -439,7 +447,7 @@ function WalkForward() {
             <text x={X - 10} y={y + 11} fill={INK_MUTE} fontSize="9" textAnchor="end" fontFamily="monospace">
               {f + 1}
             </text>
-            <rect x={X} y={y} width={W} height="15" rx="2" fill="#12151a" />
+            <rect x={X} y={y} width={W} height="15" rx="2" fill={WELL} />
             <rect x={X} y={y} width={trainW} height="15" rx="2" fill={SIGNAL} fillOpacity="0.5" />
             <rect x={X + trainW + 3} y={y} width={W * 0.14} height="15" rx="2" fill={AMBER} fillOpacity="0.55" />
           </g>
@@ -448,11 +456,11 @@ function WalkForward() {
 
       <g transform="translate(56, 218)">
         <rect width="11" height="11" rx="2" fill={SIGNAL} fillOpacity="0.5" />
-        <text x="18" y="9" fill="#a5acb6" fontSize="9.5">
+        <text x="18" y="9" fill={INK_MUTE} fontSize="9.5">
           Train
         </text>
         <rect x="70" width="11" height="11" rx="2" fill={AMBER} fillOpacity="0.55" />
-        <text x="88" y="9" fill="#a5acb6" fontSize="9.5">
+        <text x="88" y="9" fill={INK_MUTE} fontSize="9.5">
           Validate, always after
         </text>
       </g>
@@ -486,7 +494,7 @@ function GeoStack() {
           <g key={l.label}>
             <path
               d={`M110 ${y} L330 ${y - 22} L430 ${y + 6} L210 ${y + 28} Z`}
-              fill={l.tone === LINE ? "#12151a" : l.tone}
+              fill={l.tone === LINE ? WELL : l.tone}
               fillOpacity={l.tone === LINE ? 1 : 0.18}
               stroke={l.tone}
               strokeOpacity={l.tone === LINE ? 1 : 0.55}

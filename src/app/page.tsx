@@ -1,6 +1,4 @@
-import { Boot } from "@/components/Boot";
 import { Nav } from "@/components/Nav";
-import { Pointer } from "@/components/Cursor";
 import { SystemLayer } from "@/system/SystemLayer";
 import { Hero } from "@/sections/Hero";
 import { About } from "@/sections/About";
@@ -13,11 +11,9 @@ import { Contact, Footer } from "@/sections/Contact";
 export default function Page() {
   return (
     <>
-      {/* One field, fixed behind the whole page. Sections decide how much of
-          it comes through; that is the pacing system. */}
-      <Boot />
+      {/* No field and no boot gate. SystemLayer is behaviour only now:
+          the stage driver and the inertial scroll. */}
       <SystemLayer />
-      <Pointer />
       <Nav />
 
       <main className="relative z-10">

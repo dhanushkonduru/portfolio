@@ -16,7 +16,7 @@ export default function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#07080a",
+          background: "#f2efe8",
           padding: "72px 80px",
           fontFamily: "sans-serif",
         }}
@@ -30,8 +30,8 @@ export default function OpengraphImage() {
               width: 44,
               height: 44,
               borderRadius: 10,
-              border: "1px solid #343b45",
-              color: "#5ee9c0",
+              border: "1px solid #b9b1a0",
+              color: "#17614a",
               fontSize: 18,
               fontWeight: 600,
             }}
@@ -41,7 +41,7 @@ export default function OpengraphImage() {
           <div
             style={{
               display: "flex",
-              color: "#8c94a0",
+              color: "#5a5545",
               fontSize: 20,
               letterSpacing: 3,
             }}
@@ -54,7 +54,7 @@ export default function OpengraphImage() {
           <div
             style={{
               display: "flex",
-              color: "#eceef1",
+              color: "#17160f",
               fontSize: 86,
               fontWeight: 700,
               letterSpacing: -3,
@@ -66,7 +66,7 @@ export default function OpengraphImage() {
           <div
             style={{
               display: "flex",
-              color: "#a5acb6",
+              color: "#403c31",
               fontSize: 27,
               lineHeight: 1.4,
               maxWidth: 900,
@@ -82,19 +82,19 @@ export default function OpengraphImage() {
             display: "flex",
             alignItems: "center",
             gap: 28,
-            borderTop: "1px solid #1c2027",
+            borderTop: "1px solid #e4dfd3",
             paddingTop: 26,
-            color: "#5ee9c0",
+            color: "#17614a",
             fontSize: 20,
           }}
         >
           <div style={{ display: "flex" }}>2 invention disclosures</div>
-          <div style={{ display: "flex", color: "#343b45" }}>/</div>
-          <div style={{ display: "flex", color: "#8c94a0" }}>
+          <div style={{ display: "flex", color: "#b9b1a0" }}>/</div>
+          <div style={{ display: "flex", color: "#5a5545" }}>
             3 engineering internships
           </div>
-          <div style={{ display: "flex", color: "#343b45" }}>/</div>
-          <div style={{ display: "flex", color: "#8c94a0" }}>
+          <div style={{ display: "flex", color: "#b9b1a0" }}>/</div>
+          <div style={{ display: "flex", color: "#5a5545" }}>
             Integrated M.Tech, VIT Vellore
           </div>
         </div>
