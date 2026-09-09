@@ -58,6 +58,30 @@ export const stage: StageState = {
   lastMoveAt: 0,
 };
 
+/* ---- live readings from the apparatus ----
+   Every field is an actual property of the running system: node and link
+   counts are real buffer contents, load is the exact alpha the material is
+   using. Nothing here is decorative. */
+export const readings = {
+  nodes: 0,
+  links: 0,
+  segments: 0,
+  load: 0,
+  state: 0,
+  signal: 0,
+};
+
+/** The apparatus' own vocabulary for what it is doing at each stage. */
+export const STATE_LABELS = [
+  "CALIBRATION",
+  "STRUCTURE",
+  "STRUCTURE",
+  "CONNECTION",
+  "ANALYSIS",
+  "CONNECTION",
+  "OUTPUT",
+] as const;
+
 /* ---- coarse subscription: integer stage only ---- */
 
 let activeIndex = 0;
