@@ -13,34 +13,29 @@
    ========================================================================= */
 
 @theme {
-  /* ---- ground: paper, warm, four depths ----
-     The page is printed matter. Depth comes from how much ink the paper has
-     taken, not from light sources. */
-  --color-void: #f2efe8; /* the sheet */
-  --color-pit: #fbfaf7; /* raised — the brightest plane */
-  --color-panel: #ece8df; /* pressed once */
-  --color-panel-2: #e4dfd3; /* pressed twice — the densest stretch */
+  /* ---- ground ---- */
+  --color-void: #060709;
+  --color-pit: #000000;
+  --color-panel: #0b0d10;
+  --color-panel-2: #101317;
 
   /* ---- rules: three weights, used deliberately ---- */
-  --color-rule: #dcd6c9; /* structural division */
-  --color-rule-2: #b9b1a0; /* active / emphasised */
-  --color-rule-3: #8b8473; /* interactive boundary */
+  --color-rule: #171a1f; /* structural division */
+  --color-rule-2: #262b32; /* active / emphasised */
+  --color-rule-3: #3a414b; /* interactive boundary */
 
-  /* ---- ink ramp (all >= AA on every ground above) ---- */
-  --color-ink: #17160f;
-  --color-ink-2: #403c31;
-  --color-ink-3: #5a5545;
-  --color-ink-4: #67614e;
+  /* ---- type ramp (all >= AA on every ground above) ---- */
+  --color-ink: #f2f3f5;
+  --color-ink-2: #a5acb6;
+  --color-ink-3: #8c94a0;
+  --color-ink-4: #767f8c;
 
-  /* ---- semantic accents ----
-     Darkened to hold their meaning as INK. The hues are the same argument as
-     before; only the medium changed, so each still had to clear AA on paper
-     rather than glow on black. */
-  --color-mint: #17614a; /* engineering · identity · verified */
-  --color-cyan: #1c5a85; /* systems · infrastructure · time */
-  --color-iris: #4a3ea6; /* AI · models · research */
-  --color-iris-deep: #382d8c; /* the same hue for fields and graphics */
-  --color-amber: #915212; /* evidence · marked · awarded */
+  /* ---- semantic accents ---- */
+  --color-mint: #5ee9c0; /* engineering · identity · verified */
+  --color-cyan: #56c6f5; /* systems · infrastructure · time */
+  --color-iris: #a79bff; /* AI · models · research (text-safe) */
+  --color-iris-deep: #7c6bff; /* the same hue for fields and graphics */
+  --color-amber: #ffb454; /* evidence · marked · awarded */
 
   /* ---- type ---- */
   --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
@@ -73,17 +68,16 @@ body {
   background: var(--color-void);
 }
 
-/* Paper tooth. A fixed grain layer above the ground and beneath the content,
-   so text stays perfectly crisp on top of it. On a light sheet this reads as
-   the fibre of the stock rather than as noise, and it is what stops the large
-   flat areas from looking like a screenshot of a colour swatch. */
+/* One grain layer across the whole page, fixed, above the ground and beneath
+   the content. Large flat dark fields band visibly on 8-bit panels; this is
+   the cheapest fix, and text sits above it so nothing costs legibility. */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.055;
+  opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -336,13 +330,13 @@ body::after {
 /* The raised sheet — lifted above the page rather than pressed into it.
    Pairs with .stratum for the edges. */
 @utility stratum-raised {
-  background: color-mix(in oklab, var(--color-pit) 94%, transparent);
+  background: color-mix(in oklab, var(--color-panel-2) 94%, transparent);
 }
 
 /* The deeper plane, for the densest stretch of the page. Pairs with
    .stratum, which supplies the edges. */
 @utility stratum-deep {
-  background: color-mix(in oklab, var(--color-panel-2) 92%, transparent);
+  background: color-mix(in oklab, var(--color-pit) 88%, transparent);
 }
 
 @utility link-rule {

@@ -65,7 +65,24 @@ const CONFIGS: Config[] = [
     sensorOut: 0, sensorOp: 0, coreScale: 0.12, coreOp: 0.15, plateOp: 0, plateDrop: 0, signal: 0, guideOp: 0 },
 ];
 
-const ACCENTS = ["#17614a", "#17614a", "#1c5a85", "#4a3ea6", "#915212", "#4a3ea6", "#17614a"];
+/* Colours come from the design tokens at runtime rather than being written
+   into the scene. The machine then follows the sheet automatically instead of
+   having to be re-coloured whenever the ground changes. */
+function token(name: string, fallback: string) {
+  if (typeof document === "undefined") return fallback;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+
+const ACCENT_VARS = [
+  "--color-mint",
+  "--color-mint",
+  "--color-cyan",
+  "--color-iris",
+  "--color-amber",
+  "--color-iris",
+  "--color-mint",
+];
 
 const CLEAR_CHUNK = /* glsl */ `
   uniform vec4 uClear[2];
@@ -147,13 +164,13 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
 
   const mats = useMemo(
     () => ({
-      core: inkMaterial("#17160f", 0.3),
-      ring: inkMaterial("#17160f", 0.22),
-      panel: inkMaterial("#17160f", 0.2),
-      sensor: inkMaterial("#17614a", 0.3),
-      plate: inkMaterial("#67614e", 0.16),
-      signal: inkMaterial("#17614a", 0),
-      strut: inkMaterial("#17160f", 0.18),
+      core: inkMaterial(token("--color-ink", "#f2f3f5"), 0.3),
+      ring: inkMaterial(token("--color-ink", "#f2f3f5"), 0.22),
+      panel: inkMaterial(token("--color-ink", "#f2f3f5"), 0.2),
+      sensor: inkMaterial(token("--color-mint", "#5ee9c0"), 0.3),
+      plate: inkMaterial(token("--color-ink-4", "#767f8c"), 0.16),
+      signal: inkMaterial(token("--color-mint", "#5ee9c0"), 0),
+      strut: inkMaterial(token("--color-ink", "#f2f3f5"), 0.18),
     }),
     [],
   );
@@ -172,7 +189,11 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
     [built, mats],
   );
 
-  const tmp = useMemo(() => ({ c: new THREE.Color(), v: new THREE.Vector3() }), []);
+  const tmp = useMemo(() => ({ c: new THREE.Color(), c2: new THREE.Color() }), []);
+  const accents = useMemo(
+    () => ACCENT_VARS.map((v, i) => token(v, ["#5ee9c0", "#5ee9c0", "#56c6f5", "#a79bff", "#ffb454", "#a79bff", "#5ee9c0"][i])),
+    [],
+  );
   const inspRef = useRef(0);
 
   useFrame((_, rawDt) => {
@@ -321,7 +342,7 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
     setA(mats.plate, base * m("plateOp") * 0.6);
     setA(mats.signal, base * m("signal") * 0.85);
     setA(mats.strut, base * 0.5);
-    tmp.c.set(ACCENTS[i0]).lerp(new THREE.Color(ACCENTS[i1]), t);
+    tmp.c.set(accents[i0]).lerp(tmp.c2.set(accents[i1]), t);
     (mats.sensor.uniforms.uInk.value as THREE.Color).copy(tmp.c);
     (mats.signal.uniforms.uInk.value as THREE.Color).copy(tmp.c);
 

@@ -60,8 +60,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f2efe8",
-  colorScheme: "light",
+  themeColor: "#07080a",
+  colorScheme: "dark",
 };
 
 /** Structured data — lets search engines resolve the person, not just the page. */
