@@ -91,7 +91,16 @@ export function Nav() {
         {/* The header is fixed and the page runs beneath it. Without this the
             two sets of type collide on every scroll. */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-void via-void/90 to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-32 bg-gradient-to-b from-void via-void/85 to-transparent backdrop-blur-md"
+          style={{
+            // The blur is masked rather than clipped: a hard-edged blur box
+            // reads as a bar sitting on the page. Fading it out means the
+            // header dissolves into the field instead of ending somewhere.
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black 0%, black 55%, transparent 100%)",
+            maskImage:
+              "linear-gradient(to bottom, black 0%, black 55%, transparent 100%)",
+          }}
           aria-hidden="true"
         />
         <a
