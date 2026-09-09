@@ -300,7 +300,9 @@ body::after {
 
 @utility stratum {
   position: relative;
-  background: color-mix(in oklab, var(--color-panel) 90%, transparent);
+  /* No fill. A section is marked by its edges, not by a plane laid over the
+     scene — the machine has to run continuously through the whole page. */
+  background: transparent;
 
   /* Edged, not bordered — hairlines that fade at both ends, so a section
      reads as a surface laid over the field rather than as a boxed div. */
@@ -330,13 +332,13 @@ body::after {
 /* The raised sheet — lifted above the page rather than pressed into it.
    Pairs with .stratum for the edges. */
 @utility stratum-raised {
-  background: color-mix(in oklab, var(--color-panel-2) 94%, transparent);
+  background: color-mix(in oklab, var(--color-panel-2) 22%, transparent);
 }
 
 /* The deeper plane, for the densest stretch of the page. Pairs with
    .stratum, which supplies the edges. */
 @utility stratum-deep {
-  background: color-mix(in oklab, var(--color-pit) 88%, transparent);
+  background: color-mix(in oklab, var(--color-pit) 30%, transparent);
 }
 
 @utility link-rule {

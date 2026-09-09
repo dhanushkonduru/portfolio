@@ -164,12 +164,15 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
 
   const mats = useMemo(
     () => ({
-      core: inkMaterial(token("--color-ink", "#f2f3f5"), 0.3),
-      ring: inkMaterial(token("--color-ink", "#f2f3f5"), 0.22),
-      panel: inkMaterial(token("--color-ink", "#f2f3f5"), 0.2),
-      sensor: inkMaterial(token("--color-mint", "#5ee9c0"), 0.3),
-      plate: inkMaterial(token("--color-ink-4", "#767f8c"), 0.16),
-      signal: inkMaterial(token("--color-mint", "#5ee9c0"), 0),
+      // Colour is positional here too, but positional by COMPONENT rather
+      // than by scroll: each subsystem wears the accent that names what it
+      // does, so several are on screen at once and each one means something.
+      core: inkMaterial(token("--color-iris", "#a79bff"), 0.3), // computation
+      ring: inkMaterial(token("--color-ink", "#f2f3f5"), 0.22), // structure
+      panel: inkMaterial(token("--color-ink", "#f2f3f5"), 0.2), // shell
+      sensor: inkMaterial(token("--color-cyan", "#56c6f5"), 0.3), // sensing
+      plate: inkMaterial(token("--color-mint", "#5ee9c0"), 0.16), // control
+      signal: inkMaterial(token("--color-amber", "#ffb454"), 0), // evidence
       strut: inkMaterial(token("--color-ink", "#f2f3f5"), 0.18),
     }),
     [],
@@ -343,7 +346,6 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
     setA(mats.signal, base * m("signal") * 0.85);
     setA(mats.strut, base * 0.5);
     tmp.c.set(accents[i0]).lerp(tmp.c2.set(accents[i1]), t);
-    (mats.sensor.uniforms.uInk.value as THREE.Color).copy(tmp.c);
     (mats.signal.uniforms.uInk.value as THREE.Color).copy(tmp.c);
 
     // ---- readings + label anchors ----
@@ -381,6 +383,107 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
   );
 }
 
+
+/* ---------------------------------------------------------------- field ---
+ * A sparse accent field across the whole sheet. The machine is the subject;
+ * this is the room it sits in. Points are drawn soft but never additively —
+ * they read as flecks in the ground rather than as lights.
+ * ------------------------------------------------------------------------ */
+
+const FIELD_VERT = /* glsl */ `
+  ${CLEAR_CHUNK}
+  attribute vec3 aColor;
+  attribute float aSize;
+  attribute float aPhase;
+  uniform float uTime;
+  varying vec3 vColor;
+  void main() {
+    vec3 p = position;
+    p.y += sin(uTime * 0.13 + aPhase) * 0.16;
+    p.x += cos(uTime * 0.09 + aPhase * 1.7) * 0.13;
+    vec4 clip = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    vAtt = clearAtt(clip.xy / clip.w);
+    vColor = aColor;
+    gl_PointSize = aSize;
+    gl_Position = clip;
+  }
+`;
+
+const FIELD_FRAG = /* glsl */ `
+  uniform float uAlpha;
+  varying vec3 vColor;
+  varying float vAtt;
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    float a = smoothstep(0.5, 0.12, d);
+    gl_FragColor = vec4(vColor, uAlpha * vAtt * a);
+  }
+`;
+
+function Field({ count, inkScale }: { count: number; inkScale: number }) {
+  const mat = useRef<THREE.ShaderMaterial>(null);
+
+  const { geo, material } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const size = new Float32Array(count);
+    const phase = new Float32Array(count);
+    const palette = [
+      new THREE.Color(token("--color-mint", "#5ee9c0")),
+      new THREE.Color(token("--color-cyan", "#56c6f5")),
+      new THREE.Color(token("--color-iris", "#a79bff")),
+      new THREE.Color(token("--color-amber", "#ffb454")),
+      new THREE.Color(token("--color-ink", "#f2f3f5")),
+    ];
+    // Weighted so the field reads as neutral with colour in it, not as confetti.
+    const pick = [0, 1, 2, 3, 4, 4, 4, 4];
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 20;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 15;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 8;
+      const c = palette[pick[i % pick.length]];
+      col[i * 3] = c.r;
+      col[i * 3 + 1] = c.g;
+      col[i * 3 + 2] = c.b;
+      size[i] = 1.1 + Math.random() * 2.4;
+      phase[i] = Math.random() * Math.PI * 2;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute("aColor", new THREE.BufferAttribute(col, 3));
+    geo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
+    geo.setAttribute("aPhase", new THREE.BufferAttribute(phase, 1));
+    const material = new THREE.ShaderMaterial({
+      vertexShader: FIELD_VERT,
+      fragmentShader: FIELD_FRAG,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      uniforms: {
+        uAlpha: { value: 0.42 * inkScale },
+        uTime: { value: 0 },
+        uClear: { value: [new THREE.Vector4(), new THREE.Vector4()] },
+        uClearCount: { value: 0 },
+        uClearAmt: { value: 0 },
+      },
+    });
+    return { geo, material };
+  }, [count, inkScale]);
+
+  useFrame((_, dt) => {
+    const u = material.uniforms;
+    u.uTime.value += Math.min(dt, 1 / 30);
+    const rects = u.uClear.value as THREE.Vector4[];
+    for (let k = 0; k < 2; k++) {
+      rects[k].set(stage.clear[k * 4], stage.clear[k * 4 + 1], stage.clear[k * 4 + 2], stage.clear[k * 4 + 3]);
+    }
+    u.uClearCount.value = stage.clearCount;
+    u.uClearAmt.value += (stage.clearAmount - u.uClearAmt.value) * Math.min(1, dt * 4);
+  });
+
+  return <points ref={mat as never} geometry={geo} material={material} frustumCulled={false} />;
+}
+
 function Fit({ span }: { span: number }) {
   const camera = useThree((s) => s.camera) as THREE.OrthographicCamera;
   const size = useThree((s) => s.size);
@@ -396,13 +499,14 @@ export function Machine() {
   const [awake, setAwake] = useState(true);
 
   const cfg = useMemo(() => {
-    if (typeof window === "undefined") return { detail: 1, dpr: 1, span: 7.6, ink: 1 };
+    if (typeof window === "undefined")
+      return { detail: 1, dpr: 1, span: 7.6, ink: 1, field: 340 };
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     const narrow = window.innerWidth < 900;
     const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-    if (coarse || narrow) return { detail: 0, dpr: 1, span: 9.8, ink: 0.6 };
-    if (mem !== undefined && mem <= 4) return { detail: 1, dpr: 1.5, span: 7.6, ink: 1 };
-    return { detail: 1, dpr: 2, span: 7.6, ink: 1 };
+    if (coarse || narrow) return { detail: 0, dpr: 1, span: 9.8, ink: 0.6, field: 180 };
+    if (mem !== undefined && mem <= 4) return { detail: 1, dpr: 1.5, span: 7.6, ink: 1, field: 340 };
+    return { detail: 1, dpr: 2, span: 7.6, ink: 1, field: 560 };
   }, []);
 
   useEffect(() => {
@@ -421,6 +525,7 @@ export function Machine() {
         gl={{ antialias: true, alpha: true, depth: false, stencil: false }}
       >
         <Fit span={cfg.span} />
+        <Field count={cfg.field} inkScale={cfg.ink} />
         <Verifier detail={cfg.detail} inkScale={cfg.ink} reduced={reduced} />
       </Canvas>
     </div>
