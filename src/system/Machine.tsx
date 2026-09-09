@@ -144,7 +144,17 @@ function inkMaterial(color: string, alpha: number) {
 
 const lerp = THREE.MathUtils.lerp;
 
-function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: number; reduced: boolean }) {
+function Verifier({
+  detail,
+  inkScale,
+  reduced,
+  flowCount,
+}: {
+  detail: number;
+  inkScale: number;
+  reduced: boolean;
+  flowCount: number;
+}) {
   const root = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Group>(null);
   const containRef = useRef<THREE.LineSegments>(null);
@@ -386,6 +396,8 @@ function Verifier({ detail, inkScale, reduced }: { detail: number; inkScale: num
       {Array.from({ length: SENSORS }, (_, i) => (
         <lineSegments key={`s${i}`} ref={reg(sensorRefs, i)} geometry={built.sensor} material={mats.sensor} frustumCulled={false} />
       ))}
+
+      <Flow count={flowCount} inkScale={inkScale} />
     </group>
   );
 }
@@ -505,6 +517,152 @@ function Field({ count, inkScale }: { count: number; inkScale: number }) {
   return <points ref={mat as never} geometry={geo} material={material} frustumCulled={false} />;
 }
 
+
+/* ----------------------------------------------------------------- flow ---
+ * Material moving through the device. Each element is drawn in from outside,
+ * spirals inward through the coil gaps, converges on the core, then ejects
+ * along the axis and fades. It lives inside the machine's group, so it
+ * inherits the tilt and turns with it rather than floating independently.
+ *
+ * The whole path is parametric in the vertex shader — one phase value per
+ * element, nothing written back from the CPU.
+ * ------------------------------------------------------------------------ */
+
+const FLOW_VERT = /* glsl */ `
+  attribute float aPhase;
+  attribute float aSpeed;
+  attribute float aAngle;
+  attribute float aTurns;
+  attribute float aSize;
+  attribute float aTone;
+  attribute float aStartY;
+
+  uniform float uTime;
+  uniform float uRate;
+  uniform vec2 uMouse;
+
+  varying float vFade;
+  varying float vTone;
+  varying float vHot;
+
+  void main() {
+    float p = fract(aPhase + uTime * aSpeed * uRate);
+    float inb = smoothstep(0.0, 0.66, p);
+    float ej = smoothstep(0.66, 1.0, p);
+
+    // Inbound: a decaying spiral. Ejection: held on the axis and thrown clear.
+    float r = mix(3.5, 0.40, pow(inb, 1.55));
+    float ang = aAngle + inb * aTurns * 6.28318;
+    float y = mix(aStartY, 0.0, inb) + ej * 3.4 * sign(aStartY);
+
+    vec3 pos = vec3(cos(ang) * r, y, sin(ang) * r);
+    vec4 clip = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+
+    // Pointer disturbs the stream locally, in screen space so it tracks the
+    // cursor rather than some point in the machine's own frame.
+    vec2 ndc = clip.xy / clip.w;
+    vec2 d = ndc - uMouse;
+    float push = smoothstep(0.34, 0.0, length(d));
+    clip.xy += normalize(d + 1e-5) * push * 0.10 * clip.w;
+
+    vHot = push;
+    vTone = aTone;
+    // Fade in on entry, out on ejection: elements arrive and leave, never pop.
+    vFade = smoothstep(0.0, 0.08, p) * (1.0 - ej);
+
+    gl_Position = clip;
+    gl_PointSize = aSize * (1.0 + push * 0.8) * (60.0 / -(modelViewMatrix * vec4(pos, 1.0)).z);
+  }
+`;
+
+const FLOW_FRAG = /* glsl */ `
+  uniform vec3 uCyan;
+  uniform vec3 uAmber;
+  uniform vec3 uInk;
+  uniform float uAlpha;
+  varying float vFade;
+  varying float vTone;
+  varying float vHot;
+
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float a = pow(1.0 - d * 2.0, 1.8);
+    vec3 c = mix(uInk, mix(uCyan, uAmber, step(0.82, vTone)), 0.22 + vHot * 0.5);
+    gl_FragColor = vec4(c, a * vFade * uAlpha * (0.5 + vHot * 0.9));
+  }
+`;
+
+function Flow({ count, inkScale }: { count: number; inkScale: number }) {
+  const rate = useRef(1);
+
+  const { geo, material } = useMemo(() => {
+    const phase = new Float32Array(count);
+    const speed = new Float32Array(count);
+    const angle = new Float32Array(count);
+    const turns = new Float32Array(count);
+    const size = new Float32Array(count);
+    const tone = new Float32Array(count);
+    const startY = new Float32Array(count);
+    const pos = new Float32Array(count * 3);
+
+    for (let i = 0; i < count; i++) {
+      phase[i] = Math.random();
+      speed[i] = 0.045 + Math.random() * 0.075;
+      angle[i] = Math.random() * Math.PI * 2;
+      turns[i] = 0.7 + Math.random() * 1.1;
+      size[i] = 0.9 + Math.random() * 1.5;
+      tone[i] = Math.random();
+      startY[i] = (Math.random() - 0.5) * 3.4;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute("aPhase", new THREE.BufferAttribute(phase, 1));
+    geo.setAttribute("aSpeed", new THREE.BufferAttribute(speed, 1));
+    geo.setAttribute("aAngle", new THREE.BufferAttribute(angle, 1));
+    geo.setAttribute("aTurns", new THREE.BufferAttribute(turns, 1));
+    geo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
+    geo.setAttribute("aTone", new THREE.BufferAttribute(tone, 1));
+    geo.setAttribute("aStartY", new THREE.BufferAttribute(startY, 1));
+    geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 12);
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader: FLOW_VERT,
+      fragmentShader: FLOW_FRAG,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      uniforms: {
+        uTime: { value: 0 },
+        uRate: { value: 1 },
+        uMouse: { value: new THREE.Vector2(9, 9) },
+        uAlpha: { value: 0.6 * inkScale },
+        uCyan: { value: new THREE.Color(token("--color-cyan", "#56c6f5")) },
+        uAmber: { value: new THREE.Color(token("--color-amber", "#ffb454")) },
+        uInk: { value: new THREE.Color(token("--color-ink", "#f2f3f5")) },
+      },
+    });
+    return { geo, material };
+  }, [count, inkScale]);
+
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, 1 / 30);
+    const u = material.uniforms;
+    u.uTime.value += dt;
+
+    // Interaction: the closer the pointer is to the device and the faster the
+    // reader is moving, the harder it runs. Eased, so it spins up and down.
+    const prox = 1 - Math.min(1, Math.hypot(stage.px, stage.py) / 1.1);
+    const target = 1 + prox * 1.4 + stage.speed * 1.8 + signal.level * 0.7;
+    rate.current += (target - rate.current) * Math.min(1, dt * 1.6);
+    u.uRate.value = rate.current;
+    (u.uMouse.value as THREE.Vector2).set(stage.px, stage.py);
+  });
+
+  return <points geometry={geo} material={material} frustumCulled={false} />;
+}
+
 function Fit({ span }: { span: number }) {
   const camera = useThree((s) => s.camera) as THREE.OrthographicCamera;
   const size = useThree((s) => s.size);
@@ -521,13 +679,13 @@ export function Machine() {
 
   const cfg = useMemo(() => {
     if (typeof window === "undefined")
-      return { detail: 1, dpr: 1, span: 7.6, ink: 1, field: 340 };
+      return { detail: 1, dpr: 1, span: 7.6, ink: 1, field: 460, flow: 700 };
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     const narrow = window.innerWidth < 900;
     const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-    if (coarse || narrow) return { detail: 0, dpr: 1, span: 9.8, ink: 0.6, field: 180 };
-    if (mem !== undefined && mem <= 4) return { detail: 1, dpr: 1.5, span: 7.6, ink: 1, field: 340 };
-    return { detail: 1, dpr: 2, span: 7.6, ink: 1, field: 560 };
+    if (coarse || narrow) return { detail: 0, dpr: 1, span: 9.8, ink: 0.6, field: 220, flow: 260 };
+    if (mem !== undefined && mem <= 4) return { detail: 1, dpr: 1.5, span: 7.6, ink: 1, field: 460, flow: 700 };
+    return { detail: 1, dpr: 2, span: 7.6, ink: 1, field: 760, flow: 1300 };
   }, []);
 
   useEffect(() => {
@@ -547,7 +705,12 @@ export function Machine() {
       >
         <Fit span={cfg.span} />
         <Field count={cfg.field} inkScale={cfg.ink} />
-        <Verifier detail={cfg.detail} inkScale={cfg.ink} reduced={reduced} />
+        <Verifier
+          detail={cfg.detail}
+          inkScale={cfg.ink}
+          reduced={reduced}
+          flowCount={cfg.flow}
+        />
       </Canvas>
     </div>
   );
