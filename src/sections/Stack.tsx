@@ -32,7 +32,7 @@ export function Stack() {
         <StageMark index={S.index} label={S.label} state={S.state} tone="cyan" />
 
         <div className="mt-14 flex flex-wrap items-end gap-x-12 gap-y-6 md:mt-20">
-          <p className="t-monument text-cyan">{skillGroups.length}</p>
+          <p className="t-figure text-cyan">{skillGroups.length}</p>
           <div className="max-w-[40ch] pb-3">
             <p className="t-mark text-ink-4">Domains</p>
             <p className="t-read mt-3 text-pretty text-ink-2">

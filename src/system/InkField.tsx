@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { stage } from "./stageStore";
 import { STAGES } from "./stages";
@@ -208,15 +208,33 @@ function Plot({ detail, reduced }: { detail: number; reduced: boolean }) {
     for (let i = 0; i < arr.length; i++) arr[i] = a[i] + (b[i] - a[i]) * t;
     attr.needsUpdate = true;
 
-    // ---- motion -----------------------------------------------------------
-    // Orientation is scroll-led. The drift term is gated on scroll energy, so
-    // when the reader stops the drawing settles into a fixed pose instead of
-    // turning forever with nothing driving it.
+    // ---- spatial composition ---------------------------------------------
+    // The drawing travels through the page rather than sitting centred behind
+    // it. Each stage already declares where it is observed from and at what
+    // size; the object moves opposite the observer, so a camera pushed right
+    // carries the solid left across the columns.
+    const cam0 = STAGES[i0].camera;
+    const cam1 = STAGES[i1].camera;
+    const ox = -(cam0[0] + (cam1[0] - cam0[0]) * t) * 0.85;
+    const oy = -(cam0[1] + (cam1[1] - cam0[1]) * t) * 0.85;
+    const depth = cam0[2] + (cam1[2] - cam0[2]) * t;
+    const size = STAGES[i0].size + (STAGES[i1].size - STAGES[i0].size) * t;
+    const sc = (9.6 / depth) * size * 1.45;
+
+    // Damped rather than snapped: the composition should lag the scroll
+    // slightly, the way a heavy plotter head does.
+    const ease = Math.min(1, dt * 2.4);
+    g.position.x += (ox + stage.px * 0.10 - g.position.x) * ease;
+    g.position.y += (oy + stage.py * 0.07 - g.position.y) * ease;
+    const cur = g.scale.x + (sc - g.scale.x) * ease;
+    g.scale.setScalar(cur);
+
+    // ---- orientation ------------------------------------------------------
+    // Scroll-led. The drift term is gated on scroll energy, so when the reader
+    // stops the drawing settles instead of turning with nothing driving it.
     if (!reduced) {
       const spin = stage.progress * Math.PI * 1.15;
-      const settle = Math.min(1, dt * 3.2);
-      g.rotation.y += (spin - g.rotation.y) * settle + dt * stage.speed * 0.09;
-      // Pointer parallax, deliberately tiny — the object must never chase.
+      g.rotation.y += (spin - g.rotation.y) * Math.min(1, dt * 3.2) + dt * stage.speed * 0.09;
       g.rotation.x += (stage.py * 0.05 + 0.2 - g.rotation.x) * Math.min(1, dt * 2);
       g.rotation.z += (stage.px * 0.03 - g.rotation.z) * Math.min(1, dt * 2);
     }
@@ -263,6 +281,23 @@ function Plot({ detail, reduced }: { detail: number; reduced: boolean }) {
   );
 }
 
+/**
+ * Keeps the drawing a constant fraction of the sheet at every viewport. With a
+ * fixed orthographic zoom the object is sized in pixels, so a phone would show
+ * a wildly cropped fragment of the same solid a desktop shows whole. Dividing
+ * by the short edge makes it crop the same way everywhere, and mobile gets a
+ * deliberately smaller share so type keeps the page.
+ */
+function Fit({ span }: { span: number }) {
+  const camera = useThree((s) => s.camera) as THREE.OrthographicCamera;
+  const size = useThree((s) => s.size);
+  useEffect(() => {
+    camera.zoom = Math.min(size.width, size.height) / span;
+    camera.updateProjectionMatrix();
+  }, [camera, size, span]);
+  return null;
+}
+
 /* ------------------------------------------------------------------ canvas */
 
 /**
@@ -275,16 +310,16 @@ export function InkField() {
   const reduced = useReducedMotion();
   const [awake, setAwake] = useState(true);
 
-  const { detail, dpr } = useMemo(() => {
-    if (typeof window === "undefined") return { detail: 2, dpr: 1 as number };
+  const { detail, dpr, span } = useMemo(() => {
+    if (typeof window === "undefined") return { detail: 2, dpr: 1 as number, span: 7.2 };
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     const narrow = window.innerWidth < 900;
     const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
     // Detail is art direction as much as budget: enough lines to read as a
     // mesh, few enough to stay a drawing.
-    if (coarse || narrow) return { detail: 2, dpr: 1 };
-    if (mem !== undefined && mem <= 4) return { detail: 2, dpr: 1.5 };
-    return { detail: 3, dpr: 2 };
+    if (coarse || narrow) return { detail: 2, dpr: 1, span: 9.4 };
+    if (mem !== undefined && mem <= 4) return { detail: 2, dpr: 1.5, span: 7.2 };
+    return { detail: 3, dpr: 2, span: 7.2 };
   }, []);
 
   useEffect(() => {
@@ -302,6 +337,7 @@ export function InkField() {
         frameloop={awake ? "always" : "never"}
         gl={{ antialias: true, alpha: true, depth: false, stencil: false }}
       >
+        <Fit span={span} />
         <Plot detail={detail} reduced={reduced} />
       </Canvas>
     </div>
