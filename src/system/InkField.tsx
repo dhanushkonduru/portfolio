@@ -164,7 +164,7 @@ function Plot({ detail, reduced }: { detail: number; reduced: boolean }) {
       blending: THREE.NormalBlending,
       uniforms: {
         uInk: { value: new THREE.Color("#17160f") },
-        uAlpha: { value: reduced ? 0.1 : 0.09 },
+        uAlpha: { value: 0.28 },
         uClear: {
           value: [new THREE.Vector4(0, 0, 0, 0), new THREE.Vector4(0, 0, 0, 0)],
         },
@@ -246,9 +246,9 @@ function Plot({ detail, reduced }: { detail: number; reduced: boolean }) {
       STAGES[i0].presence + (STAGES[i1].presence - STAGES[i0].presence) * t;
     const transition = 4 * raw * (1 - raw); // 0 at rest, 1 mid-morph
     const target = THREE.MathUtils.clamp(
-      0.055 + presence * 0.115 + transition * 0.04,
-      0.05,
-      0.2,
+      0.2 + presence * 0.14 + transition * 0.06,
+      0.18,
+      0.42,
     );
 
     const u = material.uniforms;
