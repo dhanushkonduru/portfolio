@@ -571,7 +571,7 @@ const FLOW_VERT = /* glsl */ `
     vFade = smoothstep(0.0, 0.08, p) * (1.0 - ej);
 
     gl_Position = clip;
-    gl_PointSize = aSize * (1.0 + push * 0.8) * (60.0 / -(modelViewMatrix * vec4(pos, 1.0)).z);
+    gl_PointSize = aSize * (1.0 + push * 0.8) * (30.0 / -(modelViewMatrix * vec4(pos, 1.0)).z);
   }
 `;
 
@@ -587,7 +587,7 @@ const FLOW_FRAG = /* glsl */ `
   void main() {
     float d = length(gl_PointCoord - 0.5);
     if (d > 0.5) discard;
-    float a = pow(1.0 - d * 2.0, 1.8);
+    float a = pow(1.0 - d * 2.0, 2.6);
     vec3 c = mix(uInk, mix(uCyan, uAmber, step(0.82, vTone)), 0.22 + vHot * 0.5);
     gl_FragColor = vec4(c, a * vFade * uAlpha * (0.5 + vHot * 0.9));
   }
