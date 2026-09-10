@@ -1,7 +1,6 @@
 import { Nav } from "@/components/Nav";
 import { Pointer } from "@/components/Cursor";
 import { Registration } from "@/components/Registration";
-import { Readout } from "@/components/Readout";
 import { SystemLayer } from "@/system/SystemLayer";
 import { Hero } from "@/sections/Hero";
 import { About } from "@/sections/About";
@@ -19,7 +18,6 @@ export default function Page() {
       <SystemLayer />
       <Pointer />
       <Registration />
-      <Readout />
       <Nav />
 
       <main className="relative z-10">

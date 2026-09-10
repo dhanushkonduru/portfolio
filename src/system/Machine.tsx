@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { stage, readings } from "./stageStore";
-import { signal } from "./audio";
+import { stage } from "./stageStore";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   annulusGeo,
@@ -244,7 +243,7 @@ function Verifier({
     const sensorOut = m("sensorOut");
     const coreScale = m("coreScale");
     const plateDrop = m("plateDrop");
-    const sig = signal.level;
+    const sig = 0;
     const now = performance.now() * 0.001;
     const idle = (reduced ? 0 : 1) * (1 - insp * 0.75);
     const vib = (reduced ? 0 : 1) * (0.004 + sig * 0.016);
@@ -360,14 +359,6 @@ function Verifier({
     tmp.c.set(accents[i0]).lerp(tmp.c2.set(accents[i1]), t);
     (mats.signal.uniforms.uInk.value as THREE.Color).copy(tmp.c);
 
-    readings.nodes = COILS + SENSORS + 3;
-    readings.links = Math.round(SENSORS * m("signal"));
-    readings.segments = Math.round(shellOpen * 100);
-    readings.load = mats.contain.uniforms.uAlpha.value;
-    readings.state = i0;
-    readings.signal = sig;
-    readings.config = A.label;
-    readings.explode = explode;
     inspRef.current = insp;
   });
 
@@ -654,7 +645,7 @@ function Flow({ count, inkScale }: { count: number; inkScale: number }) {
     // Interaction: the closer the pointer is to the device and the faster the
     // reader is moving, the harder it runs. Eased, so it spins up and down.
     const prox = 1 - Math.min(1, Math.hypot(stage.px, stage.py) / 1.1);
-    const target = 1 + prox * 1.4 + stage.speed * 1.8 + signal.level * 0.7;
+    const target = 1 + prox * 1.4 + stage.speed * 1.8 + 0;
     rate.current += (target - rate.current) * Math.min(1, dt * 1.6);
     u.uRate.value = rate.current;
     (u.uMouse.value as THREE.Vector2).set(stage.px, stage.py);

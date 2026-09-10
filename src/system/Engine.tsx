@@ -5,7 +5,6 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { stage, readings } from "./stageStore";
-import { signal } from "./audio";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   columnGeo, plateGeo, corePlateGeo, gyroGeo,
@@ -198,7 +197,7 @@ function Apparatus({ reduced, quality }: { reduced: boolean; quality: number }) 
     const gyro = m("gyro");
     const now = performance.now() * 0.001;
     const idle = (reduced ? 0 : 1) * (1 - insp * 0.7);
-    const sig = signal.level;
+    const sig = 0;
 
     // ---- A01 core: the stack fans along the spine and twists ----
     for (let i = 0; i < PLATES; i++) {

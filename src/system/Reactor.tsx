@@ -9,7 +9,6 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { stage, readings } from "./stageStore";
-import { signal } from "./audio";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 /* ============================================================================
@@ -155,7 +154,7 @@ function Sparks({ count, reduced }: { count: number; reduced: boolean }) {
     const delta = Math.abs(stage.progress - lastProgress.current);
     lastProgress.current = stage.progress;
     burst.current = Math.max(burst.current - dt * 1.4, Math.min(1, delta * 55));
-    u.uBurst.value = burst.current + signal.level * 0.3;
+    u.uBurst.value = burst.current + 0 * 0.3;
 
     // Cursor into world space on the z=0 plane, smoothed so it never twitches.
     const target = new THREE.Vector3(stage.px, stage.py, 0.5).unproject(state.camera);
@@ -214,12 +213,12 @@ function Housing({ reduced }: { reduced: boolean }) {
     }
     if (segs.current) segs.current.rotation.z = -now * 0.12 * idle + stage.progress * 1.4;
     if (core.current) {
-      const s = 1 + Math.sin(now * 1.6) * 0.02 + signal.level * 0.12;
+      const s = 1 + Math.sin(now * 1.6) * 0.02 + 0 * 0.12;
       core.current.scale.setScalar(s);
       core.current.rotation.z = Math.PI + now * 0.05 * idle;
     }
     readings.load = 0.5 + stage.progress * 0.4;
-    readings.signal = signal.level;
+    readings.signal = 0;
   });
 
   return (
