@@ -158,12 +158,16 @@ function Veil() {
 
       shown += (want - shown) * 0.1;
       if (el.current) el.current.style.opacity = shown.toFixed(3);
-      /* Below lg the machine has nowhere to stand aside to — the type runs the
-         full width of the screen — so a second, flat wash carries it further
-         back. Presence is traded for legibility on the screens where
-         legibility is scarcest. */
+      /* Below xl the engine is behind the reading rather than beside it, and
+         the radial wash above is the wrong tool: it is lightest exactly where
+         the machine is. There it is switched off and a flat wash carries all
+         the dimming instead. Presence is traded for legibility on the screens
+         where legibility is scarcest. */
       if (flat.current) {
-        flat.current.style.opacity = (0.16 + shown * 0.95).toFixed(3);
+        flat.current.style.opacity = Math.min(
+          0.86,
+          0.22 + shown * 1.15,
+        ).toFixed(3);
       }
     };
 
@@ -179,14 +183,14 @@ function Veil() {
       <div
         ref={el}
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[5]"
+        className="pointer-events-none fixed inset-0 z-[5] max-xl:hidden"
         style={{
           opacity: 0,
           background:
             "radial-gradient(ellipse 66% 58% at 42% 48%, color-mix(in oklab, var(--color-void) 74%, transparent) 0%, color-mix(in oklab, var(--color-void) 92%, transparent) 58%, var(--color-void) 100%)",
         }}
       />
-      {/* The second wash exists only below lg, where the type runs the full
+      {/* The second wash exists only below xl, where the type runs the full
           width of the screen and there is no lane for the machine to stand in.
           It is flat rather than radial: on a small screen the machine is
           behind everything, so the dim has to be even. */}

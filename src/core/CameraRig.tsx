@@ -47,7 +47,10 @@ export function CameraRig({ reduced }: { reduced: boolean }) {
        two layers must agree, so both read the same number. */
     const w = state.size.width;
     const narrow = window.innerWidth < 1280;
-    const dolly = narrow ? 1.42 : 1;
+    /* On a phone the hero keeps the engine close enough to read as an
+       object, but a docked stage puts it behind the words, so it retreats
+       further the more the page is being read. */
+    const dolly = narrow ? 1.42 + cfg.dock * 0.55 : 1;
     const offset = narrow ? 0.1 : 1;
 
     const wantFov = narrow ? 44 : 38;

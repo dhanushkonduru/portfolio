@@ -144,9 +144,17 @@ deliberately cropped by the frame while you read. Reading sections hold their
 column in the `lane` between the two. That is why body copy never sits on top
 of the assembly without the page resorting to a scrim over the art.
 
-Below `lg` there is no lane to stand in, so the composition changes rather than
-shrinking: the machine takes a band of its own at the top of the hero, and the
-bay's dimmer picks up the rest.
+Below `xl` there is no lane to stand in, so the composition changes rather than
+shrinking. The engine takes a band of its own at the top of the hero, retreats
+further the more a section is being read, and is **exposed down at the source**
+— `toneMappingExposure` drops to 0.62 — rather than being covered with a grey
+sheet. The desktop dimmer is a radial wash, lightest where the machine is,
+which is right beside a column of type and exactly wrong behind one; below `xl`
+it is switched off and a flat wash carries the dimming instead.
+
+A headline's line breaks are drawn for a wide measure too. Below `sm` they are
+dropped and the sentence flows, because a designed break re-wraps into a ragged
+mess on a phone and runs the end of one line into the start of the next.
 
 Motion is three primitives (`MaskLines`, `DrawRule`, `Emerge`) and most content
 does not animate at all. **The animation itself is CSS; JavaScript decides only

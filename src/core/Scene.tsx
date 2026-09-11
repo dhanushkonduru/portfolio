@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Environment,
   Lightformer,
@@ -47,6 +47,19 @@ function detectTier(): Tier {
  * unit on an object several units across, enough that the highlights move
  * when the visitor does and nothing else changes.
  */
+/**
+ * Keeps the tone-mapping exposure in step with the breakpoint, so rotating a
+ * phone or dragging a desktop window across 1280 does not leave the engine
+ * lit for the other layout.
+ */
+function Exposure() {
+  const { gl, size } = useThree();
+  useEffect(() => {
+    gl.toneMappingExposure = window.innerWidth < 1280 ? 0.62 : 1.18;
+  }, [gl, size.width]);
+  return null;
+}
+
 function KeyLight({
   shadows,
   reduced,
@@ -79,7 +92,7 @@ function KeyLight({
   );
 }
 
-const PARTICLES: Record<Tier, number> = { high: 1100, mid: 520, low: 240 };
+const PARTICLES: Record<Tier, number> = { high: 1100, mid: 340, low: 160 };
 
 const MAX_DPR: Record<Tier, number> = { high: 1.4, mid: 1.25, low: 1 };
 
@@ -131,15 +144,20 @@ export function Scene() {
         }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          /* Held just above one. The bay stays dark; the exposure is what
-             lets the machining read inside it, rather than bloom. */
-          gl.toneMappingExposure = 1.18;
+          /* Held just above one on a desktop: the bay stays dark, and the
+             exposure is what lets the machining read inside it rather than
+             bloom. Below xl the engine sits behind the reading instead of
+             beside it, so it is exposed down at the source — a darker
+             machine, not a lit one with a grey sheet over it. */
+          gl.toneMappingExposure = window.innerWidth < 1280 ? 0.62 : 1.18;
         }}
       >
         <PerformanceMonitor
           onDecline={() => setDpr(1)}
           onIncline={() => setDpr(MAX_DPR[tier])}
         />
+
+        <Exposure />
 
         <CameraRig reduced={reduced} />
 

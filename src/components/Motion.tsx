@@ -105,15 +105,18 @@ export function MaskLines({
   }, [immediate]);
 
   return (
-    <span ref={host} className={className}>
+    <span ref={host} className={cn("mask-lines", className)}>
       {lines.map((line, i) => (
-        <span key={line} className="block overflow-hidden pb-[0.06em]">
+        <span key={line}>
           <span
             data-line
-            className={cn("rise-line", lineClassName)}
+            className={lineClassName}
             style={{ animationDelay: `${delay + i * 0.075}s` }}
           >
             {line}
+            {/* A real space, so the sentence survives being copied, read
+                aloud, or re-wrapped on a narrow screen. */}
+            {i < lines.length - 1 ? " " : null}
           </span>
         </span>
       ))}

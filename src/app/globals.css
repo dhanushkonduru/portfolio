@@ -409,9 +409,31 @@ body::after {
   animation: settle 0.85s var(--ease-out-expo) both;
 }
 
-@utility rise-line {
-  display: block;
-  animation: rise 1.05s var(--ease-out-expo) both;
+/* A headline's line breaks are drawn for a wide measure. On a narrow screen
+   they are wrong — they re-wrap into a ragged mess and run the end of one
+   line into the start of the next — so below sm the breaks are dropped, the
+   sentence flows, and the reveal is a fade rather than a rise. A rise needs a
+   block box to transform and a mask to rise out of; inline text has neither. */
+@utility mask-lines {
+  & > span {
+    display: inline;
+  }
+  & > span > span {
+    display: inline;
+    animation: settle 0.95s var(--ease-out-expo) both;
+  }
+
+  @media (width >= 40rem) {
+    & > span {
+      display: block;
+      overflow: hidden;
+      padding-bottom: 0.06em;
+    }
+    & > span > span {
+      display: block;
+      animation-name: rise;
+    }
+  }
 }
 
 @utility draw-rule {
