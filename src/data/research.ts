@@ -29,7 +29,7 @@ export const patents: Patent[] = [
     summary:
       "A verification-gated engine that diffs two dataset versions, unlearns the removed records and learns the added ones on one model without retraining, then withholds it until a multi-probe behavioural audit and an adversarial relearning test both pass.",
     contribution:
-      "Conceived the multi-prompt behavioural assessment, built the reference implementation and ran the evaluation that produced the filing's central result.",
+      "Conceived the multi-prompt behavioural assessment, built the reference implementation and ran the evaluation that produced the filing’s central result.",
     finding:
       "Fine-tuning an unlearned model on a few deleted records brought back 56 to 97 percent of the knowledge that was meant to be gone, against 22 percent for a from-scratch retrain. Every method tested would have certified itself had it not been challenged.",
     searchReport:
@@ -46,11 +46,11 @@ export const patents: Patent[] = [
     authorNote: "First-named inventor",
     area: "Digital twins · Fleet prognostics",
     summary:
-      "Carries the verification-gated approach into turbofan fleet prognostics: a departing operator's telemetry is stripped out of a remaining-life model in roughly a tenth of the retraining time the previously approved route required, while the model stays in service so fleet monitoring never pauses.",
+      "Carries the verification-gated approach into turbofan fleet prognostics: a departing operator’s telemetry is stripped out of a remaining-life model in roughly a tenth of the retraining time the previously approved route required, while the model stays in service so fleet monitoring never pauses.",
     contribution:
       "Designed the provenance-indexed erasure path and the feasibility check, and built both domain implementations: turbofan prognostics, then a second-domain port to diagnostic ECG.",
     finding:
-      "Provenance indexing resolves an erasure request by lookup rather than similarity search, and a feasibility check refuses the request outright when the departing operator's engines are statistically indistinguishable from the rest of the aircraft on the same monitoring contract.",
+      "Provenance indexing resolves an erasure request by lookup rather than similarity search, and a feasibility check refuses the request outright when the departing operator’s engines are statistically indistinguishable from the rest of the aircraft on the same monitoring contract.",
     searchReport:
       "Prior-art search report issued August 2026; assessed patentable on both novelty and inventive step.",
   },

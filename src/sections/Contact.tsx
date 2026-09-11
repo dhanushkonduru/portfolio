@@ -37,16 +37,16 @@ export function Contact() {
 
         <div className="max-w-[34rem] lg:max-w-[40rem]">
           <h2 className="t-monument mt-14 text-ink md:mt-20">
-            <MaskLines lines={["Let's build", "something that", "holds up."]} />
+            <MaskLines lines={["Let’s build", "something that", "holds up."]} />
           </h2>
         </div>
 
         <div className="grid-12 mt-14 gap-y-10 md:mt-20">
           <p className="t-read col-span-12 max-w-[46ch] text-pretty text-ink-2 lg:col-span-5">
-            I&apos;m looking for AI platform, applied-research and backend roles
-            where the output has to hold up under scrutiny. I&apos;m equally
-            glad to talk through the unlearning work with anyone who finds the
-            problem interesting.
+            I’m looking for AI platform, applied-research and backend roles
+            where the output has to hold up under scrutiny. I’m equally glad to
+            talk through the unlearning work with anyone who finds the problem
+            interesting.
           </p>
 
           <div className="col-span-12 lg:col-span-3 lg:col-start-8">

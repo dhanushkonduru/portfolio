@@ -152,7 +152,7 @@ export function TopNav() {
               href="#contact"
               className="t-mark hidden text-ink transition-colors duration-300 hover:text-signal sm:inline-flex sm:items-center sm:gap-2"
             >
-              Let&apos;s build
+              Let’s build
               <span aria-hidden="true">→</span>
             </a>
             <button

@@ -160,6 +160,27 @@ function Plate({
             </dl>
           </div>
 
+          {/* the key result, before the working that produced it */}
+          {project.metrics.length ? (
+            <div className="mt-12 border-t border-rule pt-8">
+              <dl className="flex flex-wrap gap-x-12 gap-y-7">
+                {project.metrics.map((m) => (
+                  <div key={m.label}>
+                    <dt className="sr-only">{m.label}</dt>
+                    <dd>
+                      <span className="t-figure-sm block text-ink">
+                        {m.value}
+                      </span>
+                      <span className="t-note mt-1.5 block max-w-[24ch] leading-snug">
+                        {m.label}
+                      </span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ) : null}
+
           {/* the working, on request */}
           {project.technical.length ? (
             <Disclosure
@@ -180,27 +201,6 @@ function Plate({
                 ))}
               </ul>
             </Disclosure>
-          ) : null}
-
-          {/* measured results */}
-          {project.metrics.length ? (
-            <div className="mt-12 border-t border-rule pt-8">
-              <dl className="flex flex-wrap gap-x-12 gap-y-7">
-                {project.metrics.map((m) => (
-                  <div key={m.label}>
-                    <dt className="sr-only">{m.label}</dt>
-                    <dd>
-                      <span className="t-figure-sm block text-ink">
-                        {m.value}
-                      </span>
-                      <span className="t-note mt-1.5 block max-w-[24ch] leading-snug">
-                        {m.label}
-                      </span>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
           ) : null}
 
           {/* links and stack */}

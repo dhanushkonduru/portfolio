@@ -21,7 +21,7 @@ export type Project = {
   solution: string;
   /** Explicit ownership statement. */
   contribution: string;
-  /** Technical decisions worth an interviewer's attention. */
+  /** Technical decisions worth an interviewer’s attention. */
   technical: string[];
   /** Only measured results. Empty where nothing was measured. */
   metrics: Metric[];
@@ -48,12 +48,12 @@ export const projects: Project[] = [
     problem:
       "Machine unlearning is judged almost entirely by a rising loss on the deleted records. But a loss curve only reports how surprised a model is by one exact string. It says nothing about whether the fact can still be recovered by asking differently, or whether it is genuinely gone rather than merely suppressed.",
     solution:
-      "A verification framework that interrogates every deleted record through five differently-phrased probes, detects leakage by searching the answers for the record's true values, and folds the evidence into a single trustworthiness score. It then attacks its own verdict with membership inference and a relearning attempt, graded against a reference model retrained without the deleted data.",
+      "A verification framework that interrogates every deleted record through five differently-phrased probes, detects leakage by searching the answers for the record’s true values, and folds the evidence into a single trustworthiness score. It then attacks its own verdict with membership inference and a relearning attempt, graded against a reference model retrained without the deleted data.",
     contribution:
       "First author and sole engineer. Built the 51M-parameter GPT-style transformer from scratch so every fact the model knows traces back to a training row. That is what makes 'did it forget?' a measurable question rather than a guess. Implemented all three unlearning objectives, the oracle retrain, the audit stage and both attacks.",
     technical: [
       "Training from scratch, rather than fine-tuning a public checkpoint, gives perfect ground truth: there is no pre-training corpus to hide a leaked fact in.",
-      "Three unlearning objectives compared under one harness: gradient ascent as the baseline, gradient difference with a retain anchor, and NPO's bounded self-limiting objective.",
+      "Three unlearning objectives compared under one harness: gradient ascent as the baseline, gradient difference with a retain anchor, and NPO’s bounded self-limiting objective.",
       "A five-probe behavioural audit plus a value-based leak detector, combined as Trust T = 2·F·U / (F + U). It is a harmonic mean, so a method cannot buy forgetting by destroying utility.",
       "Adversarial stage: membership-inference AUC and a brief relearning attack, both scored against a from-scratch oracle so the numbers have a reference point.",
       "Benchmark built deterministically from WHO Global Health Observatory immunisation and tuberculosis indicators. That is real published data, reproducible from the source release and a stated seed rather than shipped as a static file.",
@@ -99,7 +99,7 @@ export const projects: Project[] = [
       "Hybrid retrieval: dense embeddings for meaning, BM25 for exact strings. Ticker symbols and figures rank poorly under pure vector search, so combining both before reranking is the difference between plausible and auditable.",
       "A cross-encoder reranker reorders the top candidates, so recall can be set generously at the retrieval stage without polluting the generation context.",
       "Contextual compression filters retrieved chunks before generation. That single change cut token cost by roughly 40% without losing citation accuracy.",
-      "Faithfulness measured on a 50-question RAGAS eval set that also tracks answer relevance and context precision, so a gain in one dimension can't hide a regression in another.",
+      "Faithfulness measured on a 50-question RAGAS eval set that also tracks answer relevance and context precision, so a gain in one dimension can’t hide a regression in another.",
       "Built on LangChain LCEL, which keeps each stage independently swappable and testable rather than tangled in one prompt.",
     ],
     metrics: [
@@ -140,16 +140,16 @@ export const projects: Project[] = [
     category: "Applied research · Industrial ML",
     year: "2026",
     problem:
-      "Deleting an operator's rows from a database does not delete what a model learned from them. For a fleet under a continuous monitoring contract, the usual answer is to retrain from scratch, which takes the model out of service for as long as the retrain runs.",
+      "Deleting an operator’s rows from a database does not delete what a model learned from them. For a fleet under a continuous monitoring contract, the usual answer is to retrain from scratch, which takes the model out of service for as long as the retrain runs.",
     solution:
       "Ownership is stamped onto every telemetry reading as it arrives, so an erasure request resolves to an exact target set by indexed lookup rather than similarity search. The influence is removed without retraining, the result is attacked to check the knowledge was erased rather than hidden, and a deployment gate holds the model out of service until it passes.",
     contribution:
       "First-named inventor on the disclosure and sole engineer on both implementations: turbofan fleet prognostics (twin-forget), then a port to a second domain, 12-lead diagnostic ECG across four hospital sites (heart-forget).",
     technical: [
       "Provenance indexing means an erasure request is resolved by lookup rather than similarity search. That distinction decides whether the target set is exact or approximate.",
-      "A feasibility check refuses the request outright when the departing operator's engines turn out to be statistically indistinguishable from the rest of the fleet on the same contract, because in that case no honest erasure claim can be made.",
+      "A feasibility check refuses the request outright when the departing operator’s engines turn out to be statistically indistinguishable from the rest of the fleet on the same contract, because in that case no honest erasure claim can be made.",
       "The deployment gate is the architectural point: verification is not a report you read afterwards, it is a precondition the model has to clear.",
-      "The ECG port uses four genuinely different source databases from the PhysioNet/CinC Challenge 2021, covering different hospitals, equipment and patient populations. They are balanced at 1,500 records each so 'this site was forgotten' can't be confused with 'this site was small'.",
+      "The ECG port uses four genuinely different source databases from the PhysioNet/CinC Challenge 2021, covering different hospitals, equipment and patient populations. They are balanced at 1,500 records each so 'this site was forgotten’ can’t be confused with 'this site was small’.",
     ],
     metrics: [
       { value: "~1/10", label: "Of retraining time to strip an operator" },
@@ -178,14 +178,14 @@ export const projects: Project[] = [
     category: "Agentic systems",
     year: "2025",
     problem:
-      "A single 'write me a report' prompt produces confident prose with no separation between gathering evidence and judging it. And long agent runs fail on a tool call or a context overflow, usually with nothing to show for the tokens already spent.",
+      "A single 'write me a report’ prompt produces confident prose with no separation between gathering evidence and judging it. And long agent runs fail on a tool call or a context overflow, usually with nothing to show for the tokens already spent.",
     solution:
       "A LangGraph system where a data gatherer, fundamental analyst, sentiment analyst, risk analyst and report writer share one typed Pydantic state graph, with checkpointing so a run that fails halfway resumes from the last good state rather than restarting.",
     contribution:
       "Built the graph, the shared state schema, the tool layer and the observability. Wired the RAG service in as a tool alongside the SEC EDGAR and yfinance APIs, and used LangSmith traces to track down hallucinated tool calls and context-overflow failures during agent runs.",
     technical: [
       "A typed Pydantic state graph is the load-bearing decision: deterministic code orchestrates the run, and the model only exercises judgement inside a node.",
-      "Checkpointing turns a long agent run from all-or-nothing into resumable, which is the difference between a demo and something you'd leave running.",
+      "Checkpointing turns a long agent run from all-or-nothing into resumable, which is the difference between a demo and something you’d leave running.",
       "The retrieval service is exposed as one tool among several, so the agents reason over grounded filings rather than over their own priors.",
       "LangSmith tracing was what actually surfaced the two real failure modes: hallucinated tool calls, and context overflow inside a node.",
     ],
@@ -226,14 +226,14 @@ export const projects: Project[] = [
     category: "Geospatial ML · Research",
     year: "2025 to 2026",
     problem:
-      "Vellore's built-up area expanded steadily from 2013 to 2024 along the north-western and south-western road corridors, while hospitals stayed clustered in the city centre. Siting studies usually treat future growth as background context and never test whether including it changed the answer.",
+      "Vellore’s built-up area expanded steadily from 2013 to 2024 along the north-western and south-western road corridors, while hospitals stayed clustered in the city centre. Siting studies usually treat future growth as background context and never test whether including it changed the answer.",
     solution:
       "A fully automated, reproducible pipeline: a Random Forest built-up classifier over Landsat 8/9 composites, a CA-ANN urban growth model projected to 2030 and 2035, and an AHP multi-criteria suitability analysis that ranks candidate sites. The whole thing runs twice, once with the growth criterion and once without.",
     contribution:
-      "Built the pipeline end to end across ten staged scripts, including the two validation stages that make the claim testable: a hindcast against an observed epoch withheld from calibration, and a baseline comparison that isolates the forecast's contribution.",
+      "Built the pipeline end to end across ten staged scripts, including the two validation stages that make the claim testable: a hindcast against an observed epoch withheld from calibration, and a baseline comparison that isolates the forecast’s contribution.",
     technical: [
       "The growth model is validated by hindcasting an epoch deliberately withheld from its calibration. Without that, a growth forecast is unfalsifiable.",
-      "The siting analysis runs with and without the growth criterion, so the forecast's contribution is measured rather than asserted.",
+      "The siting analysis runs with and without the growth criterion, so the forecast’s contribution is measured rather than asserted.",
       "Built-up classification is checked against four independent reference products (GHS-BUILT-S, Esri Land Cover, WorldCover and JRC Global Surface Water) rather than self-reported accuracy.",
       "Pooled Random Forest, 500 trees, 21 features, calibrated decision threshold; water taken from JRC Global Surface Water rather than inferred.",
     ],
@@ -266,7 +266,7 @@ export const projects: Project[] = [
     category: "Classical ML · MLOps",
     year: "2025",
     problem:
-      "Random k-fold cross-validation quietly leaks future information into training whenever the underlying data is an ordered time series, which makes a great many backtests look better than they are. And a model that isn't monitored after deployment silently decays as input distributions move.",
+      "Random k-fold cross-validation quietly leaks future information into training whenever the underlying data is an ordered time series, which makes a great many backtests look better than they are. And a model that isn’t monitored after deployment silently decays as input distributions move.",
     solution:
       "An XGBoost cross-sectional return predictor over S&P 500 names using Fama-French style features, validated with expanding-window walk-forward splits, wrapped in an MLOps path: experiment tracking, data versioning, daily drift comparison against the training baseline, and a FastAPI endpoint serving whichever model is registered as production.",
     contribution:
@@ -274,7 +274,7 @@ export const projects: Project[] = [
     technical: [
       "Expanding-window walk-forward splits, because random k-fold leaks future information whenever the data is an ordered financial time series.",
       "Evidently compares live input distributions against the training baseline daily and alerts on feature drift, so decay is observed rather than discovered.",
-      "A model registry stage called 'Production' is what makes the serving endpoint deterministic about which artefact it is running.",
+      "A model registry stage called 'Production’ is what makes the serving endpoint deterministic about which artefact it is running.",
       "DVC versions the data alongside the code, so a tracked experiment is reproducible rather than merely logged.",
     ],
     metrics: [
@@ -317,7 +317,7 @@ export const projects: Project[] = [
     technical: [
       "Every stage declares a Pydantic model it must return; a schema violation feeds the validation error itself back as a correction turn.",
       "A stage returns a valid object or raises. Nothing downstream ever receives a half-parsed dict.",
-      "Test cases derive from formal design techniques, so coverage is argued from a method rather than from the model's confidence.",
+      "Test cases derive from formal design techniques, so coverage is argued from a method rather than from the model’s confidence.",
     ],
     metrics: [],
     stack: ["Python", "Pydantic", "LLM Orchestration", "CLI"],
@@ -339,7 +339,7 @@ export const projects: Project[] = [
     contribution:
       "Built the full workflow: product binding, verified context construction, the live tool-call layer during the call, transcript analysis, follow-up messaging and the failure/retry path.",
     technical: [
-      "The agent's context is assembled from catalog records rather than free text, which is what stops it inventing specifications mid-call.",
+      "The agent’s context is assembled from catalog records rather than free text, which is what stops it inventing specifications mid-call.",
       "Live tool calls during the conversation let the agent answer from the catalog instead of from memory.",
       "The entire pipeline runs end to end against a mock voice provider, so the workflow is verifiable without a live telephony number.",
     ],
@@ -369,9 +369,9 @@ export const projects: Project[] = [
       "A production-shaped Python CLI with automatic chunking and overlap deduplication for long audio, retry with exponential backoff, stage-level timings, quality heuristics, and multilingual transcription with code-switching detection.",
     contribution: "Sole author.",
     technical: [
-      "Overlap deduplication across chunk boundaries, so long audio doesn't produce repeated phrases at every seam.",
+      "Overlap deduplication across chunk boundaries, so long audio doesn’t produce repeated phrases at every seam.",
       "Stage-level timings (metadata, upload, API, merge, total) make it possible to say where the time actually went.",
-      "Structured JSONL logs and a backward-compatible JSON schema, so extended fields don't break existing consumers.",
+      "Structured JSONL logs and a backward-compatible JSON schema, so extended fields don’t break existing consumers.",
     ],
     metrics: [],
     stack: ["Python", "OpenAI Speech API", "CLI", "JSONL"],
@@ -388,7 +388,7 @@ export const projects: Project[] = [
     tier: 3,
     title: "MT5 Web Trading Platform",
     tagline:
-      "Manage a MetaTrader 5 account from the browser, with the honest architecture write-up that the platform's auth model forces.",
+      "Manage a MetaTrader 5 account from the browser, with the honest architecture write-up that the platform’s auth model forces.",
     category: "Full-stack · Systems",
     year: "2025",
     problem:

@@ -108,8 +108,8 @@ export function Research() {
  * DOSSIER — a laboratory record, not a corporate legal page.
  *
  * Three levels. What the visitor sees first is the problem, what was built,
- * the key finding and the status: the whole argument in four cells. The
- * contribution and the prior-art detail sit one control down.
+ * his contribution, the key finding and the status: the whole argument
+ * without a click. The prior-art detail sits one control down.
  * ========================================================================= */
 
 function Dossier({ patent, n }: { patent: Patent; n: number }) {
@@ -159,6 +159,12 @@ function Dossier({ patent, n }: { patent: Patent; n: number }) {
               </dd>
             </div>
             <div className="md:col-span-2">
+              <dt className="t-mark text-ink-4">My contribution</dt>
+              <dd className="t-read-sm mt-2.5 max-w-[68ch] text-pretty text-ink-2">
+                {patent.contribution}
+              </dd>
+            </div>
+            <div className="md:col-span-2">
               <dt className="t-mark text-signal">Key finding</dt>
               <dd className="t-read mt-2.5 max-w-[62ch] text-pretty text-ink">
                 {patent.finding}
@@ -177,16 +183,10 @@ function Dossier({ patent, n }: { patent: Patent; n: number }) {
           {/* ── the working, on request ── */}
           <Disclosure
             className="mt-8"
-            label="Contribution and prior-art search"
+            label="Prior-art search and project record"
             openLabel="Close"
           >
             <dl className="grid gap-y-6 pt-6">
-              <div>
-                <dt className="t-mark text-ink-4">My contribution</dt>
-                <dd className="t-read-sm mt-2.5 max-w-[68ch] text-pretty text-ink-2">
-                  {patent.contribution}
-                </dd>
-              </div>
               <div>
                 <dt className="t-mark text-ink-4">Prior-art search</dt>
                 <dd className="t-read-sm mt-2.5 max-w-[68ch] text-pretty text-ink-2">

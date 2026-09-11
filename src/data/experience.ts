@@ -26,7 +26,7 @@ export const experience: Role[] = [
     end: "2026-05",
     period: "Oct 2025 to May 2026",
     points: [
-      "Built the multi-tenant backend for Tabzy, a cloud ERP/POS product, using custom Django middleware and RBAC so no company can ever read another company's records. Billing, inventory and orders all run in production, with zero cross-tenant leakage across concurrent tenants.",
+      "Built the multi-tenant backend for Tabzy, a cloud ERP/POS product, using custom Django middleware and RBAC so no company can ever read another company’s records. Billing, inventory and orders all run in production, with zero cross-tenant leakage across concurrent tenants.",
       "Shipped an API-key system so businesses could connect Tabzy to the tools they already use, owning the feature end to end from schema design through the production release.",
       "Sole backend engineer on BlogSpeed, an AI content automation platform: wrote the auto-scheduler for hands-free publishing, the API-key integrations and the content formatting layer, then containerised the service and deployed it to GCP via Cloud Build and Cloud Run.",
     ],
@@ -92,7 +92,7 @@ export const experience: Role[] = [
     end: "2027-05",
     period: "Expected 2027",
     points: [
-      "Five-year integrated master's in Software Engineering. Coursework in machine learning, distributed systems, databases and software architecture, run alongside the applied research that produced both invention disclosures.",
+      "Five-year integrated master’s in Software Engineering. Coursework in machine learning, distributed systems, databases and software architecture, run alongside the applied research that produced both invention disclosures.",
     ],
     stack: ["Software Engineering", "Machine Learning", "Systems"],
   },

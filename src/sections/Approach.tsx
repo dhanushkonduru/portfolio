@@ -39,7 +39,7 @@ const principles = [
 const passages = [
   {
     heading: "Backends, in production",
-    body: "At CEEC I built the multi-tenant backend for Tabzy, a cloud ERP/POS product, using custom Django middleware and RBAC so no company can read another company's records. Billing, inventory and orders all run in production. I shipped the API key system end to end, and was the sole backend engineer on BlogSpeed, containerising the service and deploying it to GCP through Cloud Build and Cloud Run.",
+    body: "At CEEC I built the multi-tenant backend for Tabzy, a cloud ERP/POS product, using custom Django middleware and RBAC so no company can read another company’s records. Billing, inventory and orders all run in production. I shipped the API key system end to end, and was the sole backend engineer on BlogSpeed, containerising the service and deploying it to GCP through Cloud Build and Cloud Run.",
   },
   {
     heading: "LLM and agent systems",
@@ -54,7 +54,7 @@ const passages = [
     body: "Machine unlearning verification. Deleting a record from a database does not delete what a model learned from it, and the standard evidence, a rising loss curve on the deleted rows, turns out to prove almost nothing. Interrogate the model behaviourally, attack your own verdict, gate deployment on the result. Two invention disclosures came out of closing that gap.",
   },
   {
-    heading: "Where I'm heading",
+    heading: "Where I’m heading",
     body: "Toward AI platform and applied-research engineering. Teams building retrieval, agents and model infrastructure where the output has to be auditable, because a regulator, a clinician or a portfolio manager is downstream of it.",
   },
 ];
