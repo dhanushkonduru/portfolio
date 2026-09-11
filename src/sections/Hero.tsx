@@ -21,19 +21,25 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative flex min-h-[100svh] flex-col justify-between pb-24 pt-24 md:pt-28 xl:pb-28 xl:pt-32"
+      className="relative flex min-h-[100svh] flex-col justify-between pb-24 pt-24 [@media(max-height:740px)]:pb-16 md:pt-28 xl:pb-28 xl:pt-32"
     >
       {/* Below xl the engine gets a band of its own at the top of the screen
           and the statement starts under it. This is a different composition,
           not a narrower copy of the desktop one. */}
-      <div className="h-[30vh] shrink-0 xl:hidden" aria-hidden="true" />
+      {/* The engine's band. On a short phone — an SE is 667px tall — a band
+          measured only in vh pushes the call to action under the fold, so the
+          band gives way first. */}
+      <div
+        className="h-[30vh] shrink-0 [@media(max-height:740px)]:h-[11vh] xl:hidden"
+        aria-hidden="true"
+      />
 
       {/* On a narrow screen the engine is directly behind the reading copy
           rather than beside it, so the lower part of the hero carries its own
           gradient. Desktop never needs it. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 top-[27vh] bg-gradient-to-b from-transparent via-void/92 to-void xl:hidden"
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-[25vh] bg-gradient-to-b from-transparent via-void/92 to-void xl:hidden"
       />
 
       {/* ── statement ─────────────────────────────────────────────────── */}
@@ -68,9 +74,9 @@ export function Hero() {
             className="settle t-read mt-7 max-w-[42ch] text-pretty text-ink-2"
             style={{ animationDelay: "0.7s" }}
           >
-            I build the backend, the agents that run on it, and the proof that
-            both work. What connects them is that I would rather measure a claim
-            than assert it.
+            I work across three layers: Django backends in production, RAG and
+            multi-agent systems built on them, and applied research on machine
+            unlearning.
           </p>
 
           <div

@@ -37,7 +37,7 @@ const MODULE_LABEL: Record<ModuleKey, string> = {
   data: "Data pipelines",
   io: "I/O interface",
   cooling: "Cooling system",
-  ring: "Stabilization ring",
+  ring: "Stabilisation ring",
 };
 
 export function Stack() {

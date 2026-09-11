@@ -89,8 +89,9 @@ export function Approach() {
           </div>
 
           <p className="t-read mt-8 max-w-[52ch] text-pretty text-ink-2">
-            Three internships, two invention disclosures, and a set of
-            repositories you can open. What follows is what is actually in them.
+            I would rather measure a claim than assert it. Three internships,
+            two invention disclosures and a set of repositories you can open —
+            what follows is what is actually in them.
           </p>
 
           {/* ── the three principles first: how the system is put together ── */}

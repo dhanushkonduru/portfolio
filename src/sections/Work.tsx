@@ -65,8 +65,8 @@ export function Work() {
             </h2>
 
             <p className="t-read col-span-12 max-w-[42ch] self-end text-pretty text-ink-3 lg:col-span-4 lg:col-start-8">
-              Two produced patent filings. Every number below is measured; every
-              choice is one I can defend line by line.
+              Two produced invention disclosures. Every number below is
+              measured; every choice is one I can defend line by line.
             </p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export function Work() {
       {/* ── the register ───────────────────────────────────────────────── */}
       <div className="rail mt-24 px-[clamp(1.25rem,4vw,4rem)] md:mt-36 xl:pr-[clamp(9rem,12vw,14rem)]">
         <div className="lane flex items-center gap-4">
-          <span className="t-mark text-ink-4">Also built</span>
+          <span className="t-mark text-ink-4">Additional systems</span>
           <span className="h-px flex-1 bg-rule" aria-hidden="true" />
           <span className="t-note">
             {featuredProjects.length + supportingProjects.length} systems

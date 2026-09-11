@@ -11,7 +11,7 @@ import { pulse } from "@/core/store";
  * System metadata around the edges of the bay, and nothing else. Every field
  * is a real property of the running page — the stage index and the machine's
  * state are the scroll position — so the chrome is honest rather than
- * ornamental. The one line of prose is his, quoted from the hero.
+ * ornamental.
  *
  * Written by one rAF straight to the DOM, and deliberately sparse: a few
  * short readings, hung in the corners, at the opacity of a serial number.
@@ -67,19 +67,6 @@ export function HUD() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-30 hidden xl:block"
     >
-      {/* corner registration */}
-      {[
-        "left-5 top-5 border-l border-t",
-        "right-5 top-5 border-r border-t",
-        "left-5 bottom-5 border-l border-b",
-        "right-5 bottom-5 border-r border-b",
-      ].map((c) => (
-        <span
-          key={c}
-          className={`absolute h-3.5 w-3.5 border-rule-3/50 ${c}`}
-        />
-      ))}
-
       {/* left gutter: a graduated rule that fills as the page is traversed */}
       <div className="absolute bottom-24 left-5 top-24 w-px bg-rule">
         <div
@@ -115,17 +102,12 @@ export function HUD() {
         <span className="block h-3 w-px bg-signal/50 motion-safe:animate-[scan-y_2.4s_cubic-bezier(0.76,0,0.24,1)_infinite]" />
       </div>
 
-      {/* bottom right: his own line, and where in the inspection we are */}
-      <div className="absolute bottom-7 right-11 text-right">
-        <p className="t-note italic text-ink-3">
-          &ldquo;I would rather measure a claim than assert it.&rdquo;
-        </p>
-        <div className="mt-1.5 flex items-center justify-end gap-3">
-          <span className="h-px w-8 bg-rule-2" />
-          <span ref={index} className="t-note text-ink-2 tabular-nums">
-            01 / 07
-          </span>
-        </div>
+      {/* bottom right: where in the inspection we are */}
+      <div className="absolute bottom-7 right-11 flex items-center gap-3">
+        <span className="h-px w-8 bg-rule-2" />
+        <span ref={index} className="t-note text-ink-2 tabular-nums">
+          01 / 07
+        </span>
       </div>
     </div>
   );

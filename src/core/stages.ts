@@ -279,7 +279,7 @@ export const SUBSYSTEMS: Subsystem[] = [
   {
     key: "ring",
     index: "04",
-    title: "Stabilization Ring",
+    title: "Stabilisation Ring",
     lines: ["Verification · Reliability · Scale", "Docker · CI/CD · Cloud Run"],
     side: "right",
     offset: [152, 28],

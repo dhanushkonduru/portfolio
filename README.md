@@ -98,6 +98,14 @@ value the real engine uses, so the instrument still opens as it is inspected.
 downloaded as an HDRI. Metal with nothing to reflect reads as plastic, and this
 is a network request the page does not need to make.
 
+**Three levels of depth.** What a section shows first is the claim and the
+result; the working sits behind one `Disclosure` control that opens in place.
+The content is real DOM either way, so it stays searchable and readable with
+the stylesheet off.
+
+**Terminology is fixed.** The two filings are _invention disclosures_ whose
+patentability was cleared by a prior-art search. They are never called patents.
+
 **Idle is almost still.** The core turns very slowly, packets drift along the
 crown cables, the seed breathes and each module settles by a few thousandths of
 a unit out of phase. Nothing spins for the sake of spinning.

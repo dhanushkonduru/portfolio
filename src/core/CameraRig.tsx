@@ -87,7 +87,9 @@ export function CameraRig({ reduced }: { reduced: boolean }) {
     /* Aiming below the engine lifts it up the frame; the hero leaves the
        matching space open above the headline. */
     const halfHeight = Math.tan((wantFov * Math.PI) / 360) * wz;
-    const riseY = narrow ? 0.3 : 0;
+    /* The band shrinks on a short screen, so the lift that puts the engine
+       inside it shrinks with it. */
+    const riseY = narrow ? (window.innerHeight < 740 ? 0.44 : 0.3) : 0;
 
     /* Docking. The reading lane is 54rem wide and right-aligned inside the
        rail, so its left edge is a function of the viewport that can be
