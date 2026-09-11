@@ -4,66 +4,94 @@ import { useState } from "react";
 import {
   featuredProjects,
   flagshipProjects,
+  projects,
+  supportingProjects,
   type Project,
 } from "@/data/projects";
-import { STAGES } from "@/system/stages";
-import { setFocus } from "@/system/stageStore";
-import { ProjectVisual } from "@/components/ProjectVisual";
+import { STAGES, type ModuleKey } from "@/core/stages";
+import { setHover } from "@/core/store";
+import { ProjectVisual, hasVisual } from "@/components/ProjectVisual";
 import { ProjectModal } from "@/components/ProjectModal";
-import { StageMark, TextLink } from "@/components/Kit";
-import { Enter, MaskLines } from "@/components/Motion";
+import { SectionHead, TextLink } from "@/components/Kit";
+import { Emerge, MaskLines } from "@/components/Motion";
+import { cn } from "@/lib/utils";
 
 const S = STAGES[3];
+
+/* ============================================================================
+ * WORK
+ *
+ * A project inspection, not a card grid. Each flagship is opened out as a
+ * record: the thesis, the diagram that carries the argument, the problem and
+ * the approach, then the measured results and the links.
+ *
+ * Bringing a project into focus lights the subsystem of the machine it
+ * exercises — so the assembly behind the reading is annotating what is being
+ * read rather than running independently of it.
+ * ========================================================================= */
+
+/** Which part of the machine each project actually exercises. */
+const BOUND: Record<string, ModuleKey> = {
+  "beyond-the-loss-curve": "ai",
+  "financial-rag": "data",
+  "investment-research": "ai",
+  aeroforge: "cooling",
+  "hospital-siting": "data",
+  "portfolio-ml": "cooling",
+  req2test: "io",
+  "ai-voice-commerce": "io",
+  "speech-benchmark": "ai",
+  "mt5-platform": "compute",
+  "trek-manager": "compute",
+};
 
 export function Work() {
   const [open, setOpen] = useState<Project | null>(null);
 
   return (
-    <section id="work" className="stratum stratum-deep relative scroll-mt-24 py-32 md:py-48">
-      <div className="frame rail">
-        <StageMark index={S.index} label={S.label} state={S.state} tone="iris" />
+    <section id="work" className="stratum relative scroll-mt-28 py-28 md:py-40">
+      <div className="rail px-[clamp(1.25rem,4vw,4rem)] xl:pr-[clamp(9rem,12vw,14rem)]">
+        <div className="lane">
+          <SectionHead index={S.index} label={S.label} state={S.state} />
 
-        <h2 className="t-statement mt-16 max-w-[24ch] text-balance text-ink md:mt-24">
-          <MaskLines lines={["Six systems, and the"]} />
-          <span className="block italic text-iris">
-            decision that made each one worth building.
-          </span>
-        </h2>
+          <div className="grid-12 mt-14 gap-y-8 md:mt-20">
+            <h2 className="t-statement col-span-12 text-ink lg:col-span-6">
+              <MaskLines lines={[`${projects.length} systems, and the`]} />
+              <span className="block text-signal">
+                decision that made each one worth building.
+              </span>
+            </h2>
 
-        <p className="t-note mt-10 max-w-[46ch]">
-          Two produced patent filings. Every number below is measured; every
-          choice is one I can defend line by line.
-        </p>
-      </div>
-
-      {/* ── Plates: each flagship gets its own composition ── */}
-      <PlateOne project={flagshipProjects[0]} onOpen={() => setOpen(flagshipProjects[0])} />
-      <Dossier project={flagshipProjects[0]} n={1} />
-
-      <PlateTwo project={flagshipProjects[1]} onOpen={() => setOpen(flagshipProjects[1])} />
-      <Dossier project={flagshipProjects[1]} n={2} />
-
-      <PlateThree
-        project={flagshipProjects[2]}
-        onOpen={() => setOpen(flagshipProjects[2])}
-      />
-      <Dossier project={flagshipProjects[2]} n={3} />
-
-      {/* ── The register: an index, not a card grid ── */}
-      <div className="frame rail mt-32 md:mt-48">
-        <div className="flex items-baseline gap-4">
-          <span className="t-mark text-ink-4">Also built</span>
-          <span className="h-px flex-1 bg-rule" aria-hidden="true" />
-          <span className="t-note">{featuredProjects.length} systems</span>
+            <p className="t-read col-span-12 max-w-[42ch] self-end text-pretty text-ink-3 lg:col-span-4 lg:col-start-8">
+              Two produced patent filings. Every number below is measured; every
+              choice is one I can defend line by line.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="mt-10">
-        {featuredProjects.map((p, i) => (
+      {/* ── flagships, opened out ──────────────────────────────────────── */}
+      {flagshipProjects.map((p, i) => (
+        <Plate key={p.id} project={p} n={i + 1} onOpen={() => setOpen(p)} />
+      ))}
+
+      {/* ── the register ───────────────────────────────────────────────── */}
+      <div className="rail mt-24 px-[clamp(1.25rem,4vw,4rem)] md:mt-36 xl:pr-[clamp(9rem,12vw,14rem)]">
+        <div className="lane flex items-center gap-4">
+          <span className="t-mark text-ink-4">Also built</span>
+          <span className="h-px flex-1 bg-rule" aria-hidden="true" />
+          <span className="t-note">
+            {featuredProjects.length + supportingProjects.length} systems
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        {[...featuredProjects, ...supportingProjects].map((p, i) => (
           <RegisterRow
             key={p.id}
             project={p}
-            n={i + 4}
+            n={i + flagshipProjects.length + 1}
             onOpen={() => setOpen(p)}
           />
         ))}
@@ -75,291 +103,156 @@ export function Work() {
 }
 
 /* ============================================================================
- * PLATE 01 — the finding, at the scale of the finding.
- * The two numbers ARE the argument, so they are set as monuments and the
- * chart supports them rather than the other way round.
+ * PLATE — one flagship, inspected.
  * ========================================================================= */
 
-function PlateOne({
+function Plate({
   project,
+  n,
   onOpen,
 }: {
   project: Project;
+  n: number;
   onOpen: () => void;
 }) {
+  const bound = BOUND[project.id] ?? null;
+  const visual = hasVisual(project.id);
+
   return (
     <article
-      className="mt-28 md:mt-44"
-      onMouseEnter={() => setFocus(0)}
-      onMouseLeave={() => setFocus(-1)}
+      className="mt-20 md:mt-32"
+      onMouseEnter={() => setHover(bound)}
+      onMouseLeave={() => setHover(null)}
     >
-      <div className="frame rail">
-        <div className="flex items-baseline gap-5 border-t border-rule-2 pt-5">
-          <span className="t-figure-sm text-iris">01</span>
-          <div className="flex-1">
-            <h3 className="t-title text-ink">{project.title}</h3>
-            <p className="t-note mt-1">{project.category}</p>
-          </div>
-          <span className="t-note hidden shrink-0 md:block">{project.year}</span>
-        </div>
+      <div className="rail px-[clamp(1.25rem,4vw,4rem)] xl:pr-[clamp(9rem,12vw,14rem)]">
+        <div className="lane">
+          {/* record header */}
+          <header className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-rule-2 pt-5">
+            <span className="t-figure-sm text-signal tabular-nums">
+              {String(n).padStart(2, "0")}
+            </span>
+            <h3 className="t-title flex-1 text-ink">{project.title}</h3>
+            <span className="t-note">{project.category}</span>
+            <span className="t-note tabular-nums">{project.year}</span>
+          </header>
 
-        <p className="t-statement mt-12 max-w-[20ch] text-balance text-ink-2 md:mt-16">
-          Proving a model <span className="text-ink">actually forgot</span>,
-          instead of trusting a loss curve that says it did.
-        </p>
-      </div>
-
-      {/* The confrontation: attacked vs. retrained-from-scratch. */}
-      <div className="frame rail mt-16 md:mt-24">
-        <div className="grid gap-y-10 border-y border-rule py-12 md:grid-cols-[1fr_auto_1fr] md:gap-x-12 md:py-16">
-          <div>
-            <p className="t-mark text-amber">Approximate unlearning</p>
-            <p className="t-figure mt-5 text-amber">95.2%</p>
-            <p className="t-note mt-4 max-w-[24ch]">
-              of the &ldquo;forgotten&rdquo; knowledge came back under a brief
-              relearning attack. That was the best-scoring method tested.
-            </p>
-          </div>
-
-          <div className="hidden w-px bg-rule md:block" aria-hidden="true" />
-
-          <div>
-            <p className="t-mark text-mint">Retrained from scratch</p>
-            <p className="t-figure mt-5 text-mint">28.1%</p>
-            <p className="t-note mt-4 max-w-[24ch]">
-              under the identical attack. The gap between these two numbers is
-              the entire contribution.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="frame rail mt-16 md:mt-20">
-        <div className="grid-12 gap-y-12">
-          <div className="col-span-12 md:col-span-7">
-            <Enter as="figure">
-              <ProjectVisual id={project.id} />
-            </Enter>
-          </div>
-
-          <div className="col-span-12 space-y-9 md:col-span-4 md:col-start-9">
-            <Field label="Problem" body={project.problem} />
-            <Field label="Approach" body={project.solution} />
-            <Field label="My contribution" body={project.contribution} />
-
-            <div className="flex flex-wrap gap-x-7 gap-y-3 pt-2">
-              <button
-                type="button"
-                onClick={onOpen}
-                data-cursor="open"
-                className="t-meta link-rule text-iris transition-colors duration-300 hover:text-ink"
-              >
-                Full case study
-              </button>
-              {project.links.map((l) => (
-                <TextLink key={l.href} href={l.href} external className="t-meta">
-                  {l.label} ↗
-                </TextLink>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <StackLine items={project.stack} />
-      </div>
-    </article>
-  );
-}
-
-/* ============================================================================
- * PLATE 02 — a pipeline, so the diagram runs the full measure and the
- * argument is set beneath it in columns, like a plate caption.
- * ========================================================================= */
-
-function PlateTwo({
-  project,
-  onOpen,
-}: {
-  project: Project;
-  onOpen: () => void;
-}) {
-  return (
-    <article
-      className="mt-32 md:mt-48"
-      onMouseEnter={() => setFocus(1)}
-      onMouseLeave={() => setFocus(-1)}
-    >
-      <div className="frame rail">
-        <div className="flex items-baseline gap-5 border-t border-rule-2 pt-5">
-          <span className="t-figure-sm text-iris">02</span>
-          <div className="flex-1">
-            <h3 className="t-title text-ink">{project.title}</h3>
-            <p className="t-note mt-1">{project.category}</p>
-          </div>
-          <span className="t-note hidden shrink-0 md:block">{project.year}</span>
-        </div>
-      </div>
-
-      {/* Diagram runs wide — the architecture is the hero here. */}
-      <div className="frame rail mt-14 md:mt-20">
-        <Enter as="figure">
-          <ProjectVisual id={project.id} />
-        </Enter>
-      </div>
-
-      <div className="frame rail mt-14 md:mt-20">
-        <div className="grid-12 gap-y-12">
-          <p className="t-statement col-span-12 max-w-[18ch] text-balance text-ink-2 md:col-span-5">
-            Every answer walks back to the{" "}
-            <span className="text-ink">paragraph that produced it.</span>
+          {/* the thesis */}
+          <p className="t-statement mt-10 max-w-[22ch] text-pretty text-ink-2 md:mt-14">
+            {project.tagline}
           </p>
 
-          <div className="col-span-12 space-y-9 md:col-span-3 md:col-start-7">
-            <Field label="Problem" body={project.problem} />
-            <Field label="Approach" body={project.solution} />
+          {/* diagram beside the record */}
+          <div className="grid-12 mt-12 gap-y-12 md:mt-16">
+            {visual ? (
+              <div className="col-span-12 lg:col-span-6">
+                <Emerge as="figure">
+                  <ProjectVisual id={project.id} />
+                </Emerge>
+              </div>
+            ) : null}
+
+            <dl
+              className={cn(
+                "col-span-12",
+                visual ? "lg:col-span-5 lg:col-start-8" : "lg:col-span-8",
+              )}
+            >
+              <Row label="Problem" body={project.problem} />
+              <Row label="Approach" body={project.solution} />
+              <Row label="My contribution" body={project.contribution} />
+            </dl>
           </div>
 
-          <div className="col-span-12 md:col-span-3 md:col-start-10">
-            <div className="border-t border-rule pt-5">
-              <p className="t-figure-sm text-mint">0.71→0.89</p>
-              <p className="t-note mt-2.5">
-                Faithfulness across a 50-question RAGAS set
-              </p>
+          {/* technical decisions */}
+          {project.technical.length ? (
+            <div className="mt-12">
+              <p className="t-mark text-ink-4">Technical decisions</p>
+              <ul className="mt-5 space-y-3">
+                {project.technical.map((line, i) => (
+                  <li key={line} className="flex gap-4">
+                    <span className="t-note shrink-0 tabular-nums text-rule-3">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="t-read-sm max-w-[72ch] text-pretty text-ink-2">
+                      {line}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="mt-8 border-t border-rule pt-5">
-              <p className="t-figure-sm text-mint">~40%</p>
-              <p className="t-note mt-2.5">
-                Token cost removed by contextual compression
-              </p>
-            </div>
+          ) : null}
 
-            <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3">
-              <button
-                type="button"
-                onClick={onOpen}
-                data-cursor="open"
-                className="t-meta link-rule text-iris transition-colors duration-300 hover:text-ink"
-              >
-                Full case study
-              </button>
-              {project.links.map((l) => (
-                <TextLink key={l.href} href={l.href} external className="t-meta">
-                  {l.label} ↗
-                </TextLink>
-              ))}
+          {/* measured results */}
+          {project.metrics.length ? (
+            <div className="mt-12 border-t border-rule pt-8">
+              <dl className="flex flex-wrap gap-x-12 gap-y-7">
+                {project.metrics.map((m) => (
+                  <div key={m.label}>
+                    <dt className="sr-only">{m.label}</dt>
+                    <dd>
+                      <span className="t-figure-sm block text-ink">
+                        {m.value}
+                      </span>
+                      <span className="t-note mt-1.5 block max-w-[24ch] leading-snug">
+                        {m.label}
+                      </span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
+          ) : null}
+
+          {/* links and stack */}
+          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-rule pt-6">
+            <button
+              type="button"
+              onClick={onOpen}
+              data-cursor="open"
+              className="t-mark text-signal transition-colors duration-300 hover:text-ink"
+            >
+              Full record →
+            </button>
+            {project.links.map((l) => (
+              <TextLink key={l.href} href={l.href} external className="t-meta">
+                {l.label} ↗
+              </TextLink>
+            ))}
+            {project.note ? (
+              <span className="t-note ml-auto">{project.note}</span>
+            ) : null}
           </div>
+
+          <p className="t-note mt-5">
+            {project.stack.map((s, i) => (
+              <span key={s}>
+                {s}
+                {i < project.stack.length - 1 ? (
+                  <span className="text-rule-3"> / </span>
+                ) : null}
+              </span>
+            ))}
+          </p>
         </div>
-
-        <StackLine items={project.stack} />
       </div>
     </article>
+  );
+}
+
+function Row({ label, body }: { label: string; body: string }) {
+  return (
+    <div className="grid-12 gap-y-1.5 border-t border-rule py-5 first:border-t-0 first:pt-0">
+      <dt className="t-mark col-span-12 text-ink-4 md:col-span-3">{label}</dt>
+      <dd className="t-read-sm col-span-12 max-w-[62ch] text-pretty text-ink-2 md:col-span-9">
+        {body}
+      </dd>
+    </div>
   );
 }
 
 /* ============================================================================
- * PLATE 03 — an orchestration manifest.
- *
- * Neither of the other plates would fit this: the first is a confrontation
- * between two numbers, the second is a pipeline read left to right. An agent
- * system is a *roster* with an order of execution, so the composition is a
- * numbered crew list set against the graph they share.
+ * REGISTER ROW — an index entry, not a card.
  * ========================================================================= */
-
-function PlateThree({
-  project,
-  onOpen,
-}: {
-  project: Project;
-  onOpen: () => void;
-}) {
-  return (
-    <article
-      className="mt-32 md:mt-48"
-      onMouseEnter={() => setFocus(2)}
-      onMouseLeave={() => setFocus(-1)}
-    >
-      <div className="frame rail">
-        <div className="flex items-baseline gap-5 border-t border-rule-2 pt-5">
-          <span className="t-figure-sm text-iris">03</span>
-          <div className="flex-1">
-            <h3 className="t-title text-ink">{project.title}</h3>
-            <p className="t-note mt-1">{project.category}</p>
-          </div>
-          <span className="t-note hidden shrink-0 md:block">{project.year}</span>
-        </div>
-
-        <p className="t-statement mt-12 max-w-[19ch] text-balance text-ink-2 md:mt-16">
-          A half-failed run{" "}
-          <span className="text-ink">resumes</span> instead of starting over.
-        </p>
-      </div>
-
-      <div className="frame rail mt-16 md:mt-24">
-        <div className="grid-12 gap-y-12">
-          {/* The crew, in execution order. */}
-          <div className="col-span-12 md:col-span-4">
-            <p className="t-mark text-ink-4">Agents</p>
-            <ol className="mt-6">
-              {(project.roster ?? []).map((agent, i) => (
-                <li
-                  key={agent}
-                  className="flex items-baseline gap-5 border-t border-rule py-3.5 last:border-b"
-                >
-                  <span className="t-note w-6 shrink-0 text-iris">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="t-meta text-ink">{agent}</span>
-                </li>
-              ))}
-            </ol>
-            <p className="t-note mt-6 max-w-[30ch]">
-              All five share one typed state graph. Deterministic code decides
-              what runs next; the model only exercises judgement inside a node.
-            </p>
-          </div>
-
-          <div className="col-span-12 md:col-span-7 md:col-start-6">
-            <Enter as="figure">
-              <ProjectVisual id={project.id} />
-            </Enter>
-          </div>
-        </div>
-
-        <div className="grid-12 mt-16 gap-y-10">
-          <div className="col-span-12 md:col-span-3">
-            <Field label="Problem" body={project.problem} />
-          </div>
-          <div className="col-span-12 md:col-span-4 md:col-start-5">
-            <Field label="Approach" body={project.solution} />
-          </div>
-          <div className="col-span-12 md:col-span-3 md:col-start-10">
-            <Field label="My contribution" body={project.contribution} />
-            <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
-              <button
-                type="button"
-                onClick={onOpen}
-                data-cursor="open"
-                className="t-meta link-rule text-iris transition-colors duration-300 hover:text-ink"
-              >
-                Full case study
-              </button>
-              {project.links.map((l) => (
-                <TextLink key={l.href} href={l.href} external className="t-meta">
-                  {l.label} ↗
-                </TextLink>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <StackLine items={project.stack} />
-      </div>
-    </article>
-  );
-}
-
-/* ---------------------------------------------------------------- register */
 
 function RegisterRow({
   project,
@@ -370,26 +263,27 @@ function RegisterRow({
   n: number;
   onOpen: () => void;
 }) {
+  const bound = BOUND[project.id] ?? null;
+
   return (
-    <div
-      className="border-t border-rule last:border-b"
-      onMouseEnter={() => setFocus(n % 4)}
-      onMouseLeave={() => setFocus(-1)}
-    >
+    <div className="border-t border-rule last:border-b">
       <button
         type="button"
-        data-cursor="open"
         onClick={onOpen}
-        onFocus={() => setFocus(n % 4)}
-        aria-label={`Open the ${project.title} case study`}
-        className="frame rail group block w-full py-8 text-left md:py-10"
+        onMouseEnter={() => setHover(bound)}
+        onMouseLeave={() => setHover(null)}
+        onFocus={() => setHover(bound)}
+        onBlur={() => setHover(null)}
+        data-cursor="open"
+        aria-label={`Open the ${project.title} record`}
+        className="rail group block w-full px-[clamp(1.25rem,4vw,4rem)] py-6 text-left xl:pr-[clamp(9rem,12vw,14rem)]"
       >
-        <div className="grid-12 items-baseline gap-y-3">
-          <span className="t-note col-span-2 md:col-span-1">
+        <span className="lane grid-12 items-baseline gap-y-2">
+          <span className="t-note col-span-2 tabular-nums md:col-span-1">
             {String(n).padStart(2, "0")}
           </span>
 
-          <h3 className="t-title col-span-10 text-ink transition-colors duration-300 group-hover:text-iris md:col-span-4">
+          <h3 className="t-title col-span-10 text-ink transition-colors duration-300 group-hover:text-signal md:col-span-4">
             {project.title}
           </h3>
 
@@ -397,149 +291,22 @@ function RegisterRow({
             {project.tagline}
           </p>
 
-          <div className="col-span-12 md:col-span-3 md:col-start-10 md:text-right">
+          <span className="col-span-12 md:col-span-3 md:text-right">
             {project.metrics.length ? (
-              <span className="t-meta text-mint">
+              <span className="t-meta block text-ink">
                 {project.metrics[0].value}
               </span>
             ) : (
-              <span className="t-note">{project.stack[0]}</span>
+              <span className="t-note block">{project.stack[0]}</span>
             )}
-            <span className="t-note mt-0.5 block">
-              {project.metrics.length ? project.metrics[0].label : project.category}
+            <span className="t-note mt-1 block">
+              {project.metrics.length
+                ? project.metrics[0].label
+                : project.category}
             </span>
-          </div>
-        </div>
+          </span>
+        </span>
       </button>
     </div>
-  );
-}
-
-/* ---------------------------------------------------------------- shared */
-
-
-/* ============================================================================
- * DOSSIER
- *
- * The record behind a plate. A plate makes the argument; this is the sheet an
- * interviewer reads afterwards — problem, system, ownership, the decisions
- * worth defending, and only results that were actually measured.
- *
- * Every field here comes from the project record. Where a project measured
- * nothing, the result block is absent rather than padded.
- * ========================================================================= */
-
-function Record({
-  label,
-  body,
-  className,
-}: {
-  label: string;
-  body: string;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <dt className="t-mark text-ink-4">{label}</dt>
-      <dd className="t-read-sm mt-3 text-pretty text-ink-2">{body}</dd>
-    </div>
-  );
-}
-
-function Dossier({ project, n }: { project: Project; n: number }) {
-  const num = String(n).padStart(2, "0");
-  return (
-    <Enter>
-      <div id={`case-${num}`} className="frame rail mt-16 scroll-mt-28 md:mt-24">
-        <div className="flex flex-wrap items-baseline gap-x-7 gap-y-2 border-t border-rule-2 pt-4">
-          <span className="t-mark text-iris">Case {num}</span>
-          <span className="t-note text-ink-3">{project.category}</span>
-          <span className="t-note text-ink-4">{project.year}</span>
-          {project.associated ? (
-            <span className="t-note text-amber">{project.associated}</span>
-          ) : null}
-          {project.note ? (
-            <span className="t-note ml-auto text-ink-4">{project.note}</span>
-          ) : null}
-        </div>
-
-        {/* The record proper. Deliberately asymmetric: the problem sits in the
-            left column, the system answers it across the wider right. */}
-        <dl className="grid-12 mt-9 gap-y-9">
-          <Record
-            label="Problem"
-            body={project.problem}
-            className="col-span-12 md:col-span-5"
-          />
-          <Record
-            label="System"
-            body={project.solution}
-            className="col-span-12 md:col-span-6 md:col-start-7"
-          />
-          <Record
-            label="Role"
-            body={project.contribution}
-            className="col-span-12 md:col-span-5"
-          />
-        </dl>
-
-        <div className="mt-12 border-t border-rule pt-6">
-          <h4 className="t-mark text-ink-4">Approach</h4>
-          <ol className="mt-5 grid gap-x-12 gap-y-4 md:grid-cols-2">
-            {project.technical.map((line, i) => (
-              <li key={line} className="flex gap-4">
-                <span className="t-note shrink-0 tabular-nums text-ink-4">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="t-read-sm text-pretty text-ink-2">{line}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {project.metrics.length > 0 ? (
-          <div className="mt-12 border-t border-rule pt-6">
-            <h4 className="t-mark text-ink-4">Result — measured</h4>
-            <div className="mt-6 flex flex-wrap gap-x-16 gap-y-7">
-              {project.metrics.map((m) => (
-                <div key={m.label}>
-                  <p className="t-figure-sm text-ink">{m.value}</p>
-                  <p className="t-note mt-1.5 max-w-[24ch] leading-snug">
-                    {m.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        <StackLine items={project.stack} />
-      </div>
-    </Enter>
-  );
-}
-
-function Field({ label, body }: { label: string; body: string }) {
-  return (
-    <div>
-      <h4 className="t-mark text-ink-4">{label}</h4>
-      <p className="t-read-sm mt-2.5 text-pretty text-ink-2">{body}</p>
-    </div>
-  );
-}
-
-/** Stack as a single running line of type. Twelve pills would be twelve boxes. */
-function StackLine({ items }: { items: readonly string[] }) {
-  return (
-    <p className="t-note mt-14 border-t border-rule pt-4">
-      {items.map((s, i) => (
-        <span key={s}>
-          {s}
-          {i < items.length - 1 ? (
-            <span className="text-rule-3"> / </span>
-          ) : null}
-        </span>
-      ))}
-    </p>
   );
 }

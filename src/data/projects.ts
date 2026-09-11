@@ -103,7 +103,10 @@ export const projects: Project[] = [
       "Built on LangChain LCEL, which keeps each stage independently swappable and testable rather than tangled in one prompt.",
     ],
     metrics: [
-      { value: "0.71 → 0.89", label: "Faithfulness on a 50-question RAGAS set" },
+      {
+        value: "0.71 → 0.89",
+        label: "Faithfulness on a 50-question RAGAS set",
+      },
       { value: "~40%", label: "Token cost reduction" },
       { value: "2", label: "Document types (filings, transcripts)" },
     ],
@@ -341,7 +344,14 @@ export const projects: Project[] = [
       "The entire pipeline runs end to end against a mock voice provider, so the workflow is verifiable without a live telephony number.",
     ],
     metrics: [],
-    stack: ["Python", "FastAPI", "Retell AI", "Next.js", "Docker", "WhatsApp API"],
+    stack: [
+      "Python",
+      "FastAPI",
+      "Retell AI",
+      "Next.js",
+      "Docker",
+      "WhatsApp API",
+    ],
     links: [],
     note: "Runs end to end on a mock voice provider; live calls need broker credentials.",
   },

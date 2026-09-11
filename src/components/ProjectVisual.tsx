@@ -14,16 +14,18 @@
 /* The diagrams read from the design tokens rather than carrying their own
    palette, so they follow the sheet instead of having to be re-drawn whenever
    the ground changes. Inline SVG resolves CSS custom properties normally. */
-const SIGNAL = "var(--color-mint)";
-const IRIS = "var(--color-iris)";
-const AMBER = "var(--color-amber)";
+const SIGNAL = "var(--color-signal)";
+const IRIS = "var(--color-beam)";
+const AMBER = "var(--color-warn)";
 const LINE = "var(--color-rule-2)";
 const INK_MUTE = "var(--color-ink-3)";
 
 /* A track or well is paper pressed deeper, never a dark box cut into it. */
 const WELL = "var(--color-panel-2)";
-const WELL_SIGNAL = "color-mix(in oklab, var(--color-mint) 14%, var(--color-pit))";
-const WELL_AMBER = "color-mix(in oklab, var(--color-amber) 14%, var(--color-pit))";
+const WELL_SIGNAL =
+  "color-mix(in oklab, var(--color-signal) 14%, var(--color-pit))";
+const WELL_AMBER =
+  "color-mix(in oklab, var(--color-warn) 14%, var(--color-pit))";
 
 function Frame({
   children,
@@ -236,7 +238,13 @@ function RagPipeline() {
           fill={AMBER}
           fillOpacity="0.35"
         />
-        <text x="210" y="235" fill={INK_MUTE} fontSize="9" fontFamily="monospace">
+        <text
+          x="210"
+          y="235"
+          fill={INK_MUTE}
+          fontSize="9"
+          fontFamily="monospace"
+        >
           0.71
         </text>
         <text x="248" y="235" fill={INK_MUTE} fontSize="9">
@@ -252,7 +260,14 @@ function RagPipeline() {
           fill={SIGNAL}
           fillOpacity="0.85"
         />
-        <text x="454" y="235" fill={SIGNAL} fontSize="9" fontFamily="monospace" textAnchor="end">
+        <text
+          x="454"
+          y="235"
+          fill={SIGNAL}
+          fontSize="9"
+          fontFamily="monospace"
+          textAnchor="end"
+        >
           0.89
         </text>
       </g>
@@ -269,19 +284,42 @@ function VerificationGate() {
       caption="Verification is a precondition, not a report you read afterwards"
     >
       <defs>
-        <marker id="h2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <marker
+          id="h2"
+          markerWidth="6"
+          markerHeight="6"
+          refX="5"
+          refY="3"
+          orient="auto"
+        >
           <path d="M0 0 L6 3 L0 6 z" fill={LINE} />
         </marker>
       </defs>
 
-      <rect x="20" y="106" width="86" height="34" rx="4" fill={WELL} stroke={LINE} />
+      <rect
+        x="20"
+        y="106"
+        width="86"
+        height="34"
+        rx="4"
+        fill={WELL}
+        stroke={LINE}
+      />
       <text x="63" y="127" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
         Erasure request
       </text>
 
       <path d="M108 123 L128 123" stroke={LINE} markerEnd="url(#h2)" />
 
-      <rect x="130" y="96" width="86" height="54" rx="4" fill={WELL} stroke={LINE} />
+      <rect
+        x="130"
+        y="96"
+        width="86"
+        height="54"
+        rx="4"
+        fill={WELL}
+        stroke={LINE}
+      />
       <text x="173" y="116" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
         Provenance
       </text>
@@ -294,7 +332,15 @@ function VerificationGate() {
 
       <path d="M218 123 L238 123" stroke={LINE} markerEnd="url(#h2)" />
 
-      <rect x="240" y="88" width="86" height="70" rx="4" fill={WELL} stroke={LINE} />
+      <rect
+        x="240"
+        y="88"
+        width="86"
+        height="70"
+        rx="4"
+        fill={WELL}
+        stroke={LINE}
+      />
       <text x="283" y="107" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
         Unlearn
       </text>
@@ -335,15 +381,43 @@ function VerificationGate() {
         </text>
       </g>
 
-      <path d="M366 104 L390 92" stroke={SIGNAL} strokeOpacity="0.55" markerEnd="url(#h2)" />
-      <path d="M366 142 L390 154" stroke={AMBER} strokeOpacity="0.45" strokeDasharray="3 3" />
+      <path
+        d="M366 104 L390 92"
+        stroke={SIGNAL}
+        strokeOpacity="0.55"
+        markerEnd="url(#h2)"
+      />
+      <path
+        d="M366 142 L390 154"
+        stroke={AMBER}
+        strokeOpacity="0.45"
+        strokeDasharray="3 3"
+      />
 
-      <rect x="392" y="76" width="68" height="30" rx="4" fill={WELL_SIGNAL} stroke={SIGNAL} strokeOpacity="0.5" />
+      <rect
+        x="392"
+        y="76"
+        width="68"
+        height="30"
+        rx="4"
+        fill={WELL_SIGNAL}
+        stroke={SIGNAL}
+        strokeOpacity="0.5"
+      />
       <text x="426" y="95" fill={SIGNAL} fontSize="9.5" textAnchor="middle">
         Deploy
       </text>
 
-      <rect x="392" y="140" width="68" height="30" rx="4" fill={WELL_AMBER} stroke={AMBER} strokeOpacity="0.4" />
+      <rect
+        x="392"
+        y="140"
+        width="68"
+        height="30"
+        rx="4"
+        fill={WELL_AMBER}
+        stroke={AMBER}
+        strokeOpacity="0.4"
+      />
       <text x="426" y="159" fill={AMBER} fontSize="9.5" textAnchor="middle">
         Withheld
       </text>
@@ -351,9 +425,17 @@ function VerificationGate() {
       <text x="20" y="212" fill={INK_MUTE} fontSize="9" letterSpacing="1.2">
         FLEET MONITORING NEVER PAUSES · ~1/10 OF RETRAINING TIME
       </text>
-      <line x1="20" y1="224" x2="460" y2="224" stroke={LINE} strokeDasharray="2 3" />
+      <line
+        x1="20"
+        y1="224"
+        x2="460"
+        y2="224"
+        stroke={LINE}
+        strokeDasharray="2 3"
+      />
       <text x="20" y="242" fill={AMBER} fontSize="9">
-        Feasibility check refuses the request outright when the target set is indistinguishable.
+        Feasibility check refuses the request outright when the target set is
+        indistinguishable.
       </text>
     </Frame>
   );
@@ -375,7 +457,14 @@ function AgentGraph() {
       viewBox="0 0 480 260"
       caption="Five agents over one typed state graph, with checkpointed resume"
     >
-      <circle cx="228" cy="128" r="40" fill={WELL_SIGNAL} stroke={SIGNAL} strokeOpacity="0.4" />
+      <circle
+        cx="228"
+        cy="128"
+        r="40"
+        fill={WELL_SIGNAL}
+        stroke={SIGNAL}
+        strokeOpacity="0.4"
+      />
       <text x="228" y="124" fill={SIGNAL} fontSize="9.5" textAnchor="middle">
         Pydantic
       </text>
@@ -402,18 +491,45 @@ function AgentGraph() {
             fill={WELL}
             stroke={LINE}
           />
-          <text x={a.x} y={a.y + 3.5} fill={INK_MUTE} fontSize="9" textAnchor="middle">
+          <text
+            x={a.x}
+            y={a.y + 3.5}
+            fill={INK_MUTE}
+            fontSize="9"
+            textAnchor="middle"
+          >
             {a.label}
           </text>
         </g>
       ))}
 
       <g>
-        <rect x="20" y="106" width="14" height="44" rx="2" fill={WELL} stroke={AMBER} strokeOpacity="0.4" />
-        <text x="27" y="98" fill={AMBER} fontSize="7.5" letterSpacing="1.2" textAnchor="middle">
+        <rect
+          x="20"
+          y="106"
+          width="14"
+          height="44"
+          rx="2"
+          fill={WELL}
+          stroke={AMBER}
+          strokeOpacity="0.4"
+        />
+        <text
+          x="27"
+          y="98"
+          fill={AMBER}
+          fontSize="7.5"
+          letterSpacing="1.2"
+          textAnchor="middle"
+        >
           CKPT
         </text>
-        <path d="M36 128 L60 128" stroke={AMBER} strokeOpacity="0.4" strokeDasharray="3 3" />
+        <path
+          d="M36 128 L60 128"
+          stroke={AMBER}
+          strokeOpacity="0.4"
+          strokeDasharray="3 3"
+        />
       </g>
 
       <text x="20" y="238" fill={INK_MUTE} fontSize="9">
@@ -444,12 +560,35 @@ function WalkForward() {
         const trainW = W * (0.28 + f * 0.16);
         return (
           <g key={f}>
-            <text x={X - 10} y={y + 11} fill={INK_MUTE} fontSize="9" textAnchor="end" fontFamily="monospace">
+            <text
+              x={X - 10}
+              y={y + 11}
+              fill={INK_MUTE}
+              fontSize="9"
+              textAnchor="end"
+              fontFamily="monospace"
+            >
               {f + 1}
             </text>
             <rect x={X} y={y} width={W} height="15" rx="2" fill={WELL} />
-            <rect x={X} y={y} width={trainW} height="15" rx="2" fill={SIGNAL} fillOpacity="0.5" />
-            <rect x={X + trainW + 3} y={y} width={W * 0.14} height="15" rx="2" fill={AMBER} fillOpacity="0.55" />
+            <rect
+              x={X}
+              y={y}
+              width={trainW}
+              height="15"
+              rx="2"
+              fill={SIGNAL}
+              fillOpacity="0.5"
+            />
+            <rect
+              x={X + trainW + 3}
+              y={y}
+              width={W * 0.14}
+              height="15"
+              rx="2"
+              fill={AMBER}
+              fillOpacity="0.55"
+            />
           </g>
         );
       })}
@@ -459,7 +598,14 @@ function WalkForward() {
         <text x="18" y="9" fill={INK_MUTE} fontSize="9.5">
           Train
         </text>
-        <rect x="70" width="11" height="11" rx="2" fill={AMBER} fillOpacity="0.55" />
+        <rect
+          x="70"
+          width="11"
+          height="11"
+          rx="2"
+          fill={AMBER}
+          fillOpacity="0.55"
+        />
         <text x="88" y="9" fill={INK_MUTE} fontSize="9.5">
           Validate, always after
         </text>
@@ -499,7 +645,13 @@ function GeoStack() {
               stroke={l.tone}
               strokeOpacity={l.tone === LINE ? 1 : 0.55}
             />
-            <text x="98" y={y + 8} fill={l.tone === LINE ? INK_MUTE : l.tone} fontSize="9" textAnchor="end">
+            <text
+              x="98"
+              y={y + 8}
+              fill={l.tone === LINE ? INK_MUTE : l.tone}
+              fontSize="9"
+              textAnchor="end"
+            >
               {l.label}
             </text>
           </g>
@@ -507,7 +659,8 @@ function GeoStack() {
       })}
 
       <text x="20" y="266" fill={INK_MUTE} fontSize="9">
-        Hindcast against a withheld epoch · run with and without the growth criterion.
+        Hindcast against a withheld epoch · run with and without the growth
+        criterion.
       </text>
     </Frame>
   );

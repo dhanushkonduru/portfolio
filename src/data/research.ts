@@ -103,12 +103,12 @@ export const papers: Paper[] = [
       "A Secure and Efficient Blockchain-Based Storage System for High-Resolution Images Using IPFS, JPEG XL Compression and BLAKE3 Hashing with RBAC",
     venue: "Manuscript",
     status: "Under submission",
-    authors: "Ujwal Kumar, Madhu Viswanatham V, M Rajasekhara Babu, Dhanush Konduru",
+    authors:
+      "Ujwal Kumar, Madhu Viswanatham V, M Rajasekhara Babu, Dhanush Konduru",
     position: "Co-author",
     area: "Decentralised storage · Access control",
     summary:
       "Combines JPEG XL compression, IPFS distribution, BLAKE3 content hashing and smart-contract RBAC so high-resolution image collections can be stored cheaply, verified independently and gated by role. Compression ratios between 3:1 and 5:1 were measured, and retrieval times fell by roughly a third against older formats.",
-    contribution:
-      "Contributing author on the system design and evaluation.",
+    contribution: "Contributing author on the system design and evaluation.",
   },
 ];

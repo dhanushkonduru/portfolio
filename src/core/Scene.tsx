@@ -1,0 +1,182 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Canvas } from "@react-three/fiber";
+import {
+  Environment,
+  Lightformer,
+  PerformanceMonitor,
+} from "@react-three/drei";
+import * as THREE from "three";
+import { SystemCore, type Tier } from "./SystemCore";
+import { ParticleField } from "./ParticleField";
+import { CameraRig } from "./CameraRig";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+
+/* ============================================================================
+ * SCENE
+ *
+ * The only WebGL context on the site, fixed behind every section, running the
+ * full height of the page. The machine is continuous; the sections scroll past
+ * it.
+ *
+ * Quality is decided once, from what the device actually reports, and drives
+ * geometry counts, particle budget, pixel ratio, antialiasing and shadows
+ * together. A phone gets a simpler machine, not a smaller photograph of the
+ * same one.
+ * ========================================================================= */
+
+function detectTier(): Tier {
+  if (typeof navigator === "undefined") return "mid";
+
+  const memory = (navigator as Navigator & { deviceMemory?: number })
+    .deviceMemory;
+  const cores = navigator.hardwareConcurrency ?? 4;
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const narrow = window.innerWidth < 900;
+
+  if ((memory !== undefined && memory <= 2) || cores <= 2) return "low";
+  if (coarse || narrow || cores <= 4) return "mid";
+  return "high";
+}
+
+const PARTICLES: Record<Tier, number> = { high: 1100, mid: 520, low: 240 };
+
+const MAX_DPR: Record<Tier, number> = { high: 1.4, mid: 1.25, low: 1 };
+
+export function Scene() {
+  const reduced = useReducedMotion();
+  const [tier, setTier] = useState<Tier | null>(null);
+  const [awake, setAwake] = useState(true);
+  /**
+   * Resolution is not decided once and hoped for. The device tier sets the
+   * ceiling; if the machine cannot actually hold frame rate there, the
+   * renderer drops its pixel ratio rather than letting the page stutter.
+   * Nothing about the composition changes — only how many pixels it costs.
+   */
+  const [dpr, setDpr] = useState(1);
+
+  useEffect(() => {
+    const t = detectTier();
+    setTier(t);
+    setDpr(MAX_DPR[t]);
+  }, []);
+
+  /* A hidden tab has no reason to hold a GPU. */
+  useEffect(() => {
+    const onVisibility = () => setAwake(!document.hidden);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  if (!tier) return null;
+
+  const shadows = tier === "high" && !reduced;
+
+  return (
+    <div
+      className="pointer-events-none fixed inset-0 z-0"
+      aria-hidden="true"
+      data-system-core
+    >
+      <Canvas
+        dpr={dpr}
+        frameloop={awake ? "always" : "never"}
+        shadows={shadows ? "soft" : false}
+        camera={{ position: [0.2, 0.5, 10.4], fov: 38, near: 0.4, far: 60 }}
+        gl={{
+          antialias: tier !== "low",
+          alpha: true,
+          powerPreference: "high-performance",
+          stencil: false,
+        }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          /* Held just above one. The bay stays dark; the exposure is what
+             lets the machining read inside it, rather than bloom. */
+          gl.toneMappingExposure = 1.18;
+        }}
+      >
+        <PerformanceMonitor
+          onDecline={() => setDpr(1)}
+          onIncline={() => setDpr(MAX_DPR[tier])}
+        />
+
+        <CameraRig reduced={reduced} />
+
+        {/* ── lighting ──────────────────────────────────────────────────
+            A key that reveals the machining, a cold fill that keeps the dark
+            side readable, and a rim that separates the silhouette from the
+            bay. Nothing here is coloured for effect; it is all one cool
+            white at three temperatures. */}
+        <ambientLight intensity={0.32} color={0x93abc6} />
+
+        <directionalLight
+          position={[5.5, 6, 7]}
+          intensity={3.4}
+          color={0xdce8f7}
+          castShadow={shadows}
+          shadow-mapSize={[1024, 1024]}
+          shadow-bias={-0.0022}
+          shadow-normalBias={0.02}
+          shadow-camera-near={1}
+          shadow-camera-far={22}
+          shadow-camera-left={-4}
+          shadow-camera-right={4}
+          shadow-camera-top={4}
+          shadow-camera-bottom={-4}
+        />
+
+        <directionalLight
+          position={[-7, -2.5, 3]}
+          intensity={1.05}
+          color={0x6b87a8}
+        />
+
+        <directionalLight
+          position={[-2.5, 3.5, -8]}
+          intensity={2.4}
+          color={0x8dbcf0}
+        />
+
+        {/* ── reflections ───────────────────────────────────────────────
+            Baked once from a handful of emissive panels. Metal with nothing
+            to reflect reads as plastic, and a downloaded HDRI is a network
+            request the page does not need to make. */}
+        <Environment resolution={128} frames={1}>
+          <color attach="background" args={["#05070a"]} />
+          <Lightformer
+            intensity={5.5}
+            color="#dcebfb"
+            position={[0, 5, -5]}
+            scale={[14, 5, 1]}
+          />
+          <Lightformer
+            intensity={2.6}
+            color="#7290b2"
+            position={[-7, 1, 2]}
+            rotation={[0, Math.PI / 2, 0]}
+            scale={[8, 6, 1]}
+          />
+          <Lightformer
+            intensity={3.4}
+            color="#b3d4f2"
+            position={[7, -0.5, 1]}
+            rotation={[0, -Math.PI / 2, 0]}
+            scale={[6, 6, 1]}
+          />
+          <Lightformer
+            form="ring"
+            intensity={3.2}
+            color="#cfe4f8"
+            position={[0, 0, -4.5]}
+            scale={3.2}
+          />
+        </Environment>
+
+        <SystemCore tier={tier} reduced={reduced} />
+        <ParticleField count={PARTICLES[tier]} reduced={reduced} />
+      </Canvas>
+    </div>
+  );
+}

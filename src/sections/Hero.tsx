@@ -1,141 +1,65 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import { profile } from "@/data/profile";
-import { STAGES } from "@/system/stages";
-import { setClearAmount, setClearRects } from "@/system/stageStore";
+import { STAGES } from "@/core/stages";
 import { MaskLines } from "@/components/Motion";
 import { TextLink } from "@/components/Kit";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+const S = STAGES[0];
+
+/* ============================================================================
+ * HOME
+ *
+ * The composition the whole page is built around: identity and statement held
+ * in the left third, the machine occupying the rest of the bay, and the
+ * readings hung along the bottom edge.
+ *
+ * The type never crosses the assembly. On desktop the column stops at five of
+ * twelve, and the camera aims left of the machine so the machine sits in the
+ * space that is left. That is why the headline stays readable over a
+ * three-dimensional object without a scrim laid over it.
+ * ========================================================================= */
 
 export function Hero() {
-  const headline = useRef<HTMLHeadingElement>(null);
-  const foot = useRef<HTMLDivElement>(null);
-  const section = useRef<HTMLElement>(null);
-
-  /* The field is told where the words are and opens around them. Legibility
-     becomes part of the composition rather than a scrim laid over the art. */
-  useEffect(() => {
-    const publish = () => {
-      const rects: DOMRect[] = [];
-      if (headline.current) rects.push(headline.current.getBoundingClientRect());
-      if (foot.current) rects.push(foot.current.getBoundingClientRect());
-      setClearRects(rects);
-
-      const s = section.current;
-      if (s) {
-        const r = s.getBoundingClientRect();
-        // Fades out as the hero leaves: the clearing belongs to this stage.
-        const vis = Math.max(0, Math.min(1, (r.bottom - 60) / window.innerHeight));
-        setClearAmount(vis);
-      }
-    };
-
-    publish();
-    const ro = new ResizeObserver(publish);
-    if (headline.current) ro.observe(headline.current);
-
-    window.addEventListener("scroll", publish, { passive: true });
-    window.addEventListener("resize", publish);
-    const t = setTimeout(publish, 400); // after fonts settle
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("scroll", publish);
-      window.removeEventListener("resize", publish);
-      clearTimeout(t);
-      setClearAmount(0);
-    };
-  }, []);
-
   return (
     <section
-      ref={section}
       id="top"
-      className="relative flex min-h-[100svh] flex-col justify-between pb-8 pt-24 md:pb-12 md:pt-28"
+      className="relative flex min-h-[100svh] flex-col justify-between pb-24 pt-24 md:pt-28 xl:pb-28 xl:pt-32"
     >
-      {/* ── upper register: deliberately one-sided. The nav already carries
-             the name in this column; repeating it here only collided with it. ── */}
-      <div className="frame rail flex justify-start md:justify-end">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.25 }}
-          className="md:text-right"
-        >
-          <p className="t-note">
-            <span className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-mint align-middle animate-probe" />
-            {profile.availability}
+      {/* Below lg the machine gets a band of its own at the top of the screen
+          and the statement starts under it. This is a different composition,
+          not a narrower copy of the desktop one. */}
+      <div className="h-[27vh] shrink-0 xl:hidden" aria-hidden="true" />
+
+      {/* ── statement ─────────────────────────────────────────────────── */}
+      <div className="rail grid-12 flex-1 items-center px-[clamp(1.25rem,4vw,4rem)]">
+        <div className="relative z-10 col-span-12 max-w-[34rem] xl:col-span-5">
+          <div
+            className="settle flex items-center gap-3"
+            style={{ animationDelay: "0.15s" }}
+          >
+            <span className="t-mark text-signal tabular-nums">{S.index}</span>
+            <span className="h-px w-8 bg-rule-2" aria-hidden="true" />
+            <span className="t-mark text-ink-4">System Core</span>
+          </div>
+
+          <h1 className="t-monument mt-8 text-ink">
+            <MaskLines lines={profile.headline} immediate delay={0.22} />
+          </h1>
+
+          <p
+            className="settle t-read mt-8 max-w-[44ch] text-pretty text-ink-2"
+            style={{ animationDelay: "0.7s" }}
+          >
+            {profile.positioning}
           </p>
-          <p className="t-note mt-1.5">{profile.location}</p>
-        </motion.div>
-      </div>
 
-      {/* ── the monument ── */}
-      <div className="frame rail relative py-10 md:py-0">
-        <h1
-          ref={headline}
-          className="t-monument max-w-[13ch] text-ink"
-        >
-          <MaskLines lines={profile.headline} immediate delay={0.18} />
-        </h1>
-      </div>
-
-      {/* ── lower register ── */}
-      <div ref={foot} className="frame rail">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.75 }}
-          className="h-px w-full origin-left bg-rule"
-        />
-
-        <div className="grid-12 mt-6 items-end gap-y-7">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.85, ease: EASE }}
-            className="col-span-12 md:col-span-5"
+          <div
+            className="settle mt-10 flex flex-wrap items-center gap-x-8 gap-y-4"
+            style={{ animationDelay: "0.85s" }}
           >
-            <p className="t-mark text-mint">{profile.role}</p>
-            <p className="t-read mt-4 max-w-[46ch] text-balance text-ink-2">
-              {profile.positioning}
-            </p>
-          </motion.div>
-
-          {/* Facts hung as marginalia, not boxed into a metric grid. */}
-          <motion.dl
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1 }}
-            className="col-span-12 grid grid-cols-3 gap-x-6 gap-y-3 md:col-span-4"
-          >
-            {profile.markers.slice(0, 3).map((m) => (
-              <div key={m.label}>
-                <dt className="sr-only">{m.label}</dt>
-                <dd>
-                  <span className="t-figure-sm block text-ink">{m.value}</span>
-                  <span className="t-note mt-1 block max-w-[14ch] leading-snug">
-                    {m.label}
-                  </span>
-                </dd>
-              </div>
-            ))}
-          </motion.dl>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.1 }}
-            className="col-span-12 flex flex-wrap items-center gap-x-6 gap-y-3 md:col-span-3 md:justify-end"
-          >
-            <a
-              href="#work"
-              className="t-mark group inline-flex items-center gap-3 border border-rule-3 px-5 py-3 text-ink transition-colors duration-300 hover:border-ink hover:bg-ink hover:text-void"
-            >
-              See the work
+            <a href="#work" className="control group" data-cursor="link">
+              View my work
               <span
                 aria-hidden="true"
                 className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
@@ -144,22 +68,54 @@ export function Hero() {
               </span>
             </a>
             <TextLink href={profile.resume.href} download className="t-meta">
-              Résumé ↓
+              Download CV ↓
             </TextLink>
-          </motion.div>
+          </div>
         </div>
+      </div>
 
-        {/* Scroll cue doubles as the field's current state readout. */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.3 }}
-          className="mt-8 flex items-center gap-3"
-        >
-          <span className="t-note">Scroll to measure</span>
-          <span className="h-px w-10 bg-rule-2" aria-hidden="true" />
-          <span className="t-note text-mint">{STAGES[0].state}</span>
-        </motion.div>
+      {/* On a narrow screen the machine is directly behind the reading copy
+          rather than beside it, so the lower half of the hero carries its own
+          gradient. Desktop never needs it: there the type and the assembly
+          occupy different parts of the bay. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-[25vh] bg-gradient-to-b from-transparent via-void/92 to-void xl:hidden"
+      />
+
+      {/* ── readings along the foot ───────────────────────────────────── */}
+      <div
+        className="settle rail relative z-10 px-[clamp(1.25rem,4vw,4rem)]"
+        style={{ animationDelay: "1s" }}
+      >
+        <div className="h-px w-full bg-rule" aria-hidden="true" />
+
+        <div className="mt-5 flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
+          <dl className="flex flex-wrap gap-x-10 gap-y-5">
+            {profile.markers.map((m) => (
+              <div key={m.label}>
+                <dt className="sr-only">{m.label}</dt>
+                <dd>
+                  <span className="t-figure-sm block text-ink">{m.value}</span>
+                  <span className="t-note mt-1.5 block max-w-[15ch] leading-snug">
+                    {m.label}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="flex flex-col gap-1.5 lg:items-end">
+            <p className="t-note">
+              <span
+                className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-signal align-middle animate-pulse-soft"
+                aria-hidden="true"
+              />
+              {profile.availability}
+            </p>
+            <p className="t-note">{profile.location}</p>
+          </div>
+        </div>
       </div>
     </section>
   );

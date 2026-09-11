@@ -3,117 +3,166 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { skillGroups } from "@/data/skills";
-import { STAGES } from "@/system/stages";
-import { setFocus } from "@/system/stageStore";
-import { StageMark } from "@/components/Kit";
+import { STAGES, type ModuleKey } from "@/core/stages";
+import { setHover } from "@/core/store";
+import { SectionHead } from "@/components/Kit";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 
 const S = STAGES[2];
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-/**
- * No proficiency bars, no chips, no panel. An index of domains — and pointing
- * at one pulls its cluster out of the field behind. The 3D is not illustrating
- * the section; it is the section's other half.
- */
+/* ============================================================================
+ * STACK
+ *
+ * Not a logo wall. Each domain is bound to the module of the machine that
+ * actually does that work, so opening a row lights the corresponding hardware
+ * and its callout. The 3D is not illustrating the section; it is the other
+ * half of it.
+ * ========================================================================= */
+
+const BOUND: Record<string, ModuleKey> = {
+  llm: "ai",
+  ml: "ai",
+  backend: "compute",
+  languages: "compute",
+  data: "data",
+  mlops: "cooling",
+  cloud: "power",
+};
+
+const MODULE_LABEL: Record<ModuleKey, string> = {
+  compute: "Compute core",
+  ai: "AI module",
+  data: "Data pipelines",
+  io: "I/O interface",
+  cooling: "Cooling system",
+  power: "Power & control",
+};
+
 export function Stack() {
   const [active, setActive] = useState<number | null>(null);
   const reduced = useReducedMotion();
 
   const focus = (i: number | null) => {
     setActive(i);
-    setFocus(i ?? -1);
+    setHover(i === null ? null : (BOUND[skillGroups[i].id] ?? null));
   };
 
   return (
-    <section id="stack" className="stratum stratum-raised relative scroll-mt-24 py-32 md:py-48">
-      <div className="frame rail">
-        <StageMark index={S.index} label={S.label} state={S.state} tone="cyan" />
+    <section
+      id="stack"
+      className="stratum relative scroll-mt-28 py-28 md:py-40"
+    >
+      <div className="rail px-[clamp(1.25rem,4vw,4rem)] xl:pr-[clamp(9rem,12vw,14rem)]">
+        <div className="lane">
+          <SectionHead index={S.index} label={S.label} state={S.state} />
 
-        <div className="mt-14 flex flex-wrap items-end gap-x-12 gap-y-6 md:mt-20">
-          <p className="t-figure text-cyan">{skillGroups.length}</p>
-          <div className="max-w-[40ch] pb-3">
-            <p className="t-mark text-ink-4">Domains</p>
-            <p className="t-read mt-3 text-pretty text-ink-2">
-              Point at one and its cluster separates from the field behind.
-              Everything listed appears in work you can open. None of it is
-              aspirational.
+          <div className="grid-12 mt-14 items-end gap-y-8 md:mt-20">
+            <div className="col-span-12 lg:col-span-5">
+              <p className="t-figure text-ink">
+                {skillGroups.length}
+                <span className="ml-3 text-rule-3">/</span>
+                <span className="ml-3 text-ink-4">06</span>
+              </p>
+              <p className="t-mark mt-4 text-ink-4">
+                Domains mapped to modules
+              </p>
+            </div>
+
+            <p className="t-read col-span-12 max-w-[46ch] text-pretty text-ink-2 lg:col-span-5 lg:col-start-8">
+              Every domain below is wired to the part of the assembly that runs
+              it. Open one and its module lifts out of the machine. None of this
+              is aspirational — all of it appears in work you can open.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Full-bleed index. The rules run edge to edge; the type does not. */}
-      <div
-        className="mt-20 md:mt-28"
-        onMouseLeave={() => focus(null)}
-      >
+      {/* Full-bleed index: the rules run edge to edge, the type does not. */}
+      <div className="mt-16 md:mt-24" onMouseLeave={() => focus(null)}>
         {skillGroups.map((g, i) => {
-          const isOn = active === i;
-          const dim = active !== null && !isOn;
+          const on = active === i;
+          const dim = active !== null && !on;
+          const bound = BOUND[g.id];
 
           return (
             <div key={g.id} className="border-t border-rule last:border-b">
               <button
                 type="button"
-                aria-expanded={isOn}
+                aria-expanded={on}
                 data-cursor="expand"
                 onMouseEnter={() => focus(i)}
                 onFocus={() => focus(i)}
-                onClick={() => focus(isOn ? null : i)}
+                onClick={() => focus(on ? null : i)}
                 className={cn(
-                  "frame rail group flex w-full items-baseline gap-5 py-7 text-left transition-opacity duration-500 md:py-9",
-                  dim ? "opacity-35" : "opacity-100",
+                  "rail flex w-full items-center gap-5 px-[clamp(1.25rem,4vw,4rem)] text-left transition-opacity duration-500 xl:pr-[clamp(9rem,12vw,14rem)]",
+                  dim ? "opacity-30" : "opacity-100",
                 )}
               >
-                <span
-                  className={cn(
-                    "t-note w-8 shrink-0 tabular-nums transition-colors duration-300",
-                    isOn ? "text-cyan" : "",
-                  )}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+                <span className="lane flex w-full items-center gap-5 py-6 md:py-8">
+                  <span
+                    className={cn(
+                      "t-note w-8 shrink-0 tabular-nums transition-colors duration-300",
+                      on ? "text-signal" : "",
+                    )}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
 
-                <span
-                  className={cn(
-                    "t-title flex-1 transition-colors duration-300",
-                    isOn ? "text-cyan" : "text-ink",
-                  )}
-                >
-                  {g.name}
-                </span>
+                  <span
+                    className={cn(
+                      "t-title flex-1 transition-colors duration-300",
+                      on ? "text-signal" : "text-ink",
+                    )}
+                  >
+                    {g.name}
+                  </span>
 
-                <span className="t-note hidden shrink-0 sm:block">
-                  {String(g.items.length).padStart(2, "0")}
+                  <span className="t-note hidden shrink-0 text-right md:block">
+                    {MODULE_LABEL[bound]}
+                  </span>
+
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "ml-6 hidden h-px shrink-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:block",
+                      on ? "w-10 bg-signal" : "w-5 bg-rule-3",
+                    )}
+                  />
+
+                  <span className="t-note w-7 shrink-0 text-right tabular-nums">
+                    {String(g.items.length).padStart(2, "0")}
+                  </span>
                 </span>
               </button>
 
               <AnimatePresence initial={false}>
-                {isOn ? (
+                {on ? (
                   <motion.div
                     initial={reduced ? false : { height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={reduced ? undefined : { height: 0, opacity: 0 }}
-                    transition={{ duration: 0.55, ease: EASE }}
+                    transition={{ duration: 0.5, ease: EASE }}
                     className="overflow-hidden"
                   >
-                    <div className="frame rail grid-12 pb-10 md:pb-12">
-                      <p className="t-read-sm col-span-12 max-w-[52ch] text-pretty text-ink-3 md:col-span-5 md:col-start-2">
-                        {g.context}
-                      </p>
-                      {/* Technologies as running text, not as tags. */}
-                      <p className="t-meta col-span-12 mt-6 text-ink-2 md:col-span-5 md:col-start-8 md:mt-0">
-                        {g.items.map((item, k) => (
-                          <span key={item}>
-                            {item}
-                            {k < g.items.length - 1 ? (
-                              <span className="text-rule-3"> · </span>
-                            ) : null}
-                          </span>
-                        ))}
-                      </p>
+                    <div className="rail px-[clamp(1.25rem,4vw,4rem)] pb-9 xl:pr-[clamp(9rem,12vw,14rem)]">
+                      <div className="lane grid-12">
+                        <p className="t-read-sm col-span-12 max-w-[52ch] text-pretty text-ink-3 md:col-span-5 md:col-start-2">
+                          {g.context}
+                        </p>
+                        {/* Technologies as running text, not as tags. */}
+                        <p className="t-meta col-span-12 mt-5 text-ink-2 md:col-span-5 md:col-start-8 md:mt-0">
+                          {g.items.map((item, k) => (
+                            <span key={item}>
+                              {item}
+                              {k < g.items.length - 1 ? (
+                                <span className="text-rule-3"> · </span>
+                              ) : null}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
                     </div>
                   </motion.div>
                 ) : null}

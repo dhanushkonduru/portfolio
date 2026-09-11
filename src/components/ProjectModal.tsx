@@ -10,8 +10,8 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 
 /**
  * The full record. A sheet rather than a dialog box: ruled, monospaced at the
- * edges, and set on solid ground so the field does not compete with dense
- * reading.
+ * edges, and set on solid ground so the machine does not compete with dense
+ * reading. It resolves into place instead of arriving from the side.
  */
 export function ProjectModal({
   project,
@@ -88,16 +88,23 @@ export function ProjectModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="record-title"
-            initial={reduced ? { opacity: 0 } : { x: "100%" }}
-            animate={reduced ? { opacity: 1 } : { x: 0 }}
-            exit={reduced ? { opacity: 0 } : { x: "100%" }}
-            transition={{ duration: 0.6, ease: EASE }}
+            /* The sheet comes forward out of the bay rather than sliding in
+               from the edge. Nothing on this site travels horizontally. */
+            initial={
+              reduced ? { opacity: 0 } : { opacity: 0, scale: 0.985, y: 14 }
+            }
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.99, y: 8 }}
+            transition={{ duration: 0.5, ease: EASE }}
             className="relative flex h-full w-full flex-col border-l border-rule-2 bg-void md:max-w-2xl lg:max-w-3xl"
           >
             <div className="flex items-start justify-between gap-6 border-b border-rule px-6 py-5 md:px-10">
               <div className="min-w-0">
                 <p className="t-note">{project.category}</p>
-                <h2 id="record-title" className="t-title mt-2 text-balance text-ink">
+                <h2
+                  id="record-title"
+                  className="t-title mt-2 text-balance text-ink"
+                >
                   {project.title}
                 </h2>
               </div>
@@ -106,7 +113,7 @@ export function ProjectModal({
                 type="button"
                 onClick={onClose}
                 aria-label="Close record"
-                className="t-note mt-1 shrink-0 text-ink-3 transition-colors hover:text-mint"
+                className="t-note mt-1 shrink-0 text-ink-3 transition-colors hover:text-signal"
               >
                 Close ✕
               </button>
@@ -123,7 +130,7 @@ export function ProjectModal({
                 {project.associated ? (
                   <>
                     <span className="mx-2 text-rule-3">/</span>
-                    <span className="text-amber">Linked filing</span>
+                    <span className="text-signal">Linked filing</span>
                   </>
                 ) : null}
               </p>
@@ -140,7 +147,7 @@ export function ProjectModal({
                     <div key={m.label} className="border-t border-rule pt-4">
                       <dt className="sr-only">{m.label}</dt>
                       <dd>
-                        <span className="t-figure-sm block text-mint">
+                        <span className="t-figure-sm block text-signal">
                           {m.value}
                         </span>
                         <span className="t-note mt-2 block">{m.label}</span>
@@ -164,7 +171,9 @@ export function ProjectModal({
                       <span className="t-note shrink-0 pt-0.5 text-rule-3">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <span className="t-read-sm text-pretty text-ink-2">{t}</span>
+                      <span className="t-read-sm text-pretty text-ink-2">
+                        {t}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -182,7 +191,7 @@ export function ProjectModal({
               </p>
 
               {project.note ? (
-                <p className="t-note mt-8 border-l-2 border-amber/40 pl-4 text-amber">
+                <p className="t-note mt-8 border-l-2 border-signal/40 pl-4 text-signal">
                   {project.note}
                 </p>
               ) : null}
@@ -196,7 +205,7 @@ export function ProjectModal({
                     href={l.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="t-meta link-rule text-ink transition-colors hover:text-mint"
+                    className="t-meta link-rule text-ink transition-colors hover:text-signal"
                   >
                     {l.label} ↗
                   </a>

@@ -1,58 +1,63 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   THE INSTRUMENT — design system
+   SYSTEM CORE — design system
    ----------------------------------------------------------------------------
-   Two voices, held in tension:
-     · Instrument Serif  — the thinking voice. Statements, arguments, findings.
-     · JetBrains Mono    — the measuring voice. Indices, data, annotations, IDs.
-   Inter Tight carries reading copy and nothing else.
+   One machine, inspected. The page is a dark instrument bay: near-black
+   ground, restrained white/grey type, a single cool blue-white illumination
+   that belongs to the system rather than to the branding.
 
-   Colour is POSITIONAL, not decorative. Each stage of the page owns one accent,
-   so the temperature of the page tells you where you are in the argument.
+   Rules of the sheet:
+     · Colour is illumination, not decoration. One accent, one muted second.
+     · Type is geometric sans throughout. Mono carries technical metadata.
+     · Nothing translates horizontally. Sections emerge in place.
    ========================================================================= */
 
 @theme {
-  /* ---- ground ---- */
-  --color-void: #060709;
-  --color-pit: #000000;
-  --color-panel: #0b0d10;
-  --color-panel-2: #101317;
+  /* ---- ground: almost black, never flat ---- */
+  --color-void: #06070a;
+  --color-pit: #010203;
+  --color-panel: #0a0c10;
+  --color-panel-2: #0f1217;
 
   /* ---- rules: three weights, used deliberately ---- */
-  --color-rule: #171a1f; /* structural division */
-  --color-rule-2: #262b32; /* active / emphasised */
-  --color-rule-3: #3a414b; /* interactive boundary */
+  --color-rule: #14171c; /* structural division */
+  --color-rule-2: #202530; /* active / emphasised */
+  --color-rule-3: #333a47; /* interactive boundary */
 
-  /* ---- type ramp (all >= AA on every ground above) ---- */
-  --color-ink: #f2f3f5;
-  --color-ink-2: #a5acb6;
-  --color-ink-3: #8c94a0;
-  --color-ink-4: #767f8c;
+  /* ---- type ramp ----
+     Every step clears WCAG AA against the ground: 17.8 / 8.0 / 5.5 / 4.8.
+     ink-4 carries the smallest type on the page — 11px uppercase mono — so it
+     is the step that has to be checked, not the one that can be eyeballed. */
+  --color-ink: #eef1f5;
+  --color-ink-2: #9ba4b0;
+  --color-ink-3: #7d8793;
+  --color-ink-4: #737d8a;
 
-  /* ---- semantic accents ---- */
-  --color-mint: #5ee9c0; /* engineering · identity · verified */
-  --color-cyan: #56c6f5; /* systems · infrastructure · time */
-  --color-iris: #a79bff; /* AI · models · research (text-safe) */
-  --color-iris-deep: #7c6bff; /* the same hue for fields and graphics */
-  --color-amber: #ffb454; /* evidence · marked · awarded */
+  /* ---- illumination ----
+     One accent. Cool blue-white, the colour of the light inside the machine.
+     `signal` is text-safe on the dark grounds; `beam` is the graphics-only
+     hue used in the 3D and in fills, and `warn` is the one muted second —
+     it appears only where a diagram has to distinguish a failing case from a
+     passing one, and nowhere else on the page. */
+  --color-signal: #bcd8f2;
+  --color-beam: #6ba8e6;
+  --color-warn: #d8a26a;
 
   /* ---- type ---- */
-  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo,
-    monospace;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* ---- motion ---- */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
-  --ease-entry: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 /* ============================ base ============================ */
 
 html {
-  /* No scroll-behavior. The inertial smoother in src/system/scroll.ts animates
+  /* No scroll-behavior. The inertial smoother in src/core/scroll.ts animates
      anchors itself; leaving this on made the browser run a second, competing
      animation on every frame. */
   -webkit-text-size-adjust: 100%;
@@ -66,34 +71,63 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--color-void);
+  overflow-x: hidden;
 }
 
-/* One grain layer across the whole page, fixed, above the ground and beneath
-   the content. Large flat dark fields band visibly on 8-bit panels; this is
-   the cheapest fix, and text sits above it so nothing costs legibility. */
+/* Atmosphere, in three almost-invisible layers, fixed behind everything.
+
+   1. the engineering grid — a 92px construction lattice, vignetted so it
+      only reads near the centre of the bay;
+   2. a soft radial lift behind the machine, so the ground has depth
+      instead of being one flat value;
+   3. grain, because a large near-black field bands visibly on 8-bit panels.
+
+   None of them should register on the first look. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(120, 150, 190, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(120, 150, 190, 0.055) 1px, transparent 1px);
+  background-size: 92px 92px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 78% 62% at 50% 42%,
+    black 0%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    ellipse 78% 62% at 50% 42%,
+    black 0%,
+    transparent 78%
+  );
+}
+
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::selection {
-  background: var(--color-mint);
+  background: var(--color-signal);
   color: var(--color-void);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-mint);
-  outline-offset: 3px;
+  outline: 1px solid var(--color-signal);
+  outline-offset: 4px;
   border-radius: 1px;
 }
 
 ::-webkit-scrollbar {
-  width: 9px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--color-void);
@@ -108,128 +142,109 @@ body::after {
 }
 
 /* ========================= typography =========================
-   Display sizes are named by ROLE, not by size, so a section can only
-   pick the voice appropriate to what it is saying.                */
+   Sizes are named by ROLE, not by measurement, so a section can only
+   reach for the voice appropriate to what it is saying. */
 
-/* A statement that owns the viewport. Used at most three times on the page. */
+/* The hero statement. Used once. */
 @utility t-monument {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(3.25rem, 12vw, 11rem);
-  line-height: 0.86;
-  letter-spacing: -0.03em;
-  /* Big serif set ragged will orphan a word on most viewports; balancing
-     the line lengths is the single clearest tell between typeset and
-     merely styled. */
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: clamp(2.75rem, 6.1vw, 5.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
   text-wrap: balance;
-  font-kerning: normal;
-  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1,
+    "calt" 1;
 }
 
-/* The voice of an argument — section openers, project theses. */
+/* Section openers and project theses. */
 @utility t-statement {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(2.25rem, 5.6vw, 4.75rem);
-  line-height: 1.02;
-  letter-spacing: -0.021em;
-  /* Big serif set ragged will orphan a word on most viewports; balancing
-     the line lengths is the single clearest tell between typeset and
-     merely styled. */
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 3.5vw, 3.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.028em;
   text-wrap: balance;
-  font-kerning: normal;
-  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
 @utility t-title {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(1.75rem, 3vw, 2.75rem);
-  line-height: 1.12;
-  letter-spacing: -0.015em;
-  /* Big serif set ragged will orphan a word on most viewports; balancing
-     the line lengths is the single clearest tell between typeset and
-     merely styled. */
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: clamp(1.3rem, 1.9vw, 1.75rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
   text-wrap: balance;
-  font-kerning: normal;
-  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
-/* Large measured numbers. The instrument speaking. */
+/* Measured numbers. The instrument speaking. */
 @utility t-figure {
   font-family: var(--font-mono);
   font-weight: 500;
-  font-size: clamp(2.5rem, 7vw, 6rem);
-  line-height: 0.9;
-  letter-spacing: -0.05em;
+  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.055em;
   font-variant-numeric: tabular-nums;
 }
 
 @utility t-figure-sm {
   font-family: var(--font-mono);
   font-weight: 500;
-  font-size: clamp(1.75rem, 2.9vw, 2.5rem);
+  font-size: clamp(1.4rem, 2.1vw, 1.9rem);
   line-height: 1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 
 @utility t-read {
-  font-size: clamp(1.125rem, 1.35vw, 1.375rem);
-  line-height: 1.6;
-  letter-spacing: -0.01em;
+  font-size: clamp(1rem, 1.1vw, 1.125rem);
+  line-height: 1.62;
+  letter-spacing: -0.008em;
   text-wrap: pretty;
 }
 
 @utility t-read-sm {
-  font-size: 1.0625rem;
-  line-height: 1.62;
-  letter-spacing: -0.006em;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  letter-spacing: -0.004em;
   text-wrap: pretty;
 }
 
-/* The instrument's small voice: indices, IDs, units, annotations. */
+/* The system's small voice: indices, IDs, units, annotations. */
 @utility t-mark {
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: 0.6875rem;
   font-weight: 500;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.17em;
   text-transform: uppercase;
 }
 
 @utility t-meta {
   font-family: var(--font-mono);
-  font-size: 0.9375rem;
-  letter-spacing: 0.005em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
 }
 
-/* Marginalia — set small, hung off the edge of a column. */
 @utility t-note {
   font-family: var(--font-mono);
-  font-size: 0.875rem;
-  line-height: 1.6;
-  letter-spacing: 0.005em;
+  font-size: 0.75rem;
+  line-height: 1.65;
+  letter-spacing: 0.02em;
   color: var(--color-ink-3);
 }
 
 /* ========================== layout ==========================
-   No single "container". A page gutter, plus an editorial 12-column
-   grid that sections opt into so composition can differ per section. */
-
-@utility frame {
-  padding-inline: clamp(1.25rem, 4.5vw, 4.5rem);
-
-  /* On desktop the right margin belongs to the instrument's register, so the
-     page is deliberately asymmetric rather than accidentally colliding. */
-  @media (width >= 64rem) {
-    padding-right: clamp(7rem, 9vw, 10rem);
-  }
-}
+   A page gutter, a 12-column grid sections opt into, and the reading lane.
+   The desktop composition needs two margins at once — one for the machine on
+   the left, one for the navigator on the right — so it starts at xl rather
+   than lg. Between 1024 and 1280 there is room for neither, and the page runs
+   as a single column with the machine behind it. */
 
 @utility rail {
   width: 100%;
-  max-width: 96rem;
+  max-width: 100rem;
   margin-inline: auto;
 }
 
@@ -239,106 +254,41 @@ body::after {
   column-gap: clamp(1rem, 2vw, 2rem);
 }
 
-@utility measure {
-  max-width: 62ch;
-}
-@utility measure-tight {
-  max-width: 46ch;
-}
-
-/* Display face as a standalone utility, for the few places that need the
-   serif voice without a full size token. */
-@utility font-display {
-  font-family: var(--font-display);
-}
-
-/* While a record sheet is open, the fixed header and the section register
-   are removed rather than dimmed. At 95% opacity they still read through the
-   backdrop and cut across the panel. */
-[data-overlay] header,
-[data-overlay] nav[aria-label="Sections"] {
-  display: none;
+/* The reading lane.
+   While the page is being read the assembly is cropped against the LEFT edge
+   of the bay, so every reading section holds its column on the right. The
+   width is capped rather than fluid: past about 54rem the measure gets long
+   and the machine starts arriving underneath the first few words. */
+@utility lane {
+  @media (width >= 80rem) {
+    margin-left: auto;
+    max-width: 54rem;
+  }
 }
 
 /* ========================== detail ========================== */
 
-/* Hairline that fades at both ends — reads as drawn, not as a border. */
-@utility rule-fade {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-rule-2) 10%,
-    var(--color-rule-2) 90%,
-    transparent
-  );
-}
-
-/* Grain, to kill banding across the large dark fields. */
-@utility grain {
-  position: relative;
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-}
-
-/* ========================== strata ==========================
-   The page alternates two states of ground. In the open field the system
-   layer reads through at full strength; on a stratum a translucent plane
-   sits over it. Alternating the two is what gives the scroll a pulse —
-   without it every section resolves to the same near-black and the
-   positional accents are left carrying the whole burden alone.
-
-   Translucent rather than opaque, and deliberately no backdrop-filter: a
-   blur across a ten-viewport element composited over the WebGL canvas is
-   expensive, and letting the field tint the plane directly reads the same. */
-
+/* A section is marked by its edges, never by a plane laid over the machine.
+   The core has to run continuously behind the whole page. */
 @utility stratum {
   position: relative;
-  /* No fill. A section is marked by its edges, not by a plane laid over the
-     scene — the machine has to run continuously through the whole page. */
   background: transparent;
 
-  /* Edged, not bordered — hairlines that fade at both ends, so a section
-     reads as a surface laid over the field rather than as a boxed div. */
-  &::before,
-  &::after {
+  &::before {
     content: "";
     position: absolute;
     inset-inline: 0;
+    top: 0;
     height: 1px;
     pointer-events: none;
     background: linear-gradient(
       90deg,
       transparent,
-      var(--color-rule-2) 12%,
-      var(--color-rule-2) 88%,
+      var(--color-rule-2) 10%,
+      var(--color-rule-2) 90%,
       transparent
     );
   }
-  &::before {
-    top: 0;
-  }
-  &::after {
-    bottom: 0;
-  }
-}
-
-/* The raised sheet — lifted above the page rather than pressed into it.
-   Pairs with .stratum for the edges. */
-@utility stratum-raised {
-  background: color-mix(in oklab, var(--color-panel-2) 22%, transparent);
-}
-
-/* The deeper plane, for the densest stretch of the page. Pairs with
-   .stratum, which supplies the edges. */
-@utility stratum-deep {
-  background: color-mix(in oklab, var(--color-pit) 30%, transparent);
 }
 
 @utility link-rule {
@@ -362,32 +312,133 @@ body::after {
   }
 }
 
+/* The one button shape on the site: a hairline box that fills on hover. */
+@utility control {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.35rem;
+  border: 1px solid var(--color-rule-3);
+  color: var(--color-ink);
+  background: color-mix(in oklab, var(--color-panel) 40%, transparent);
+  transition:
+    border-color 0.4s var(--ease-out-expo),
+    background-color 0.4s var(--ease-out-expo),
+    color 0.4s var(--ease-out-expo);
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-signal);
+    background: var(--color-signal);
+    color: var(--color-void);
+  }
+}
+
+/* While a record sheet is open, the fixed chrome is removed rather than
+   dimmed — at 95% opacity it still reads through the backdrop. */
+[data-overlay] header,
+[data-overlay] nav[aria-label="Sections"],
+[data-overlay] [data-hud],
+[data-overlay] [data-callouts] {
+  display: none;
+}
+
+/* ========================= entrances =========================
+   Content emerges by CSS animation, not by a JavaScript-driven one.
+
+   The difference matters more than it looks. A JS entrance holds its element
+   at opacity 0 until a frame budget arrives to move it, so a tab that loads
+   in the background, or a device having a bad moment, can leave the page
+   blank. A CSS animation is time-based and driven by the compositor: it
+   finishes on schedule whether or not the main thread is keeping up, and
+   `both` fill means the element is at its final state either way.
+
+   Nothing here translates horizontally. Vertical settle, opacity, and a blur
+   resolving to sharp — the content comes into focus in the bay rather than
+   arriving from somewhere off-screen. */
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 9px, 0);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translate3d(0, 108%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Applied on mount for above-the-fold content. */
+@utility settle {
+  animation: settle 0.95s var(--ease-out-expo) both;
+}
+
+/* Applied by an observer once the element is in view. */
+@utility settle-armed {
+  opacity: 0;
+}
+@utility settle-on {
+  animation: settle 0.85s var(--ease-out-expo) both;
+}
+
+@utility rise-line {
+  display: block;
+  animation: rise 1.05s var(--ease-out-expo) both;
+}
+
+@utility draw-rule {
+  transform-origin: left;
+  animation: draw 1.1s var(--ease-out-expo) both;
+}
+
 /* ========================= keyframes ========================= */
 
-@keyframes probe-drift {
+@keyframes pulse-soft {
   0%,
   100% {
-    opacity: 0.35;
+    opacity: 0.3;
   }
   50% {
     opacity: 1;
   }
 }
 
-@keyframes marquee-x {
+@keyframes scan-y {
   from {
-    transform: translate3d(0, 0, 0);
+    transform: translateY(0);
   }
   to {
-    transform: translate3d(-50%, 0, 0);
+    transform: translateY(100%);
   }
 }
 
-.animate-probe {
-  animation: probe-drift 3s var(--ease-inout) infinite;
-}
-.animate-marquee-x {
-  animation: marquee-x 60s linear infinite;
+.animate-pulse-soft {
+  animation: pulse-soft 3.4s var(--ease-inout) infinite;
 }
 
 /* ====================== reduced motion ====================== */

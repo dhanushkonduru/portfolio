@@ -1,20 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Inter_Tight, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { profile, seo } from "@/data/profile";
 import "./globals.css";
 
-/* Three voices, self-hosted by next/font at build time — no render-blocking
+/* Two voices, self-hosted by next/font at build time — no render-blocking
    request to a font CDN.
-     · Instrument Serif — the thinking voice: statements and arguments.
-     · JetBrains Mono   — the measuring voice: indices, data, annotations.
-     · Inter Tight      — reading copy, and nothing else. */
-const instrument = Instrument_Serif({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400"],
-  variable: "--font-instrument-serif",
-});
-
+     · Inter Tight    — the whole typographic ramp, from the hero statement
+                        down to reading copy. Geometric, tight, engineered.
+     · JetBrains Mono — the measuring voice: indices, IDs, units, annotations
+                        and every reading the system reports about itself. */
 const interTight = Inter_Tight({
   subsets: ["latin"],
   display: "swap",
@@ -60,7 +54,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07080a",
+  themeColor: "#06070a",
   colorScheme: "dark",
 };
 
@@ -102,10 +96,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${interTight.variable} ${jetbrains.variable} ${instrument.variable}`}
-    >
+    <html lang="en" className={`${interTight.variable} ${jetbrains.variable}`}>
       <body className="antialiased">
         <script
           type="application/ld+json"

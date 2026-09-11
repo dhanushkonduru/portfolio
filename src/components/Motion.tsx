@@ -1,23 +1,69 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef, type ReactNode } from "react";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useEffect, useRef, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 /* ============================================================================
  * MOTION VOCABULARY
  *
- * Three primitives, each with one job. Most content on this site does not
- * animate at all — it is simply there when you arrive. Motion is spent on the
- * few elements that carry an argument, because everything-fades-up is the
- * cheapest and most recognisable tell in generated frontend.
+ * Three primitives, and two hard rules.
+ *
+ *   1. NOTHING TRANSLATES HORIZONTALLY. Content emerges from the environment —
+ *      opacity, a few pixels of vertical settle, blur resolving to sharp —
+ *      because the camera is already moving, and a section that also flies in
+ *      from the side turns one machine into a slideshow.
+ *
+ *   2. The animation is CSS. JavaScript decides only WHEN, by adding a class;
+ *      the compositor decides how. An entrance that holds its element at
+ *      opacity 0 until the main thread has a frame to spare is an entrance
+ *      that can leave the page blank, and a portfolio that renders blank on a
+ *      slow machine is worse than one that never animated at all.
+ *
+ * Most content on this page does not animate. It is simply there when you
+ * arrive. Motion is spent on the few elements that carry an argument.
  * ========================================================================= */
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+/**
+ * Reveal an element the first time it enters the viewport.
+ *
+ * The element is laid out and painted from the start; only its opacity waits.
+ * If the observer never fires — no IntersectionObserver, a script error, a
+ * browser we did not anticipate — the element is simply visible, because the
+ * hidden state is applied from JavaScript rather than being the default.
+ */
+function useReveal<T extends HTMLElement>(delay: number) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") return;
+
+    el.classList.add("settle-armed");
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          el.style.animationDelay = `${delay}s`;
+          el.classList.remove("settle-armed");
+          el.classList.add("settle-on");
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, [delay]);
+
+  return ref;
+}
 
 /**
- * Type emerging from behind a rule. For statements only — the sentence should
- * be worth the second of attention this buys.
+ * Type rising from behind a rule. For statements only — the sentence should be
+ * worth the second of attention this buys.
  */
 export function MaskLines({
   lines,
@@ -33,90 +79,107 @@ export function MaskLines({
   /** Hero copy animates on mount; everything else waits for the viewport. */
   immediate?: boolean;
 }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px 0px -15% 0px" });
-  const reduced = useReducedMotion();
-  const play = immediate || inView;
+  const host = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (immediate) return;
+    const el = host.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+
+    const lineEls = Array.from(el.querySelectorAll<HTMLElement>("[data-line]"));
+    for (const l of lineEls) l.style.animationPlayState = "paused";
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          for (const l of lineEls) l.style.animationPlayState = "running";
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -10% 0px" },
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, [immediate]);
 
   return (
-    <span ref={ref} className={className}>
+    <span ref={host} className={className}>
       {lines.map((line, i) => (
         <span key={line} className="block overflow-hidden pb-[0.06em]">
-          {reduced ? (
-            <span className={`block ${lineClassName ?? ""}`}>{line}</span>
-          ) : (
-            <motion.span
-              className={`block ${lineClassName ?? ""}`}
-              initial={{ y: "110%" }}
-              animate={play ? { y: 0 } : { y: "110%" }}
-              transition={{ duration: 1.1, delay: delay + i * 0.08, ease: EASE }}
-            >
-              {line}
-            </motion.span>
-          )}
+          <span
+            data-line
+            className={cn("rise-line", lineClassName)}
+            style={{ animationDelay: `${delay + i * 0.075}s` }}
+          >
+            {line}
+          </span>
         </span>
       ))}
     </span>
   );
 }
 
-/**
- * A rule that draws itself across. Used to divide, and to signal that a new
- * measurement is beginning.
- */
+/** A rule that draws itself across. Divides, and marks a new measurement. */
 export function DrawRule({
   className,
   delay = 0,
-  vertical = false,
 }: {
   className?: string;
   delay?: number;
-  vertical?: boolean;
 }) {
-  const reduced = useReducedMotion();
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    el.style.animationPlayState = "paused";
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          el.style.animationPlayState = "running";
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -6% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
-    <motion.span
+    <span
+      ref={ref}
       aria-hidden="true"
-      className={className}
-      initial={reduced ? false : { scaleX: vertical ? 1 : 0, scaleY: vertical ? 0 : 1 }}
-      whileInView={{ scaleX: 1, scaleY: 1 }}
-      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-      transition={{ duration: 1.15, delay, ease: EASE }}
-      style={{ transformOrigin: vertical ? "top" : "left" }}
+      className={cn("draw-rule", className)}
+      style={{ animationDelay: `${delay}s` }}
     />
   );
 }
 
 /**
- * The general-purpose entrance — deliberately restrained, and deliberately
- * rare. Travel is 12px, not 40: at this scale motion should register as
- * settling rather than arriving.
+ * The general-purpose entrance: a few pixels of settle and a blur resolving.
+ * Travel is 9px, not 40 — at this scale motion should register as coming into
+ * focus rather than as arriving from somewhere else.
  */
-export function Enter({
+export function Emerge({
   children,
   delay = 0,
   className,
-  as = "div",
+  as: Tag = "div",
 }: {
   children: ReactNode;
   delay?: number;
   className?: string;
-  as?: "div" | "li" | "article" | "section" | "figure";
+  as?: "div" | "li" | "article" | "section" | "figure" | "header";
 }) {
-  const reduced = useReducedMotion();
-  const Tag = motion[as];
-
-  if (reduced) return <Tag className={className}>{children}</Tag>;
+  const ref = useReveal<HTMLElement>(delay);
 
   return (
-    <Tag
-      className={className}
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -12% 0px" }}
-      transition={{ duration: 0.9, delay, ease: EASE }}
-    >
+    <Tag ref={ref as React.RefObject<never>} className={className}>
       {children}
     </Tag>
   );
