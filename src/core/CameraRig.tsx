@@ -18,12 +18,13 @@ import { makeConfig, pulse, sampleStage } from "./store";
  * camera in a room.
  * ========================================================================= */
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const damp = (a: number, b: number, rate: number, dt: number) =>
-  a + (b - a) * (1 - Math.exp(-rate * dt));
+  lerp(a, b, 1 - Math.exp(-rate * dt));
 
 export function CameraRig({ reduced }: { reduced: boolean }) {
   const cfg = useMemo(makeConfig, []);
-  const aim = useMemo(() => new THREE.Vector3(-1.15, 0, 0), []);
+  const aim = useMemo(() => new THREE.Vector3(0, 0.05, 0), []);
   const px = useRef(0);
   const py = useRef(0);
   const fov = useRef(0);
@@ -35,17 +36,21 @@ export function CameraRig({ reduced }: { reduced: boolean }) {
 
     sampleStage(pulse.p, cfg);
 
-    /* Composition is not the same problem on every screen. A narrow viewport
-       has no room for the machine to sit off-centre beside a column of type,
-       so it is centred and pushed back instead of being cropped. */
+    /* Composition is not the same problem on every screen. Below xl the type
+       runs the full width, so the engine is centred, pushed back a little,
+       and lifted into a band of its own at the top of the hero. A tower is
+       the right shape for that: it crops cleanly against the top edge. */
+    /* The breakpoint is read from the viewport, not the canvas. The canvas
+       sits beside the scrollbar and comes up fifteen pixels short, so at
+       exactly 1280 it would take the narrow path while the stylesheet — which
+       measures the viewport, scrollbar included — takes the desktop one. The
+       two layers must agree, so both read the same number. */
     const w = state.size.width;
-    const narrow = w < 1280;
-    const dolly = narrow ? 1.3 : 1;
-    /* Below xl the type runs full width and the machine is behind it, so the
-       sideways placement is collapsed almost to nothing. */
-    const offset = narrow ? 0.12 : 1;
+    const narrow = window.innerWidth < 1280;
+    const dolly = narrow ? 1.42 : 1;
+    const offset = narrow ? 0.1 : 1;
 
-    const wantFov = narrow ? 46 : 38;
+    const wantFov = narrow ? 44 : 38;
     if (fov.current !== wantFov) {
       fov.current = wantFov;
       cam.fov = wantFov;
@@ -57,10 +62,15 @@ export function CameraRig({ reduced }: { reduced: boolean }) {
     py.current = damp(py.current, reduced ? 0 : pulse.py, rate, dt);
 
     const breath = reduced ? 0 : 1;
+    /* A docked stage keeps the camera on the engine's axis: the placement
+       below is exact only from there, and the three-quarter view a lateral
+       camera would give is already provided by the stage's yaw. */
     const wx =
-      cfg.cam[0] + px.current * 0.42 + Math.sin(t * 0.13) * 0.05 * breath;
+      lerp(cfg.cam[0], 0, cfg.dock) +
+      px.current * 0.42 +
+      Math.sin(t * 0.13) * 0.05 * breath;
     const wy =
-      cfg.cam[1] + py.current * 0.3 + Math.sin(t * 0.19) * 0.06 * breath;
+      cfg.cam[1] + py.current * 0.26 + Math.sin(t * 0.19) * 0.05 * breath;
     const wz = cfg.cam[2] * dolly;
 
     const settle = reduced ? 60 : 3.4;
@@ -74,14 +84,26 @@ export function CameraRig({ reduced }: { reduced: boolean }) {
     const halfWidth =
       Math.tan((wantFov * Math.PI) / 360) * (w / state.size.height) * wz;
 
-    /* Below xl the page is one column, so the machine is given a band of its
-       own at the top of the screen rather than being pushed sideways into a
-       lane that does not exist. Aiming below the assembly lifts it up the
-       frame; the hero leaves the matching space open. */
+    /* Aiming below the engine lifts it up the frame; the hero leaves the
+       matching space open above the headline. */
     const halfHeight = Math.tan((wantFov * Math.PI) / 360) * wz;
-    const riseY = narrow ? 0.62 : 0;
+    const riseY = narrow ? 0.3 : 0;
 
-    aim.x = damp(aim.x, -cfg.bias * offset * halfWidth, settle, dt);
+    /* Docking. The reading lane is 54rem wide and right-aligned inside the
+       rail, so its left edge is a function of the viewport that can be
+       computed exactly, not guessed. The engine's envelope, arms extended and a
+       module turned toward the camera, is about 2.75 units either side of its
+       axis; the bias that puts that edge a gap left of the
+       lane is derived from the frustum at this distance. Between a composed
+       stage and a docked one the two placements are simply blended. */
+    const navPad = Math.max(144, Math.min(w * 0.12, 224));
+    const laneLeft = Math.max(64, w - navPad - 864);
+    const rightEdge = laneLeft - 44;
+    const envelopePx = (2.75 / halfWidth) * (w / 2);
+    const dockedBias = (rightEdge - envelopePx - w / 2) / (w / 2);
+    const bias = narrow ? cfg.bias : lerp(cfg.bias, dockedBias, cfg.dock);
+
+    aim.x = damp(aim.x, -bias * offset * halfWidth, settle, dt);
     aim.y = damp(aim.y, cfg.target[1] - riseY * halfHeight, settle, dt);
     aim.z = damp(aim.z, cfg.target[2], settle, dt);
     cam.lookAt(aim);

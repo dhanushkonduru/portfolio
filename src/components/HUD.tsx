@@ -3,24 +3,23 @@
 import { useEffect, useRef } from "react";
 import { profile } from "@/data/profile";
 import { STAGES } from "@/core/stages";
-import { pulse, readings } from "@/core/store";
+import { pulse } from "@/core/store";
 
 /* ============================================================================
  * HUD
  *
  * System metadata around the edges of the bay, and nothing else. Every field
- * is a real property of the running page — the stage index is the scroll
- * position, the frame rate is the measured frame rate — so the chrome is
- * honest rather than ornamental.
+ * is a real property of the running page — the stage index and the machine's
+ * state are the scroll position — so the chrome is honest rather than
+ * ornamental. The one line of prose is his, quoted from the hero.
  *
- * Written by one rAF straight to the DOM, and deliberately sparse: four short
- * readings, hung in the corners, at the opacity of a serial number.
+ * Written by one rAF straight to the DOM, and deliberately sparse: a few
+ * short readings, hung in the corners, at the opacity of a serial number.
  * ========================================================================= */
 
 export function HUD() {
   const index = useRef<HTMLSpanElement>(null);
   const state = useRef<HTMLSpanElement>(null);
-  const rate = useRef<HTMLSpanElement>(null);
   const scale = useRef<HTMLDivElement>(null);
   const cue = useRef<HTMLDivElement>(null);
 
@@ -43,10 +42,6 @@ export function HUD() {
         const next = STAGES[i].state.toUpperCase();
         if (state.current.textContent !== next)
           state.current.textContent = next;
-      }
-      if (rate.current && readings.fps) {
-        const next = `${readings.fps} FPS`;
-        if (rate.current.textContent !== next) rate.current.textContent = next;
       }
       if (scale.current) {
         scale.current.style.transform = `scaleY(${pulse.progress})`;
@@ -94,13 +89,18 @@ export function HUD() {
         />
       </div>
 
-      {/* bottom left: what the machine is doing */}
-      <div className="absolute bottom-7 left-11 flex items-center gap-3">
-        <span className="block h-1 w-1 rounded-full bg-signal animate-pulse-soft" />
-        <span className="t-note text-ink-3">System status</span>
-        <span ref={state} className="t-note text-ink-2">
-          SYSTEM ONLINE
-        </span>
+      {/* bottom left: what the machine is doing, and where it is doing it */}
+      <div className="absolute bottom-7 left-11">
+        <div className="flex items-center gap-3">
+          <span className="block h-1.5 w-1.5 rounded-full bg-[#4fd18a] animate-pulse-soft" />
+          <span ref={state} className="t-mark text-ink-2">
+            SYSTEM ONLINE
+          </span>
+        </div>
+        <p className="t-note mt-1.5">
+          Based in {profile.location.split(",").pop()?.trim()} · Building
+          globally
+        </p>
       </div>
 
       {/* bottom centre: the invitation, while it is still one */}
@@ -108,24 +108,24 @@ export function HUD() {
         ref={cue}
         className="absolute bottom-7 left-1/2 flex -translate-x-1/2 items-center gap-3 transition-opacity duration-300"
       >
+        <span className="t-mark text-ink-4">Drag to rotate</span>
+        <span className="h-px w-5 bg-rule-2" />
         <span className="t-mark text-ink-4">Scroll to explore</span>
         <span className="h-px w-10 bg-rule-2" />
         <span className="block h-3 w-px bg-signal/50 motion-safe:animate-[scan-y_2.4s_cubic-bezier(0.76,0,0.24,1)_infinite]" />
       </div>
 
-      {/* bottom right: where and how fast */}
-      <div className="absolute bottom-7 right-11 flex items-center gap-5">
-        <span className="t-note">
-          {profile.location.split(",").pop()?.trim()}
-        </span>
-        <span className="h-px w-5 bg-rule-2" />
-        <span ref={rate} className="t-note tabular-nums">
-          REAL-TIME
-        </span>
-        <span className="h-px w-5 bg-rule-2" />
-        <span ref={index} className="t-note text-ink-2 tabular-nums">
-          01 / 07
-        </span>
+      {/* bottom right: his own line, and where in the inspection we are */}
+      <div className="absolute bottom-7 right-11 text-right">
+        <p className="t-note italic text-ink-3">
+          &ldquo;I would rather measure a claim than assert it.&rdquo;
+        </p>
+        <div className="mt-1.5 flex items-center justify-end gap-3">
+          <span className="h-px w-8 bg-rule-2" />
+          <span ref={index} className="t-note text-ink-2 tabular-nums">
+            01 / 07
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -15,29 +15,29 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 /* ============================================================================
  * STACK
  *
- * Not a logo wall. Each domain is bound to the module of the machine that
+ * Not a logo wall. Each domain is bound to the subsystem of the engine that
  * actually does that work, so opening a row lights the corresponding hardware
  * and its callout. The 3D is not illustrating the section; it is the other
  * half of it.
  * ========================================================================= */
 
 const BOUND: Record<string, ModuleKey> = {
-  llm: "ai",
-  ml: "ai",
-  backend: "compute",
+  llm: "compute",
+  ml: "compute",
+  backend: "data",
   languages: "compute",
   data: "data",
   mlops: "cooling",
-  cloud: "power",
+  cloud: "ring",
 };
 
 const MODULE_LABEL: Record<ModuleKey, string> = {
   compute: "Compute core",
-  ai: "AI module",
+  sensor: "Sensor array",
   data: "Data pipelines",
   io: "I/O interface",
   cooling: "Cooling system",
-  power: "Power & control",
+  ring: "Stabilization ring",
 };
 
 export function Stack() {

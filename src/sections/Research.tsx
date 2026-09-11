@@ -21,7 +21,7 @@ export function Research() {
     <section
       id="research"
       className="stratum relative scroll-mt-28 py-28 md:py-44"
-      onMouseEnter={() => setHover("ai")}
+      onMouseEnter={() => setHover("compute")}
       onMouseLeave={() => setHover(null)}
     >
       <div className="rail px-[clamp(1.25rem,4vw,4rem)] xl:pr-[clamp(9rem,12vw,14rem)]">

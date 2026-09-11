@@ -8,10 +8,10 @@ import { makeConfig, pulse, sampleStage } from "./store";
 /* ============================================================================
  * PARTICLE FIELD
  *
- * Data, not decoration — and deliberately sparse. Particles occupy a shell
- * around the assembly rather than filling the frame, because their job is to
- * describe the depth of the bay and the activity of the machine, not to be the
- * thing you look at.
+ * Data, not decoration — and deliberately sparse. Particles occupy a column
+ * of air around the engine rather than filling the frame, because their job
+ * is to describe the depth of the bay and the activity of the machine, not to
+ * be the thing you look at.
  *
  * Drift is computed in the vertex shader. Moving a thousand points on the CPU
  * every frame is a thousand writes and a buffer upload for something a sine
@@ -32,9 +32,9 @@ const VERT = /* glsl */ `
     /* Each point drifts on its own three phases, so the field never reads as
        one mass moving together. */
     float rate = 0.14 + aSeed.z * 0.2;
-    p.x += sin(uTime * rate + aSeed.x * 6.28318) * 0.14;
-    p.y += cos(uTime * rate * 0.82 + aSeed.y * 6.28318) * 0.14;
-    p.z += sin(uTime * rate * 0.6 + aSeed.z * 6.28318) * 0.1;
+    p.x += sin(uTime * rate + aSeed.x * 6.28318) * 0.12;
+    p.y += cos(uTime * rate * 0.82 + aSeed.y * 6.28318) * 0.16;
+    p.z += sin(uTime * rate * 0.6 + aSeed.z * 6.28318) * 0.12;
 
     /* A shallow push away from the cursor. Restrained: the point of it is that
        you notice the field is aware of you, not that you can shove it. */
@@ -48,7 +48,7 @@ const VERT = /* glsl */ `
 
     /* Fade the near plane and the far field: points that pass through the
        camera read as dirt on the lens. */
-    vFade = smoothstep(1.4, 4.0, dist) * (1.0 - smoothstep(11.0, 19.0, dist));
+    vFade = smoothstep(1.2, 3.6, dist) * (1.0 - smoothstep(11.0, 19.0, dist));
     vFade *= uDust * (0.35 + aSeed.y * 0.65);
   }
 `;
@@ -79,16 +79,16 @@ export function ParticleField({
     const seed = new Float32Array(count * 3);
 
     for (let i = 0; i < count; i++) {
-      /* A shell, not a box: points sit in the volume the machine occupies and
-         a little beyond it, so they read as belonging to the assembly. */
-      const r = 1.6 + Math.pow(Math.random(), 0.6) * 3.9;
+      /* A standing column of air around a standing machine: points sit just
+         outside the engine's envelope and thin out with height, the way dust
+         does in a lit bay. */
+      const r = 1.3 + Math.pow(Math.random(), 0.55) * 3.4;
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
+      const y = -2.3 + Math.pow(Math.random(), 0.8) * 6.4;
 
-      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      /* Flattened along the axis: the assembly is a disc, and so is its dust. */
-      pos[i * 3 + 2] = r * Math.cos(phi) * 0.55;
+      pos[i * 3] = r * Math.cos(theta);
+      pos[i * 3 + 1] = y;
+      pos[i * 3 + 2] = r * Math.sin(theta);
 
       seed[i * 3] = Math.random();
       seed[i * 3 + 1] = Math.random();
@@ -148,7 +148,7 @@ export function ParticleField({
     }
 
     if (points.current && !reduced) {
-      points.current.rotation.z = state.clock.elapsedTime * 0.012;
+      points.current.rotation.y = state.clock.elapsedTime * 0.01;
     }
   });
 

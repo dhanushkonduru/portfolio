@@ -1,18 +1,20 @@
 /* ============================================================================
- * STAGES — one continuous camera journey
+ * STAGES — one continuous inspection
  *
- * The page is not seven pages. It is one machine, observed from seven
- * positions, and scrolling interpolates between them. Every value here is a
- * state of the SYSTEM, not a keyframe of an animation: the parts move because
- * the machine is in a configuration, not because they were told to.
+ * The page is not seven pages. It is one machine — the Verification Engine —
+ * observed from seven positions, and scrolling moves the camera between them.
+ * Every value here is a state of the MACHINE, not a keyframe of an animation:
+ * the parts move because the engine is in a configuration, not because they
+ * were told to.
  *
- * Section order is stage order. `sections.ts` re-exports this file, so the
- * top nav, the section navigator, the scroll-spy and the 3D can never
- * disagree about what the page contains.
+ * Section order is stage order. The top nav, the section navigator, the
+ * scroll-spy and the 3D all derive from this file, so they cannot drift out of
+ * sync.
  * ========================================================================= */
 
 /** Named subsystems. Callouts, hover targets and stage focus all use these. */
-export type ModuleKey = "compute" | "ai" | "data" | "io" | "cooling" | "power";
+export type ModuleKey =
+  "cooling" | "sensor" | "compute" | "ring" | "data" | "io";
 
 export type Stage = {
   id: string;
@@ -25,52 +27,59 @@ export type Stage = {
   /** The machine's own word for what it is doing here. */
   state: string;
 
-  /* ---- camera ---- */
+  /* ---- camera (Y up) ---- */
   camera: [number, number, number];
   target: [number, number, number];
   /**
-   * Where the assembly sits across the frame, as a fraction of the viewport's
-   * half-width. Negative puts it left, positive right, and anything past 1
-   * crops it against the edge.
-   *
-   * This is a screen fraction rather than a world offset on purpose: a fixed
-   * world offset moves the machine by a different number of pixels on every
-   * aspect ratio, which is exactly how type and geometry end up on top of
-   * each other on somebody else's monitor.
+   * Where the engine sits across the frame, as a fraction of the viewport's
+   * half-width. Negative puts it left, positive right, past 1 crops it against
+   * the edge. A screen fraction rather than a world offset on purpose: a world
+   * offset moves the machine by a different number of pixels on every aspect
+   * ratio, which is how type and geometry end up on top of each other on
+   * somebody else's monitor.
    */
   bias: number;
+  /**
+   * 1 docks the engine against the reading lane instead: its right edge is
+   * held a fixed gap left of where the lane actually starts on this screen,
+   * whatever the aspect ratio. Reading stages dock; the two composed views at
+   * either end of the page use `bias`.
+   */
+  dock: number;
 
-  /* ---- system configuration, all 0..1 unless noted ---- */
-  /** Additional yaw of the whole assembly, radians. */
+  /* ---- machine configuration, 0..1 unless noted ---- */
+  /** Yaw of the whole engine, radians. */
   spin: number;
-  /** Additional pitch of the whole assembly, radians. */
-  tilt: number;
-  /** How far the concentric rings separate along their own axis. */
-  spread: number;
-  /** How far the hub shroud opens. */
+  /**
+   * How far the engine is unlocked: ring stacks part, struts retract, arms
+   * extend, the crown lifts. 0 is the sealed machine, 1 is fully opened for
+   * inspection.
+   */
   open: number;
-  /** How strongly the internal illumination reads. */
+  /** Internal illumination — the core, the lattice, the module indicators. */
   reveal: number;
-  /** Rate of travelling data pulses along the channels. */
+  /** The measurement pass: the scanner ring travels the chamber. */
+  scan: number;
+  /** Rate of packets travelling the cables. */
   flow: number;
   /** Particle activity. */
   dust: number;
   /**
-   * How large the assembly reads on screen here. Reading sections need the
-   * machine present but out of the column, so it draws back rather than being
-   * cropped by the type.
-   */
-  scale: number;
-  /**
-   * How far the bay is dimmed over the machine, 0..1. This is the page's
-   * pacing control: where the reading is dense the machine steps back, where
-   * it is the exhibit it comes forward. Nothing is ever fully covered.
+   * How far the bay is dimmed over the machine. The page's pacing control:
+   * where the reading is dense the engine steps back, where it is the exhibit
+   * it comes forward. Nothing is ever fully covered.
    */
   veil: number;
-  /** Subsystem pulled forward and lit for this stage. */
+  /** Subsystem lit for this stage. */
   focus: ModuleKey | null;
   /** Callouts raised to full presence here. */
   callouts: ModuleKey[];
+  /**
+   * Callouts that are also raised, but only where the frame is wide enough
+   * for them to sit clear of the type. The reference composition carries all
+   * six around the engine; at 1280 there is room for three.
+   */
+  calloutsWide?: ModuleKey[];
 };
 
 export const STAGES: Stage[] = [
@@ -78,41 +87,40 @@ export const STAGES: Stage[] = [
     id: "top",
     index: "01",
     label: "Home",
-    blurb: "Full assembly",
+    blurb: "The big picture",
     state: "System online",
-    camera: [0.2, 0.5, 10.4],
-    target: [0, 0, 0],
-    bias: 0.42,
+    camera: [0.4, 1.15, 11.2],
+    target: [0, 0.38, 0],
+    bias: 0.3,
+    dock: 0,
     spin: 0,
-    tilt: 0,
-    spread: 0,
     open: 0,
-    reveal: 0.34,
+    reveal: 0.36,
+    scan: 0,
     flow: 0.3,
-    dust: 0.5,
-    scale: 1.0,
-    veil: 0.0,
+    dust: 0.45,
+    veil: 0,
     focus: null,
-    callouts: ["compute", "ai", "cooling"],
+    callouts: ["cooling", "compute", "ring"],
+    calloutsWide: ["sensor", "data", "io"],
   },
   {
     id: "approach",
     index: "02",
     label: "Approach",
-    blurb: "Outer shell",
+    blurb: "How I think",
     state: "Inspection",
-    camera: [1.9, 1.0, 8.8],
-    target: [0, 0.05, 0],
-    bias: -0.9,
-    spin: 0.11,
-    tilt: 0.06,
-    spread: 0.26,
-    open: 0.2,
+    camera: [1.8, 1.5, 8.8],
+    target: [0, 0.3, 0],
+    bias: -0.74,
+    dock: 1,
+    spin: 0.42,
+    open: 0.14,
     reveal: 0.5,
-    flow: 0.42,
-    dust: 0.6,
-    scale: 1.0,
-    veil: 0.6,
+    scan: 0,
+    flow: 0.4,
+    dust: 0.55,
+    veil: 0.56,
     focus: "cooling",
     callouts: ["cooling"],
   },
@@ -120,41 +128,39 @@ export const STAGES: Stage[] = [
     id: "stack",
     index: "03",
     label: "Stack",
-    blurb: "Subsystems",
-    state: "Separated",
-    camera: [-1.5, 0.5, 8.0],
-    target: [0, 0, 0],
-    bias: -0.95,
-    spin: 0.24,
-    tilt: -0.04,
-    spread: 0.72,
-    open: 0.55,
-    reveal: 0.74,
-    flow: 0.58,
-    dust: 0.7,
-    scale: 1.0,
-    veil: 0.58,
-    focus: "compute",
-    callouts: ["compute"],
+    blurb: "Tools I use",
+    state: "Unlocked",
+    camera: [-1.4, 0.7, 8.0],
+    target: [0, 0.1, 0],
+    bias: -0.8,
+    dock: 1,
+    spin: -0.55,
+    open: 1,
+    reveal: 0.7,
+    scan: 0.08,
+    flow: 0.55,
+    dust: 0.65,
+    veil: 0.52,
+    focus: "sensor",
+    callouts: ["sensor"],
   },
   {
     id: "work",
     index: "04",
     label: "Work",
-    blurb: "Modules under load",
+    blurb: "Things I've built",
     state: "Under load",
-    camera: [2.0, -0.7, 8.5],
-    target: [0, -0.05, 0],
-    bias: -0.98,
-    spin: -0.15,
-    tilt: 0.1,
-    spread: 0.42,
-    open: 0.4,
-    reveal: 0.8,
+    camera: [1.5, -0.1, 6.4],
+    target: [0, 0, 0],
+    bias: -1.0,
+    dock: 1,
+    spin: 0.85,
+    open: 0.62,
+    reveal: 0.86,
+    scan: 0.3,
     flow: 1,
-    dust: 0.85,
-    scale: 1.0,
-    veil: 0.62,
+    dust: 0.8,
+    veil: 0.6,
     focus: "io",
     callouts: ["io"],
   },
@@ -162,62 +168,59 @@ export const STAGES: Stage[] = [
     id: "research",
     index: "05",
     label: "Research",
-    blurb: "Inner core",
-    state: "Under probe",
-    camera: [0.1, 0.35, 6.4],
+    blurb: "Papers & ideas",
+    state: "Measuring",
+    camera: [0.35, 0.15, 5.2],
     target: [0, 0, 0],
     bias: -1.22,
-    spin: 0.32,
-    tilt: -0.02,
-    spread: 0.92,
-    open: 1,
+    dock: 1,
+    spin: 0.25,
+    open: 0.78,
     reveal: 1,
-    flow: 0.78,
+    scan: 1,
+    flow: 0.7,
     dust: 1,
-    scale: 1.0,
-    veil: 0.48,
-    focus: "ai",
-    callouts: ["ai", "compute"],
+    veil: 0.5,
+    focus: "compute",
+    callouts: ["compute"],
   },
   {
     id: "journey",
     index: "06",
     label: "Journey",
-    blurb: "Reassembly",
+    blurb: "Growth & milestones",
     state: "Reassembling",
-    camera: [-1.2, 1.7, 10.0],
-    target: [0, 0.1, 0],
-    bias: -0.95,
-    spin: 0.54,
-    tilt: 0.13,
-    spread: 0.34,
+    camera: [-1.9, 1.7, 9.6],
+    target: [0, 0.2, 0],
+    bias: -0.82,
+    dock: 1,
+    spin: -0.95,
     open: 0.28,
-    reveal: 0.56,
+    reveal: 0.55,
+    scan: 0,
     flow: 0.5,
-    dust: 0.6,
-    scale: 1.0,
+    dust: 0.55,
     veil: 0.56,
-    focus: "power",
-    callouts: ["power"],
+    focus: "ring",
+    callouts: ["ring"],
   },
   {
     id: "contact",
     index: "07",
     label: "Contact",
-    blurb: "Stable state",
-    state: "Resolved",
-    camera: [0, 0.25, 11.3],
-    target: [0, 0, 0],
-    bias: 0.32,
-    spin: 0.28,
-    tilt: 0,
-    spread: 0,
+    blurb: "Let's collaborate",
+    state: "Sealed",
+    camera: [0, 1.0, 11.8],
+    target: [0, 0.36, 0],
+    bias: 0.27,
+    dock: 0,
+    spin: 0.18,
     open: 0,
-    reveal: 0.44,
+    reveal: 0.42,
+    scan: 0,
     flow: 0.24,
-    dust: 0.35,
-    scale: 1.0,
-    veil: 0.26,
+    dust: 0.32,
+    veil: 0.12,
     focus: null,
     callouts: [],
   },
@@ -231,95 +234,71 @@ export const NAV_STAGES = STAGES;
 /* ============================================================================
  * SUBSYSTEMS
  *
- * Each callout names a real part of the assembly and a real part of his work.
- * `anchor` is the point on the machine the leader line is drawn to, in local
- * model space — the callouts are attached to geometry, not floated near it.
+ * Each callout names a real part of the engine and a real part of his work.
+ * The 3D places an anchor object on the part itself, so a label is attached
+ * to geometry, not floated near it: open the machine and the label goes with
+ * the component it names.
  * ========================================================================= */
 
 export type Subsystem = {
   key: ModuleKey;
+  index: string;
   title: string;
   lines: string[];
-  /** Local-space anchor on the assembly. */
-  anchor: [number, number, number];
-  /** Which side of the anchor the label sits on. */
+  /** Which side of the anchor the label prefers. */
   side: "left" | "right";
-  /**
-   * Where the label sits relative to the projected anchor, in px. The hub is
-   * pushed well clear because its anchor is in the middle of the assembly;
-   * the docked modules only need a short run off the edge.
-   */
+  /** Where the label sits relative to the projected anchor, in px. */
   offset: [number, number];
-  /** Angle around the docking ring, radians — where the module is built. */
-  angle: number;
-};
-
-/** Radius of the docking ring the subsystem modules are bolted to. */
-export const DOCK_RADIUS = 1.95;
-
-const dock = (deg: number): [number, number, number] => {
-  const a = (deg * Math.PI) / 180;
-  return [
-    +(DOCK_RADIUS * Math.cos(a)).toFixed(4),
-    +(DOCK_RADIUS * Math.sin(a)).toFixed(4),
-    0.2,
-  ];
 };
 
 export const SUBSYSTEMS: Subsystem[] = [
   {
-    key: "compute",
-    title: "Compute Core",
-    lines: ["Scalable infrastructure", "Django · FastAPI · PostgreSQL"],
-    anchor: [0, 0.6, 0.46],
-    side: "right",
-    offset: [58, -338],
-    angle: 0,
+    key: "cooling",
+    index: "01",
+    title: "Cooling System",
+    lines: ["Monitoring · Drift · Tracking", "MLflow · DVC · Evidently AI"],
+    side: "left",
+    offset: [-150, -36],
   },
   {
-    key: "ai",
-    title: "AI Module",
+    key: "sensor",
+    index: "02",
+    title: "Sensor Array",
+    lines: ["Inputs · Retrieval · Evaluation", "Hybrid search · RAGAS"],
+    side: "left",
+    offset: [-146, 4],
+  },
+  {
+    key: "compute",
+    index: "03",
+    title: "Compute Core",
     lines: ["Models · Agents · Inference", "PyTorch · LangGraph · LoRA"],
-    anchor: dock(62),
+    side: "left",
+    offset: [-160, 72],
+  },
+  {
+    key: "ring",
+    index: "04",
+    title: "Stabilization Ring",
+    lines: ["Verification · Reliability · Scale", "Docker · CI/CD · Cloud Run"],
     side: "right",
-    offset: [104, -34],
-    angle: (62 * Math.PI) / 180,
+    offset: [152, 28],
   },
   {
     key: "data",
+    index: "05",
     title: "Data Pipelines",
-    lines: ["Retrieval · Evaluation", "Hybrid search · RAGAS · reranking"],
-    anchor: dock(124),
-    side: "left",
-    offset: [-104, -34],
-    angle: (124 * Math.PI) / 180,
+    lines: ["Processing · Storage · Serving", "Django · FastAPI · PostgreSQL"],
+    side: "right",
+    offset: [150, -24],
   },
   {
     key: "io",
+    index: "06",
     title: "I/O Interface",
     lines: ["APIs · Integrations", "REST · API keys · RBAC"],
-    anchor: dock(180),
-    side: "left",
-    offset: [-118, 6],
-    angle: Math.PI,
-  },
-  {
-    key: "cooling",
-    title: "Cooling System",
-    lines: ["Monitoring · Drift · Tracking", "MLflow · DVC · Evidently AI"],
-    anchor: dock(236),
-    side: "left",
-    offset: [-104, 56],
-    angle: (236 * Math.PI) / 180,
-  },
-  {
-    key: "power",
-    title: "Power & Control",
-    lines: ["Reliability · Safety · Scale", "Docker · CI/CD · Cloud Run"],
-    anchor: dock(298),
     side: "right",
-    offset: [118, 44],
-    angle: (298 * Math.PI) / 180,
+    offset: [148, 18],
   },
 ];
 

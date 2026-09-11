@@ -55,6 +55,17 @@ export function TechnicalCallouts() {
       if (svg.current) svg.current.setAttribute("viewBox", `0 0 ${w} ${h}`);
 
       const hovered = getHover();
+      const wide = w >= 1500;
+
+      /* The bay has two regions a label may never enter: the reading column
+         at the left of the hero, and the navigator's gutter at the right.
+         Both are measured, not assumed. */
+      const textEdge = pulse.p < 0.6 ? Math.min(w * 0.42, 64 + 512 + 28) : 14;
+      const navEdge = w - Math.max(144, Math.min(w * 0.12, 224)) - 40;
+
+      /* Placed labels, per side, so later ones can step clear of earlier. */
+      const placedL: { y: number; hgt: number }[] = [];
+      const placedR: { y: number; hgt: number }[] = [];
 
       for (let i = 0; i < SUBSYSTEMS.length; i++) {
         const s = SUBSYSTEMS[i];
@@ -71,7 +82,7 @@ export function TechnicalCallouts() {
 
         boost[i] += ((hovered === s.key ? 1 : 0) - boost[i]) * 0.16;
 
-        const stage = calloutWeight(s.key, pulse.p);
+        const stage = calloutWeight(s.key, pulse.p, wide);
         const want =
           onScreen *
           Math.min(1, Math.max(boost[i], stage * 0.9 + 0.03) * (0.4 + depth));
@@ -89,9 +100,11 @@ export function TechnicalCallouts() {
            so a label that would run off the edge is placed on the other side
            of its part instead of being clipped or hidden. */
         const width = node.offsetWidth || 216;
+        const hgt = node.offsetHeight || 54;
         let side = s.side;
-        if (side === "left" && x + s.offset[0] - width < 12) side = "right";
-        else if (side === "right" && x + s.offset[0] + width > w - 12)
+        if (side === "left" && x + s.offset[0] - width < textEdge)
+          side = "right";
+        else if (side === "right" && x + s.offset[0] + width > navEdge)
           side = "left";
 
         const dir = side === "left" ? -1 : 1;
@@ -99,14 +112,28 @@ export function TechnicalCallouts() {
         let lx = x + (flipped ? -s.offset[0] : s.offset[0]);
         let ly = y + s.offset[1];
 
-        /* The assembly is deliberately cropped by the frame, so an anchor can
-           sit off-screen entirely. Keep the label inside the bay and let the
-           leader stretch back to wherever its part actually is. */
+        /* The engine is deliberately cropped by the frame in places, so an
+           anchor can sit off-screen. Keep the label inside its allowed band
+           and let the leader stretch back to wherever the part actually is. */
+        const minLeft = side === "left" ? textEdge : 14;
+        const maxRight = side === "right" ? navEdge : w - 14;
         const leftEdge = side === "left" ? lx - width : lx;
-        if (leftEdge < 14) lx += 14 - leftEdge;
+        if (leftEdge < minLeft) lx += minLeft - leftEdge;
         const rightEdge = side === "left" ? lx : lx + width;
-        if (rightEdge > w - 14) lx -= rightEdge - (w - 14);
-        ly = Math.min(h - 40, Math.max(96, ly));
+        if (rightEdge > maxRight) lx -= rightEdge - maxRight;
+        ly = Math.min(h - 60, Math.max(96, ly));
+
+        /* Two labels on the same side must not sit on top of each other. The
+           later one steps down (or up) until it is clear of the earlier. */
+        const placed = side === "left" ? placedL : placedR;
+        for (let k = 0; k < 12; k++) {
+          const hit = placed.find(
+            (q) => Math.abs(q.y - ly) < (q.hgt + hgt) / 2 + 10,
+          );
+          if (!hit) break;
+          ly = hit.y + (ly >= hit.y ? 1 : -1) * ((hit.hgt + hgt) / 2 + 10);
+        }
+        placed.push({ y: ly, hgt });
 
         node.style.textAlign = side === "left" ? "right" : "left";
         node.style.opacity = String(a);

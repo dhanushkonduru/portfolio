@@ -190,6 +190,19 @@ export function Approach() {
       {/* ── the record ─────────────────────────────────────────────────── */}
       <div className="rail mt-20 px-[clamp(1.25rem,4vw,4rem)] md:mt-28 xl:pr-[clamp(9rem,12vw,14rem)]">
         <div className="lane">
+          <dl className="mb-10 flex flex-wrap gap-x-12 gap-y-6">
+            {profile.markers.map((m) => (
+              <div key={m.label}>
+                <dt className="sr-only">{m.label}</dt>
+                <dd>
+                  <span className="t-figure-sm block text-ink">{m.value}</span>
+                  <span className="t-note mt-1.5 block max-w-[15ch] leading-snug">
+                    {m.label}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
           <dl>
             {record.map(([k, v]) => (
               <div

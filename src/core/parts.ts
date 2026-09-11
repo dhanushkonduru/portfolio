@@ -9,10 +9,16 @@ import * as THREE from "three";
  * kilobytes of code rather than a few megabytes of GLB, and each part can be
  * driven by the stage configuration instead of baked into a mesh.
  *
- * The assembly's axis is Z — toward the viewer — so rings and plates are built
- * in the XY plane and extruded along Z. All builders return geometry centred
- * on the origin.
+ * Builders return geometry in the XY plane extruded along Z, centred on the
+ * origin. The engine stands on Y, so anything that has to lie flat — a plate,
+ * a ring — is passed through `lie()`, which turns it into the XZ plane.
  * ========================================================================= */
+
+/** Lay an XY-built part flat, so its axis is Y. */
+export function lie<T extends THREE.BufferGeometry>(geo: T): T {
+  geo.rotateX(-Math.PI / 2);
+  return geo;
+}
 
 const EXTRUDE = {
   bevelEnabled: true,
@@ -139,16 +145,62 @@ export function conduit(
   return new THREE.TubeGeometry(curve, segments, radius, 6, false);
 }
 
+/**
+ * The nameplate. Text is not modelled; it is drawn once to a small canvas and
+ * applied as a map, the way an etched plate is a print on a machined face.
+ * Returned null on the server, where there is no canvas to draw on.
+ */
+export function nameplate(): THREE.CanvasTexture | null {
+  if (typeof document === "undefined") return null;
+  const c = document.createElement("canvas");
+  c.width = 1024;
+  c.height = 288;
+  const g = c.getContext("2d");
+  if (!g) return null;
+
+  g.fillStyle = "#1b2027";
+  g.fillRect(0, 0, c.width, c.height);
+
+  /* Brushed grain: a few hundred hairlines, barely lighter than the plate. */
+  g.strokeStyle = "rgba(255,255,255,0.035)";
+  g.lineWidth = 1;
+  for (let y = 0; y < c.height; y += 3) {
+    g.beginPath();
+    g.moveTo(0, y + Math.random());
+    g.lineTo(c.width, y + Math.random());
+    g.stroke();
+  }
+
+  g.strokeStyle = "rgba(200,214,232,0.35)";
+  g.lineWidth = 3;
+  g.strokeRect(22, 22, c.width - 44, c.height - 44);
+
+  g.fillStyle = "#cfd9e6";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.font = "600 84px 'Inter Tight', Inter, system-ui, sans-serif";
+  g.fillText("VERIFICATION ENGINE", c.width / 2, 118);
+
+  g.fillStyle = "#8b98a8";
+  g.font = "500 34px 'JetBrains Mono', ui-monospace, Menlo, monospace";
+  g.fillText("DK-01  ·  MEASURE  ·  VERIFY  ·  BUILD", c.width / 2, 208);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
 /* ---------------------------------------------------------------- shared */
 
 /** Precision connector — the bolt that appears wherever two plates meet. */
 export const boltGeo = new THREE.CylinderGeometry(0.028, 0.034, 0.062, 6);
 
-/** A single cooling fin. Stacked by instancing. */
-export const finGeo = new THREE.BoxGeometry(0.2, 0.16, 0.012);
+/** A single cooling fin: a thin vertical plate, instanced around the drum. */
+export const finGeo = new THREE.BoxGeometry(0.012, 0.62, 0.17);
 
-/** Graduation tick on the outer measurement ring. */
-export const tickGeo = new THREE.BoxGeometry(0.012, 0.01, 0.07);
+/** Graduation tick on the platform's measurement ring. */
+export const tickGeo = new THREE.BoxGeometry(0.012, 0.008, 0.07);
 
 /** Emissive indicator. Small enough that 8 segments is generous. */
 export const ledGeo = new THREE.SphereGeometry(0.017, 8, 6);

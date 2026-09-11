@@ -87,7 +87,7 @@ export function Boot() {
       aria-hidden="true"
     >
       <div className="flex w-[min(26rem,76vw)] flex-col items-center">
-        <p className="t-mark text-ink">System Core</p>
+        <p className="t-mark text-ink">Verification Engine</p>
 
         <div className="mt-5 h-px w-full bg-rule">
           <span

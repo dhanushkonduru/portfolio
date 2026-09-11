@@ -8,7 +8,7 @@ import {
   PerformanceMonitor,
 } from "@react-three/drei";
 import * as THREE from "three";
-import { SystemCore, type Tier } from "./SystemCore";
+import { VerificationEngine, type Tier } from "./VerificationEngine";
 import { ParticleField } from "./ParticleField";
 import { CameraRig } from "./CameraRig";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -17,7 +17,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
  * SCENE
  *
  * The only WebGL context on the site, fixed behind every section, running the
- * full height of the page. The machine is continuous; the sections scroll past
+ * full height of the page. The engine is continuous; the sections scroll past
  * it.
  *
  * Quality is decided once, from what the device actually reports, and drives
@@ -77,13 +77,13 @@ export function Scene() {
     <div
       className="pointer-events-none fixed inset-0 z-0"
       aria-hidden="true"
-      data-system-core
+      data-engine
     >
       <Canvas
         dpr={dpr}
         frameloop={awake ? "always" : "never"}
         shadows={shadows ? "soft" : false}
-        camera={{ position: [0.2, 0.5, 10.4], fov: 38, near: 0.4, far: 60 }}
+        camera={{ position: [0.4, 0.9, 11.2], fov: 38, near: 0.3, far: 60 }}
         gl={{
           antialias: tier !== "low",
           alpha: true,
@@ -112,30 +112,30 @@ export function Scene() {
         <ambientLight intensity={0.32} color={0x93abc6} />
 
         <directionalLight
-          position={[5.5, 6, 7]}
-          intensity={3.4}
+          position={[5, 8, 6]}
+          intensity={3.2}
           color={0xdce8f7}
           castShadow={shadows}
-          shadow-mapSize={[1024, 1024]}
-          shadow-bias={-0.0022}
-          shadow-normalBias={0.02}
-          shadow-camera-near={1}
-          shadow-camera-far={22}
-          shadow-camera-left={-4}
-          shadow-camera-right={4}
-          shadow-camera-top={4}
-          shadow-camera-bottom={-4}
+          shadow-mapSize={[1536, 1536]}
+          shadow-bias={-0.0018}
+          shadow-normalBias={0.025}
+          shadow-camera-near={2}
+          shadow-camera-far={26}
+          shadow-camera-left={-4.5}
+          shadow-camera-right={4.5}
+          shadow-camera-top={4.5}
+          shadow-camera-bottom={-4.5}
         />
 
         <directionalLight
-          position={[-7, -2.5, 3]}
-          intensity={1.05}
+          position={[-7, 1.5, 4]}
+          intensity={1.1}
           color={0x6b87a8}
         />
 
         <directionalLight
-          position={[-2.5, 3.5, -8]}
-          intensity={2.4}
+          position={[-2, 5, -8]}
+          intensity={2.2}
           color={0x8dbcf0}
         />
 
@@ -145,11 +145,20 @@ export function Scene() {
             request the page does not need to make. */}
         <Environment resolution={128} frames={1}>
           <color attach="background" args={["#05070a"]} />
+          {/* A bay has a ceiling. The strongest reflection on a standing
+              machine comes from above, so the largest panel is overhead. */}
           <Lightformer
-            intensity={5.5}
+            intensity={5}
             color="#dcebfb"
-            position={[0, 5, -5]}
-            scale={[14, 5, 1]}
+            position={[0, 7, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            scale={[12, 12, 1]}
+          />
+          <Lightformer
+            intensity={3.2}
+            color="#c9dcf2"
+            position={[0, 3, -7]}
+            scale={[14, 4, 1]}
           />
           <Lightformer
             intensity={2.6}
@@ -174,7 +183,7 @@ export function Scene() {
           />
         </Environment>
 
-        <SystemCore tier={tier} reduced={reduced} />
+        <VerificationEngine tier={tier} reduced={reduced} />
         <ParticleField count={PARTICLES[tier]} reduced={reduced} />
       </Canvas>
     </div>

@@ -31,6 +31,20 @@ export type Pulse = {
   direction: number;
   /** Whether a pointer has ever moved — gates the desktop cursor work. */
   active: boolean;
+  /**
+   * Yaw added by dragging the engine, radians. Written by the drag handler,
+   * relaxed back toward zero by the renderer once the pointer lets go — the
+   * machine can be turned to look at, but it is not a toy that stays where it
+   * was spun.
+   */
+  dragYaw: number;
+  dragging: boolean;
+  /**
+   * The engine's footprint on screen, px: x0, y0, x1, y1. Written by the
+   * renderer from the projected anchors so the drag handler can tell a press
+   * on the machine from a press on the page.
+   */
+  rect: Float32Array;
 };
 
 /* The scene is a dynamically imported chunk and the bundler does not
@@ -39,7 +53,6 @@ export type Pulse = {
    another, so the singletons are pinned to globalThis. */
 type Global = typeof globalThis & {
   __dkPulse?: Pulse;
-  __dkReadings?: Readings;
   __dkProjected?: Float32Array;
 };
 const G = globalThis as Global;
@@ -54,27 +67,12 @@ const pulseInit: Pulse = {
   speed: 0,
   direction: 1,
   active: false,
+  dragYaw: 0,
+  dragging: false,
+  rect: new Float32Array(4),
 };
 
 export const pulse: Pulse = G.__dkPulse ?? (G.__dkPulse = pulseInit);
-
-/* ---- live readings ----
-   What the HUD reports about the running system: the renderer's measured
-   frame rate, and whether the scroll driver is up. Nothing here is a
-   decorative fake, and nothing is kept that is not displayed — the stage
-   label the HUD shows is derived from the scroll position directly. */
-export type Readings = {
-  fps: number;
-  online: boolean;
-};
-
-const readingsInit: Readings = {
-  fps: 0,
-  online: false,
-};
-
-export const readings: Readings =
-  G.__dkReadings ?? (G.__dkReadings = readingsInit);
 
 /* ---- the bridge between the machine and its annotations ----
    Each subsystem's anchor is projected to screen space by the renderer every
@@ -94,15 +92,14 @@ export type Config = {
   cam: [number, number, number];
   target: [number, number, number];
   spin: number;
-  tilt: number;
-  spread: number;
   open: number;
   reveal: number;
+  scan: number;
   flow: number;
   dust: number;
-  scale: number;
   veil: number;
   bias: number;
+  dock: number;
 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -124,32 +121,30 @@ export function sampleStage(p: number, out: Config): Config {
     out.target[k] = lerp(a.target[k], b.target[k], t);
   }
   out.spin = lerp(a.spin, b.spin, t);
-  out.tilt = lerp(a.tilt, b.tilt, t);
-  out.spread = lerp(a.spread, b.spread, t);
   out.open = lerp(a.open, b.open, t);
   out.reveal = lerp(a.reveal, b.reveal, t);
+  out.scan = lerp(a.scan, b.scan, t);
   out.flow = lerp(a.flow, b.flow, t);
   out.dust = lerp(a.dust, b.dust, t);
-  out.scale = lerp(a.scale, b.scale, t);
   out.veil = lerp(a.veil, b.veil, t);
   out.bias = lerp(a.bias, b.bias, t);
+  out.dock = lerp(a.dock, b.dock, t);
   return out;
 }
 
 export function makeConfig(): Config {
   return {
-    cam: [0, 0, 10],
+    cam: [0, 0, 11],
     target: [0, 0, 0],
     spin: 0,
-    tilt: 0,
-    spread: 0,
     open: 0,
     reveal: 0,
+    scan: 0,
     flow: 0,
     dust: 0,
-    scale: 1,
     veil: 0,
     bias: 0,
+    dock: 0,
   };
 }
 
@@ -158,14 +153,21 @@ export function makeConfig(): Config {
  * stages either side of `p`. This is what makes a callout rise as its section
  * arrives instead of switching on at a boundary.
  */
-export function calloutWeight(key: ModuleKey, p: number): number {
+export function calloutWeight(
+  key: ModuleKey,
+  p: number,
+  wide: boolean,
+): number {
   const last = STAGES.length - 1;
   const clamped = Math.min(last, Math.max(0, p));
   const i = Math.min(last - 1, Math.floor(clamped));
   const t = ease(Math.min(1, Math.max(0, clamped - i)));
-  const a = STAGES[i].callouts.includes(key) ? 1 : 0;
-  const b = STAGES[Math.min(last, i + 1)].callouts.includes(key) ? 1 : 0;
-  return lerp(a, b, t);
+  const has = (s: Stage) =>
+    s.callouts.includes(key) ||
+    (wide && (s.calloutsWide?.includes(key) ?? false))
+      ? 1
+      : 0;
+  return lerp(has(STAGES[i]), has(STAGES[Math.min(last, i + 1)]), t);
 }
 
 /* ======================= discrete subscriptions ======================= */
@@ -198,7 +200,7 @@ export function getHoverServer(): ModuleKey | null {
   return null;
 }
 
-/** Set by the 3D raycaster and by DOM hover on the matching stack row. */
+/** Set by the renderer's proximity test and by DOM hover on a bound row. */
 export function setHover(key: ModuleKey | null) {
   if (hovered === key) return;
   hovered = key;
@@ -313,7 +315,6 @@ export function startDriver() {
 
   measure();
   tick();
-  readings.online = true;
 
   /* Sections are tall and lazily laid out; re-measure once the fonts and the
      images have settled rather than trusting the first frame. */

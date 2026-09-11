@@ -10,13 +10,10 @@ const S = STAGES[0];
 /* ============================================================================
  * HOME
  *
- * The composition the whole page is built around: identity and statement held
- * in the left third, the machine occupying the rest of the bay, and the
- * readings hung along the bottom edge.
- *
- * The type never crosses the assembly. On desktop the column stops at five of
- * twelve, and the camera aims left of the machine so the machine sits in the
- * space that is left. That is why the headline stays readable over a
+ * Three zones, left to right: identity and statement, the engine, navigation
+ * and state. The type never crosses the machine — the column stops well short
+ * of it and the camera aims a little left of the tower, so the tower stands in
+ * the space that is left. That is why the headline stays readable over a
  * three-dimensional object without a scrim laid over it.
  * ========================================================================= */
 
@@ -26,36 +23,58 @@ export function Hero() {
       id="top"
       className="relative flex min-h-[100svh] flex-col justify-between pb-24 pt-24 md:pt-28 xl:pb-28 xl:pt-32"
     >
-      {/* Below lg the machine gets a band of its own at the top of the screen
+      {/* Below xl the engine gets a band of its own at the top of the screen
           and the statement starts under it. This is a different composition,
           not a narrower copy of the desktop one. */}
-      <div className="h-[27vh] shrink-0 xl:hidden" aria-hidden="true" />
+      <div className="h-[30vh] shrink-0 xl:hidden" aria-hidden="true" />
+
+      {/* On a narrow screen the engine is directly behind the reading copy
+          rather than beside it, so the lower part of the hero carries its own
+          gradient. Desktop never needs it. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-[27vh] bg-gradient-to-b from-transparent via-void/92 to-void xl:hidden"
+      />
 
       {/* ── statement ─────────────────────────────────────────────────── */}
-      <div className="rail grid-12 flex-1 items-center px-[clamp(1.25rem,4vw,4rem)]">
-        <div className="relative z-10 col-span-12 max-w-[34rem] xl:col-span-5">
+      <div className="rail grid-12 relative z-10 flex-1 items-center px-[clamp(1.25rem,4vw,4rem)]">
+        <div className="col-span-12 max-w-[32rem] xl:col-span-5">
           <div
             className="settle flex items-center gap-3"
             style={{ animationDelay: "0.15s" }}
           >
-            <span className="t-mark text-signal tabular-nums">{S.index}</span>
+            <span
+              className="block h-1.5 w-1.5 rounded-full bg-signal"
+              aria-hidden="true"
+            />
             <span className="h-px w-8 bg-rule-2" aria-hidden="true" />
-            <span className="t-mark text-ink-4">System Core</span>
+            <span className="t-mark text-ink-2 tabular-nums">
+              {S.index} / 07
+            </span>
           </div>
 
-          <h1 className="t-monument mt-8 text-ink">
+          <p
+            className="settle t-mark mt-7 text-ink-4"
+            style={{ animationDelay: "0.25s" }}
+          >
+            Building real-world systems
+          </p>
+
+          <h1 className="t-monument mt-4 text-ink">
             <MaskLines lines={profile.headline} immediate delay={0.22} />
           </h1>
 
           <p
-            className="settle t-read mt-8 max-w-[44ch] text-pretty text-ink-2"
+            className="settle t-read mt-7 max-w-[42ch] text-pretty text-ink-2"
             style={{ animationDelay: "0.7s" }}
           >
-            {profile.positioning}
+            I build the backend, the agents that run on it, and the proof that
+            both work. What connects them is that I would rather measure a claim
+            than assert it.
           </p>
 
           <div
-            className="settle mt-10 flex flex-wrap items-center gap-x-8 gap-y-4"
+            className="settle mt-9 flex flex-wrap items-center gap-x-8 gap-y-4"
             style={{ animationDelay: "0.85s" }}
           >
             <a href="#work" className="control group" data-cursor="link">
@@ -71,50 +90,14 @@ export function Hero() {
               Download CV ↓
             </TextLink>
           </div>
-        </div>
-      </div>
 
-      {/* On a narrow screen the machine is directly behind the reading copy
-          rather than beside it, so the lower half of the hero carries its own
-          gradient. Desktop never needs it: there the type and the assembly
-          occupy different parts of the bay. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 top-[25vh] bg-gradient-to-b from-transparent via-void/92 to-void xl:hidden"
-      />
-
-      {/* ── readings along the foot ───────────────────────────────────── */}
-      <div
-        className="settle rail relative z-10 px-[clamp(1.25rem,4vw,4rem)]"
-        style={{ animationDelay: "1s" }}
-      >
-        <div className="h-px w-full bg-rule" aria-hidden="true" />
-
-        <div className="mt-5 flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
-          <dl className="flex flex-wrap gap-x-10 gap-y-5">
-            {profile.markers.map((m) => (
-              <div key={m.label}>
-                <dt className="sr-only">{m.label}</dt>
-                <dd>
-                  <span className="t-figure-sm block text-ink">{m.value}</span>
-                  <span className="t-note mt-1.5 block max-w-[15ch] leading-snug">
-                    {m.label}
-                  </span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-
-          <div className="flex flex-col gap-1.5 lg:items-end">
-            <p className="t-note">
-              <span
-                className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-signal align-middle animate-pulse-soft"
-                aria-hidden="true"
-              />
-              {profile.availability}
-            </p>
-            <p className="t-note">{profile.location}</p>
-          </div>
+          <p className="settle t-note mt-6" style={{ animationDelay: "0.95s" }}>
+            <span
+              className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-signal align-middle animate-pulse-soft"
+              aria-hidden="true"
+            />
+            {profile.availability}
+          </p>
         </div>
       </div>
     </section>

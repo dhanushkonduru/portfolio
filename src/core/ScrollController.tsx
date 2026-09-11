@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { makeConfig, pulse, sampleStage, startDriver } from "./store";
 import { startScroll } from "./scroll";
+import { EngineSchematic } from "@/components/EngineSchematic";
 
 /* three.js is fetched only after the page is interactive, and never on the
    server. The content is readable long before the machine arrives. */
@@ -35,10 +36,12 @@ export function ScrollController() {
       ok = false;
     }
     setDraw(ok);
+    const stopDrag = startDrag();
 
     return () => {
       stopDriver();
       stopScroll();
+      stopDrag();
     };
   }, []);
 
@@ -48,6 +51,73 @@ export function ScrollController() {
       <Veil />
     </>
   );
+}
+
+/**
+ * Drag to turn the engine.
+ *
+ * A press that lands on the machine's footprint — and not on a link, a button
+ * or a panel that scrolls itself — turns the engine by horizontal travel. The
+ * renderer relaxes the turn back to rest once the pointer lets go, so the
+ * machine can be looked around but never left spun. Vertical travel is left
+ * alone entirely: on touch that is the scroll, and it must stay the scroll.
+ */
+function startDrag() {
+  if (!window.matchMedia("(pointer: fine)").matches) return () => {};
+
+  let lastX = 0;
+  let pressed = false;
+
+  const onDown = (e: PointerEvent) => {
+    if (e.button !== 0) return;
+    const el = e.target as Element | null;
+    if (
+      el?.closest?.("a, button, input, textarea, select, [data-scroll-ignore]")
+    )
+      return;
+    const r = pulse.rect;
+    if (r[2] <= r[0]) return;
+    if (
+      e.clientX < r[0] ||
+      e.clientX > r[2] ||
+      e.clientY < r[1] ||
+      e.clientY > r[3]
+    )
+      return;
+    pressed = true;
+    lastX = e.clientX;
+    pulse.dragging = true;
+    document.body.style.userSelect = "none";
+  };
+
+  const onMove = (e: PointerEvent) => {
+    if (!pressed) return;
+    const dx = e.clientX - lastX;
+    lastX = e.clientX;
+    pulse.dragYaw = Math.max(-1.4, Math.min(1.4, pulse.dragYaw + dx * 0.0055));
+  };
+
+  const onUp = () => {
+    if (!pressed) return;
+    pressed = false;
+    pulse.dragging = false;
+    document.body.style.userSelect = "";
+  };
+
+  window.addEventListener("pointerdown", onDown);
+  window.addEventListener("pointermove", onMove, { passive: true });
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onUp);
+  window.addEventListener("blur", onUp);
+
+  return () => {
+    window.removeEventListener("pointerdown", onDown);
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onUp);
+    window.removeEventListener("blur", onUp);
+    document.body.style.userSelect = "";
+  };
 }
 
 /**
@@ -131,9 +201,10 @@ function Veil() {
 }
 
 /**
- * No WebGL: the machine is drawn flat instead of not at all. Same composition,
- * same rings, same near-invisible construction lines — so the page still reads
- * as a system being inspected rather than as a bare column of text.
+ * No WebGL: the engine is drawn flat instead of not at all — the same line
+ * elevation the hero carries as an inset, at the size of the machine, parting
+ * by the same value. The page still reads as an instrument being inspected
+ * rather than as a bare column of text.
  */
 function Schematic() {
   return (
@@ -141,48 +212,10 @@ function Schematic() {
       className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
       aria-hidden="true"
     >
-      <svg
-        viewBox="-200 -200 400 400"
-        className="h-[min(88vh,88vw)] w-[min(88vh,88vw)] opacity-45"
-        fill="none"
-      >
-        <g stroke="var(--color-rule-3)" strokeWidth="0.7">
-          <circle r="150" />
-          <circle r="118" strokeDasharray="12 7" />
-          <circle r="86" />
-          <circle r="54" strokeDasharray="4 5" />
-          <circle r="26" stroke="var(--color-beam)" />
-        </g>
-        <g stroke="var(--color-rule-2)" strokeWidth="0.6">
-          {Array.from({ length: 12 }, (_, i) => {
-            const a = (i / 12) * Math.PI * 2;
-            return (
-              <line
-                key={i}
-                x1={(Math.cos(a) * 30).toFixed(2)}
-                y1={(Math.sin(a) * 30).toFixed(2)}
-                x2={(Math.cos(a) * 150).toFixed(2)}
-                y2={(Math.sin(a) * 150).toFixed(2)}
-              />
-            );
-          })}
-        </g>
-        <g fill="var(--color-beam)" opacity="0.55">
-          {Array.from({ length: 5 }, (_, i) => {
-            const a = ((i + 0.5) / 5) * Math.PI * 2;
-            return (
-              <rect
-                key={i}
-                x={(Math.cos(a) * 118 - 9).toFixed(2)}
-                y={(Math.sin(a) * 118 - 6).toFixed(2)}
-                width="18"
-                height="12"
-                rx="2"
-              />
-            );
-          })}
-        </g>
-      </svg>
+      <EngineSchematic
+        detail="fallback"
+        className="h-[min(86vh,120vw)] opacity-60"
+      />
     </div>
   );
 }

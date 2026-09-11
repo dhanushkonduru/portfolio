@@ -1,11 +1,14 @@
 # Dhanush Konduru — Portfolio
 
 An interactive inspection of an engineer's work, built around one object:
-**the System Core.**
+**the Verification Engine.**
 
-A single WebGL assembly runs the height of the page. It is not a backdrop and
-it is not seven separate animations — it is one machine, observed from seven
-positions, and scrolling moves the camera between them.
+A single WebGL instrument runs the height of the page — a glass inspection
+chamber holding a compute core, clamped between stabilisation ring stacks,
+cooled from above, with four modules docked on telescoping arms. It is not a
+backdrop and it is not seven separate animations: it is one machine, observed
+from seven positions, and scrolling moves the camera between them while the
+machine unlocks, opens, measures and seals again.
 
 ```bash
 npm install
@@ -27,15 +30,15 @@ configuration — where the camera stands, how far the shroud is open, how far
 the rings have separated, how hard the data channels are running — and every
 part derives its own transform from those parameters. Nothing is keyframed.
 
-| Stage | View | Configuration |
-|---|---|---|
-| 01 Home | Full assembly | Closed, composed, right of the statement |
-| 02 Approach | Outer shell | Shroud parts, structure becomes visible |
-| 03 Stack | Subsystems | Rings separate, modules lift out |
-| 04 Work | Modules under load | Channels at full rate, one module lit |
-| 05 Research | Inner core | Camera inside the assembly, fully open |
-| 06 Journey | Reassembly | Pulling back, the machine closing up |
-| 07 Contact | Stable state | Complete, still, at rest |
+| Stage       | View                | Configuration                                            |
+| ----------- | ------------------- | -------------------------------------------------------- |
+| 01 Home     | The big picture     | Sealed, still, right of the statement                    |
+| 02 Approach | How I think         | Camera closer; the first latches release                 |
+| 03 Stack    | Tools I use         | Fully unlocked: stacks part, struts retract, arms extend |
+| 04 Work     | Things I've built   | Cables at full rate, the module for each project lit     |
+| 05 Research | Papers & ideas      | Camera at the chamber; the scanner ring runs the core    |
+| 06 Journey  | Growth & milestones | Pulling back, the machine closing up                     |
+| 07 Contact  | Let's collaborate   | Sealed again, at rest                                    |
 
 **Nothing translates horizontally.** No section slides in from the side. The
 camera is already moving; content emerges in place through opacity, a few
@@ -45,13 +48,13 @@ pixels of vertical settle, and blur resolving to sharp.
 
 ## Stack
 
-| | |
-|---|---|
-| Framework | Next.js 15 (App Router) · React 19 · TypeScript (strict) |
-| Styling | Tailwind CSS v4 — role-named tokens in `src/app/globals.css` |
-| 3D | Three.js · React Three Fiber — procedural geometry, no model files |
-| Motion | CSS animations + an inertial scroll smoother (`src/core/scroll.ts`) |
-| Type | Inter Tight · JetBrains Mono, self-hosted by `next/font` |
+|           |                                                                     |
+| --------- | ------------------------------------------------------------------- |
+| Framework | Next.js 15 (App Router) · React 19 · TypeScript (strict)            |
+| Styling   | Tailwind CSS v4 — role-named tokens in `src/app/globals.css`        |
+| 3D        | Three.js · React Three Fiber — procedural geometry, no model files  |
+| Motion    | CSS animations + an inertial scroll smoother (`src/core/scroll.ts`) |
+| Type      | Inter Tight · JetBrains Mono, self-hosted by `next/font`            |
 
 First Load JS is **187 kB**; three.js sits behind `next/dynamic` and never
 enters the initial bundle.
@@ -71,26 +74,39 @@ the voice appropriate to what it is saying.
 
 ## `src/core/` — the machine
 
-| File | Role |
-|---|---|
-| `stages.ts` | The seven views and the six named subsystems. The nav, the navigator, the scroll-spy and the 3D all derive from this, so they cannot drift out of sync. |
-| `store.ts` | Scroll → one continuous float `p` across stages. Read by reference inside `useFrame`; scrolling never triggers a React render. |
-| `parts.ts` | Every piece machined from primitives: bevelled annular plates, ring sectors, chamfered housings, fins, bolts, routed conduits. |
-| `SystemCore.tsx` | The assembly and the single frame loop that drives it. Zero per-frame allocation. |
-| `CameraRig.tsx` | Critically damped position and aim, plus pointer follow and camera breathing. |
-| `ParticleField.tsx` | A sparse shell of data particles; drift is computed in the vertex shader. |
-| `Scene.tsx` | Lighting, baked reflections, device tier, adaptive pixel ratio. |
-| `ScrollController.tsx` | Lazy load, WebGL detection, static schematic fallback, and the bay's dimmer. |
+| File                     | Role                                                                                                                                                                                |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stages.ts`              | The seven views and the six named subsystems. The nav, the navigator, the scroll-spy and the 3D all derive from this, so they cannot drift out of sync.                             |
+| `store.ts`               | Scroll → one continuous float `p` across stages, plus the drag yaw and the engine's screen footprint. Read by reference inside `useFrame`; scrolling never triggers a React render. |
+| `parts.ts`               | Every piece machined from primitives: bevelled annular plates, chamfered housings, fins, bolts, routed conduits, and the nameplate drawn to a canvas.                               |
+| `VerificationEngine.tsx` | The instrument and the single frame loop that drives it: unlocking, the core, the scanner pass, the cables, the anchors. Zero per-frame allocation.                                 |
+| `CameraRig.tsx`          | Critically damped position and aim, plus pointer follow and camera breathing.                                                                                                       |
+| `ParticleField.tsx`      | A sparse shell of data particles; drift is computed in the vertex shader.                                                                                                           |
+| `Scene.tsx`              | Lighting, baked reflections, device tier, adaptive pixel ratio.                                                                                                                     |
+| `ScrollController.tsx`   | Lazy load, WebGL detection, static schematic fallback, and the bay's dimmer.                                                                                                        |
 
 **No model files.** The whole machine is a few kilobytes of code rather than a
 few megabytes of GLB, and because it is built from parameters it can be driven
-by the stage configuration instead of being baked into a mesh.
+by the stage configuration instead of being baked into a mesh. The one piece of
+text on it — the nameplate — is drawn to a canvas once and applied as a map.
+
+**The fallback is a reading, not a picture.** Without WebGL the page draws
+`EngineSchematic`, a line elevation whose part groups part by the same `open`
+value the real engine uses, so the instrument still opens as it is inspected.
 
 **Reflections are baked once from a handful of emissive panels** rather than
 downloaded as an HDRI. Metal with nothing to reflect reads as plastic, and this
 is a network request the page does not need to make.
 
-Three things make the machine part of the product rather than scenery:
+**Idle is almost still.** The core turns very slowly, packets drift along the
+crown cables, the seed breathes and each module settles by a few thousandths of
+a unit out of phase. Nothing spins for the sake of spinning.
+
+**Drag turns it; it turns back.** A press on the engine's footprint yaws it by
+horizontal travel, and the renderer relaxes the yaw to rest once the pointer
+lets go. Vertical travel is never touched: on touch that is the scroll.
+
+Three more things make the machine part of the product rather than scenery:
 
 - **The callouts are attached to the geometry.** The renderer projects each
   subsystem's anchor to screen space every frame and the HTML layer draws a
@@ -134,14 +150,14 @@ has a frame to spare is an entrance that can leave the page blank.
 All content lives in `src/data/`. You should never edit a component to change
 what the site says.
 
-| File | What it holds |
-|---|---|
-| `profile.ts` | Name, headline, positioning, links, SEO, hero markers |
-| `experience.ts` | Internships and education — drives the path |
-| `projects.ts` | Every project, tiered 1 / 2 / 3 |
-| `research.ts` | Both invention disclosures and the three manuscripts |
-| `skills.ts` | The domains, each bound to a module of the machine |
-| `achievements.ts` | Placements and certifications |
+| File              | What it holds                                         |
+| ----------------- | ----------------------------------------------------- |
+| `profile.ts`      | Name, headline, positioning, links, SEO, hero markers |
+| `experience.ts`   | Internships and education — drives the path           |
+| `projects.ts`     | Every project, tiered 1 / 2 / 3                       |
+| `research.ts`     | Both invention disclosures and the three manuscripts  |
+| `skills.ts`       | The domains, each bound to a module of the machine    |
+| `achievements.ts` | Placements and certifications                         |
 
 **Tier 1** projects get a full plate with their own diagram; tiers 2 and 3
 appear in the register. Every tier opens the same full record, so detail is
@@ -215,7 +231,7 @@ at `/opengraph-image` is generated at build time from the same profile data.
 - `overflow-x: hidden` lives on `html`, not `body`. On `body` it makes body a
   scroll container and silently breaks `position: sticky`.
 - `rail` sets an explicit `width: 100%`: inside a flex column, `margin-inline:
-  auto` otherwise collapses the box to fit-content.
+auto` otherwise collapses the box to fit-content.
 - `<line>` in JSX resolves to the SVG element, not `THREE.Line`. Use
   `lineSegments`.
 - Colour literals exist outside the CSS tokens in three places — the SVG plates,

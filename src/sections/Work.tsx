@@ -32,17 +32,17 @@ const S = STAGES[3];
 
 /** Which part of the machine each project actually exercises. */
 const BOUND: Record<string, ModuleKey> = {
-  "beyond-the-loss-curve": "ai",
-  "financial-rag": "data",
-  "investment-research": "ai",
-  aeroforge: "cooling",
+  "beyond-the-loss-curve": "compute",
+  "financial-rag": "sensor",
+  "investment-research": "compute",
+  aeroforge: "ring",
   "hospital-siting": "data",
   "portfolio-ml": "cooling",
   req2test: "io",
   "ai-voice-commerce": "io",
-  "speech-benchmark": "ai",
-  "mt5-platform": "compute",
-  "trek-manager": "compute",
+  "speech-benchmark": "sensor",
+  "mt5-platform": "io",
+  "trek-manager": "data",
 };
 
 export function Work() {
