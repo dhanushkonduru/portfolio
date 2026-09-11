@@ -112,8 +112,10 @@ Three more things make the machine part of the product rather than scenery:
   subsystem's anchor to screen space every frame and the HTML layer draws a
   leader line from that exact point. Rotate the assembly and the labels follow
   the parts they name.
-- **Pointing at a domain in Stack, or a project in Work, lights the module that
-  actually runs it.** The DOM and the 3D are two halves of one component.
+- **The engine follows what you are reading.** The project crossing the middle
+  of the viewport, the domain row that is open, the stage's own emphasis — each
+  puts a subsystem under _focus_, and the module lights and its callout rises.
+  Hover is a separate, stronger channel, so the two never fight.
 - **Hovering a module** lifts it out of its dock, brightens its indicator, and
   raises its callout to full.
 

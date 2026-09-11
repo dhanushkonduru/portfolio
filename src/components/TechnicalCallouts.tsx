@@ -3,10 +3,12 @@
 import { useEffect, useRef } from "react";
 import {
   calloutWeight,
+  getFocus,
   getHover,
   projected,
   PROJECTED_STRIDE,
   pulse,
+  stageFocus,
   subscribeHover,
 } from "@/core/store";
 import { SUBSYSTEMS } from "@/core/stages";
@@ -55,13 +57,21 @@ export function TechnicalCallouts() {
       if (svg.current) svg.current.setAttribute("viewBox", `0 0 ${w} ${h}`);
 
       const hovered = getHover();
+      const focused = getFocus() ?? stageFocus(pulse.p);
       const wide = w >= 1500;
 
       /* The bay has two regions a label may never enter: the reading column
          at the left of the hero, and the navigator's gutter at the right.
          Both are measured, not assumed. */
+      const navPad = Math.max(144, Math.min(w * 0.12, 224));
+      const docked = pulse.p > 0.6 && pulse.p < 5.5;
       const textEdge = pulse.p < 0.6 ? Math.min(w * 0.42, 64 + 512 + 28) : 14;
-      const navEdge = w - Math.max(144, Math.min(w * 0.12, 224)) - 40;
+      /* While the engine is docked against the lane, every label lives on the
+         engine's side of it. A callout drawn over the reading is a caption on
+         the wrong picture. */
+      const navEdge = docked
+        ? Math.max(64, w - navPad - 864) - 18
+        : w - navPad - 40;
 
       /* Placed labels, per side, so later ones can step clear of earlier. */
       const placedL: { y: number; hgt: number }[] = [];
@@ -82,10 +92,17 @@ export function TechnicalCallouts() {
 
         boost[i] += ((hovered === s.key ? 1 : 0) - boost[i]) * 0.16;
 
+        /* Four levels: a resting presence so the machine always reads as
+           annotated, the stage's own emphasis, the reader's focus, and the
+           pointer. Never all six at full. */
         const stage = calloutWeight(s.key, pulse.p, wide);
+        const focus = focused === s.key ? 0.86 : 0;
         const want =
           onScreen *
-          Math.min(1, Math.max(boost[i], stage * 0.9 + 0.03) * (0.4 + depth));
+          Math.min(
+            1,
+            Math.max(boost[i], focus, stage * 0.9, 0.14) * (0.4 + depth),
+          );
         shown[i] += (want - shown[i]) * 0.12;
 
         const a = shown[i];

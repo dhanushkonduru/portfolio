@@ -2,7 +2,6 @@
 
 import { papers, patents, type Patent } from "@/data/research";
 import { STAGES } from "@/core/stages";
-import { setHover } from "@/core/store";
 import { Field, SectionHead } from "@/components/Kit";
 import { DrawRule, Emerge, MaskLines } from "@/components/Motion";
 
@@ -21,8 +20,6 @@ export function Research() {
     <section
       id="research"
       className="stratum relative scroll-mt-28 py-28 md:py-44"
-      onMouseEnter={() => setHover("compute")}
-      onMouseLeave={() => setHover(null)}
     >
       <div className="rail px-[clamp(1.25rem,4vw,4rem)] xl:pr-[clamp(9rem,12vw,14rem)]">
         <SectionHead index={S.index} label={S.label} state={S.state} />
@@ -46,8 +43,8 @@ export function Research() {
               ))}
             </ul>
             <p className="t-note mt-6 max-w-[30ch]">
-              The assembly behind this section is the specimen. Scrolling drives
-              the probe down through it.
+              The chamber behind this section is under measurement. The scanner
+              runs the core while you read.
             </p>
           </div>
         </div>

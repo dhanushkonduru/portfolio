@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useEffect, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Environment,
   Lightformer,
@@ -12,6 +12,7 @@ import { VerificationEngine, type Tier } from "./VerificationEngine";
 import { ParticleField } from "./ParticleField";
 import { CameraRig } from "./CameraRig";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { pulse } from "./store";
 
 /* ============================================================================
  * SCENE
@@ -38,6 +39,44 @@ function detectTier(): Tier {
   if ((memory !== undefined && memory <= 2) || cores <= 2) return "low";
   if (coarse || narrow || cores <= 4) return "mid";
   return "high";
+}
+
+/**
+ * The key light leans a little toward the pointer. It is the "lighting
+ * response" the brief asks for, and it is the whole of it: a few tenths of a
+ * unit on an object several units across, enough that the highlights move
+ * when the visitor does and nothing else changes.
+ */
+function KeyLight({
+  shadows,
+  reduced,
+}: {
+  shadows: boolean;
+  reduced: boolean;
+}) {
+  const ref = useRef<THREE.DirectionalLight>(null);
+  useFrame(() => {
+    if (!ref.current || reduced) return;
+    ref.current.position.set(5 + pulse.sx * 0.9, 8 + pulse.sy * 0.5, 6);
+  });
+  return (
+    <directionalLight
+      ref={ref}
+      position={[5, 8, 6]}
+      intensity={3.2}
+      color={0xdce8f7}
+      castShadow={shadows}
+      shadow-mapSize={[1536, 1536]}
+      shadow-bias={-0.0018}
+      shadow-normalBias={0.025}
+      shadow-camera-near={2}
+      shadow-camera-far={26}
+      shadow-camera-left={-4.5}
+      shadow-camera-right={4.5}
+      shadow-camera-top={4.5}
+      shadow-camera-bottom={-4.5}
+    />
+  );
 }
 
 const PARTICLES: Record<Tier, number> = { high: 1100, mid: 520, low: 240 };
@@ -111,21 +150,7 @@ export function Scene() {
             white at three temperatures. */}
         <ambientLight intensity={0.32} color={0x93abc6} />
 
-        <directionalLight
-          position={[5, 8, 6]}
-          intensity={3.2}
-          color={0xdce8f7}
-          castShadow={shadows}
-          shadow-mapSize={[1536, 1536]}
-          shadow-bias={-0.0018}
-          shadow-normalBias={0.025}
-          shadow-camera-near={2}
-          shadow-camera-far={26}
-          shadow-camera-left={-4.5}
-          shadow-camera-right={4.5}
-          shadow-camera-top={4.5}
-          shadow-camera-bottom={-4.5}
-        />
+        <KeyLight shadows={shadows} reduced={reduced} />
 
         <directionalLight
           position={[-7, 1.5, 4]}

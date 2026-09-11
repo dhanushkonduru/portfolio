@@ -207,6 +207,35 @@ export function setHover(key: ModuleKey | null) {
   for (const l of hoverListeners) l();
 }
 
+/* ---- focus ----
+   Hover is where the pointer is. Focus is where the READER is: the project
+   being read, the row that is open, the stage's own emphasis. The renderer
+   lights both, hover harder, and the two never overwrite each other — which
+   is what let a hovered row light a module for exactly one frame before the
+   proximity test cleared it. */
+let focused: ModuleKey | null = null;
+const focusListeners = new Set<() => void>();
+
+export function subscribeFocus(fn: () => void) {
+  focusListeners.add(fn);
+  return () => focusListeners.delete(fn);
+}
+export function getFocus() {
+  return focused;
+}
+export function setFocus(key: ModuleKey | null) {
+  if (focused === key) return;
+  focused = key;
+  (G as Global & { __dkFocus?: ModuleKey | null }).__dkFocus = key;
+  for (const l of focusListeners) l();
+}
+
+/** The stage's own emphasis, used when the page has not put anything under focus. */
+export function stageFocus(p: number): ModuleKey | null {
+  const i = Math.min(STAGES.length - 1, Math.max(0, Math.round(p)));
+  return STAGES[i].focus;
+}
+
 /* ============================== driver ============================== */
 
 let anchors: HTMLElement[] = [];

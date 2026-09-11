@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   featuredProjects,
   flagshipProjects,
@@ -9,7 +9,9 @@ import {
   type Project,
 } from "@/data/projects";
 import { STAGES, type ModuleKey } from "@/core/stages";
-import { setHover } from "@/core/store";
+import { setFocus } from "@/core/store";
+import { useFocusInView } from "@/hooks/useFocusInView";
+import { Disclosure } from "@/components/Disclosure";
 import { ProjectVisual, hasVisual } from "@/components/ProjectVisual";
 import { ProjectModal } from "@/components/ProjectModal";
 import { SectionHead, TextLink } from "@/components/Kit";
@@ -117,13 +119,11 @@ function Plate({
 }) {
   const bound = BOUND[project.id] ?? null;
   const visual = hasVisual(project.id);
+  const ref = useRef<HTMLElement>(null);
+  useFocusInView(ref, bound);
 
   return (
-    <article
-      className="mt-20 md:mt-32"
-      onMouseEnter={() => setHover(bound)}
-      onMouseLeave={() => setHover(null)}
-    >
+    <article ref={ref} className="mt-20 md:mt-32">
       <div className="rail px-[clamp(1.25rem,4vw,4rem)] xl:pr-[clamp(9rem,12vw,14rem)]">
         <div className="lane">
           {/* record header */}
@@ -144,7 +144,7 @@ function Plate({
           {/* diagram beside the record */}
           <div className="grid-12 mt-12 gap-y-12 md:mt-16">
             {visual ? (
-              <div className="col-span-12 lg:col-span-6">
+              <div className="col-span-12">
                 <Emerge as="figure">
                   <ProjectVisual id={project.id} />
                 </Emerge>
@@ -152,10 +152,7 @@ function Plate({
             ) : null}
 
             <dl
-              className={cn(
-                "col-span-12",
-                visual ? "lg:col-span-5 lg:col-start-8" : "lg:col-span-8",
-              )}
+              className={cn("col-span-12", visual ? "mt-2" : "lg:col-span-9")}
             >
               <Row label="Problem" body={project.problem} />
               <Row label="Approach" body={project.solution} />
@@ -163,11 +160,14 @@ function Plate({
             </dl>
           </div>
 
-          {/* technical decisions */}
+          {/* the working, on request */}
           {project.technical.length ? (
-            <div className="mt-12">
-              <p className="t-mark text-ink-4">Technical decisions</p>
-              <ul className="mt-5 space-y-3">
+            <Disclosure
+              className="mt-10"
+              label={`Technical decisions · ${project.technical.length}`}
+              openLabel="Technical decisions"
+            >
+              <ul className="space-y-3 pt-5">
                 {project.technical.map((line, i) => (
                   <li key={line} className="flex gap-4">
                     <span className="t-note shrink-0 tabular-nums text-rule-3">
@@ -179,7 +179,7 @@ function Plate({
                   </li>
                 ))}
               </ul>
-            </div>
+            </Disclosure>
           ) : null}
 
           {/* measured results */}
@@ -264,16 +264,16 @@ function RegisterRow({
   onOpen: () => void;
 }) {
   const bound = BOUND[project.id] ?? null;
+  const ref = useRef<HTMLDivElement>(null);
+  useFocusInView(ref, bound);
 
   return (
-    <div className="border-t border-rule last:border-b">
+    <div ref={ref} className="border-t border-rule last:border-b">
       <button
         type="button"
         onClick={onOpen}
-        onMouseEnter={() => setHover(bound)}
-        onMouseLeave={() => setHover(null)}
-        onFocus={() => setHover(bound)}
-        onBlur={() => setHover(null)}
+        onMouseEnter={() => setFocus(bound)}
+        onFocus={() => setFocus(bound)}
         data-cursor="open"
         aria-label={`Open the ${project.title} record`}
         className="rail group block w-full px-[clamp(1.25rem,4vw,4rem)] py-6 text-left xl:pr-[clamp(9rem,12vw,14rem)]"

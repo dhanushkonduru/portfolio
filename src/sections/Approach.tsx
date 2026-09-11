@@ -2,9 +2,10 @@
 
 import { profile } from "@/data/profile";
 import { STAGES, SUBSYSTEMS } from "@/core/stages";
-import { setHover } from "@/core/store";
+import { setFocus } from "@/core/store";
 import { Annotation, SectionHead } from "@/components/Kit";
 import { DrawRule, Emerge, MaskLines } from "@/components/Motion";
+import { Disclosure } from "@/components/Disclosure";
 
 const S = STAGES[1];
 
@@ -87,26 +88,53 @@ export function Approach() {
             </h2>
           </div>
 
-          <div className="grid-12 mt-16 gap-y-12 md:mt-24">
-            <div className="col-span-12 lg:col-span-4">
-              <Emerge>
-                <Annotation className="lg:sticky lg:top-36">
-                  Three internships, two patent filings, and a set of
-                  repositories you can open. What follows is what is actually in
-                  them.
-                </Annotation>
-              </Emerge>
-            </div>
+          <p className="t-read mt-8 max-w-[52ch] text-pretty text-ink-2">
+            Three internships, two invention disclosures, and a set of
+            repositories you can open. What follows is what is actually in them.
+          </p>
 
-            <div className="col-span-12 space-y-10 lg:col-span-7 lg:col-start-5">
-              {passages.map((p) => (
-                <Emerge key={p.heading}>
-                  <h3 className="t-mark text-signal">{p.heading}</h3>
-                  <p className="t-read mt-3 text-pretty text-ink-2">{p.body}</p>
-                </Emerge>
-              ))}
-            </div>
+          {/* ── the three principles first: how the system is put together ── */}
+          <div className="mt-16 grid gap-x-10 gap-y-10 md:mt-20 md:grid-cols-3">
+            {principles.map((p, i) => (
+              <Emerge key={p.n} delay={i * 0.05} as="article">
+                <div className="flex items-center gap-3">
+                  <span className="t-mark text-signal tabular-nums">{p.n}</span>
+                  <span className="h-px flex-1 bg-rule" aria-hidden="true" />
+                </div>
+                <h3 className="t-title mt-5 text-ink">{p.title}</h3>
+                <p className="t-read-sm mt-3 text-pretty text-ink-3">
+                  {p.body}
+                </p>
+              </Emerge>
+            ))}
           </div>
+
+          {/* ── the working, on request ── */}
+          <Disclosure
+            className="mt-14"
+            label="Read the full approach"
+            openLabel="Close the full approach"
+          >
+            <div className="grid-12 gap-y-10 pt-10">
+              <div className="col-span-12 lg:col-span-4">
+                <Annotation className="lg:sticky lg:top-36">
+                  Five short passages: what is in production, what runs on it,
+                  how the models were measured, what the research found, and
+                  where this is going.
+                </Annotation>
+              </div>
+              <div className="col-span-12 space-y-10 lg:col-span-7 lg:col-start-5">
+                {passages.map((p) => (
+                  <div key={p.heading}>
+                    <h3 className="t-mark text-signal">{p.heading}</h3>
+                    <p className="t-read mt-3 text-pretty text-ink-2">
+                      {p.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Disclosure>
         </div>
       </div>
 
@@ -132,22 +160,6 @@ export function Approach() {
         <DrawRule className="block h-px w-full bg-rule" />
       </div>
 
-      {/* ── how the system is put together ─────────────────────────────── */}
-      <div className="rail mt-20 px-[clamp(1.25rem,4vw,4rem)] md:mt-28 xl:pr-[clamp(9rem,12vw,14rem)]">
-        <div className="lane grid gap-x-10 gap-y-10 md:grid-cols-3">
-          {principles.map((p, i) => (
-            <Emerge key={p.n} delay={i * 0.05} as="article">
-              <div className="flex items-center gap-3">
-                <span className="t-mark text-signal tabular-nums">{p.n}</span>
-                <span className="h-px flex-1 bg-rule" aria-hidden="true" />
-              </div>
-              <h3 className="t-title mt-5 text-ink">{p.title}</h3>
-              <p className="t-read-sm mt-3 text-pretty text-ink-3">{p.body}</p>
-            </Emerge>
-          ))}
-        </div>
-      </div>
-
       {/* ── the subsystem index ────────────────────────────────────────
              The same six modules the machine carries, written out. Pointing at
              a row lights the module it names, which is how the annotations
@@ -161,13 +173,13 @@ export function Approach() {
             <span className="t-note">{SUBSYSTEMS.length} modules</span>
           </div>
 
-          <ul className="mt-8" onMouseLeave={() => setHover(null)}>
+          <ul className="mt-8" onMouseLeave={() => setFocus(null)}>
             {SUBSYSTEMS.map((s) => (
               <li key={s.key} className="border-t border-rule last:border-b">
                 <div
-                  onMouseEnter={() => setHover(s.key)}
-                  onFocus={() => setHover(s.key)}
-                  onBlur={() => setHover(null)}
+                  onMouseEnter={() => setFocus(s.key)}
+                  onFocus={() => setFocus(s.key)}
+                  onBlur={() => setFocus(null)}
                   tabIndex={0}
                   className="grid-12 gap-y-1.5 py-4 outline-none transition-colors duration-400 hover:text-ink focus-visible:text-ink"
                 >

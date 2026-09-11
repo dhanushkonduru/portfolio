@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { skillGroups } from "@/data/skills";
 import { STAGES, type ModuleKey } from "@/core/stages";
-import { setHover } from "@/core/store";
+import { setFocus } from "@/core/store";
 import { SectionHead } from "@/components/Kit";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
@@ -46,7 +46,7 @@ export function Stack() {
 
   const focus = (i: number | null) => {
     setActive(i);
-    setHover(i === null ? null : (BOUND[skillGroups[i].id] ?? null));
+    setFocus(i === null ? null : (BOUND[skillGroups[i].id] ?? null));
   };
 
   return (

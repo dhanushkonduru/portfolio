@@ -39,14 +39,19 @@ function Frame({
   return (
     <figure className="w-full">
       <div className="h-px w-full bg-rule" aria-hidden="true" />
-      <svg
-        viewBox={viewBox}
-        className="block w-full"
-        role="img"
-        aria-label={caption}
-      >
-        {children}
-      </svg>
+      {/* A diagram is wide by nature. It takes the whole reading lane, and on
+          a screen narrower than the drawing it scrolls in its own track
+          rather than shrinking its labels below legibility. */}
+      <div className="overflow-x-auto" data-scroll-ignore>
+        <svg
+          viewBox={viewBox}
+          className="block w-full min-w-[34rem]"
+          role="img"
+          aria-label={caption}
+        >
+          {children}
+        </svg>
+      </div>
       <div className="h-px w-full bg-rule" aria-hidden="true" />
       <figcaption className="t-note pt-3">{caption}</figcaption>
     </figure>
@@ -72,7 +77,7 @@ function UnlearningChart() {
       viewBox="0 0 480 260"
       caption="Knowledge recovered by a relearning attack · 3 seeds, mean"
     >
-      <text x="24" y="30" fill={INK_MUTE} fontSize="9" letterSpacing="1.4">
+      <text x="24" y="30" fill={INK_MUTE} fontSize="11" letterSpacing="1.4">
         RECOVERED AFTER &quot;FORGETTING&quot;
       </text>
 
@@ -84,7 +89,7 @@ function UnlearningChart() {
               x={X - 12}
               y={y + 11}
               fill={r.tone === SIGNAL ? SIGNAL : INK_MUTE}
-              fontSize="11"
+              fontSize="13"
               textAnchor="end"
             >
               {r.label}
@@ -110,7 +115,7 @@ function UnlearningChart() {
               x={X + (r.value / 100) * W + 8}
               y={y + 11}
               fill={r.tone}
-              fontSize="10"
+              fontSize="12"
               fontFamily="monospace"
             >
               {r.value}%
@@ -127,7 +132,7 @@ function UnlearningChart() {
         stroke={LINE}
         strokeDasharray="2 3"
       />
-      <text x="24" y="243" fill={INK_MUTE} fontSize="9">
+      <text x="24" y="243" fill={INK_MUTE} fontSize="11">
         A loss curve reports none of this.
       </text>
     </Frame>
@@ -160,7 +165,7 @@ function RagPipeline() {
         x={x + w / 2}
         y={y + h / 2 + 3.5}
         fill={accent ? SIGNAL : INK_MUTE}
-        fontSize="9.5"
+        fontSize="11.5"
         textAnchor="middle"
       >
         {label}
@@ -204,10 +209,10 @@ function RagPipeline() {
       {box(108, 82, 78, 28, "Dense · vectors")}
       {box(108, 126, 78, 28, "BM25 · exact")}
 
-      <text x="147" y="72" fill={INK_MUTE} fontSize="8" textAnchor="middle">
+      <text x="147" y="72" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
         TICKERS AND FIGURES RANK
       </text>
-      <text x="147" y="171" fill={INK_MUTE} fontSize="8" textAnchor="middle">
+      <text x="147" y="171" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
         POORLY UNDER VECTORS ALONE
       </text>
 
@@ -220,12 +225,12 @@ function RagPipeline() {
       {arrow(378, 118, 396, 118)}
       {box(398, 96, 62, 44, "Answer + cites", true)}
 
-      <text x="342" y="150" fill={AMBER} fontSize="9" textAnchor="middle">
+      <text x="342" y="150" fill={AMBER} fontSize="11" textAnchor="middle">
         −40% tokens
       </text>
 
       <g>
-        <text x="20" y="218" fill={INK_MUTE} fontSize="9" letterSpacing="1.2">
+        <text x="20" y="218" fill={INK_MUTE} fontSize="11" letterSpacing="1.2">
           FAITHFULNESS · 50-QUESTION RAGAS SET
         </text>
         <rect x="20" y="228" width="180" height="8" rx="2" fill={WELL} />
@@ -242,12 +247,12 @@ function RagPipeline() {
           x="210"
           y="235"
           fill={INK_MUTE}
-          fontSize="9"
+          fontSize="11"
           fontFamily="monospace"
         >
           0.71
         </text>
-        <text x="248" y="235" fill={INK_MUTE} fontSize="9">
+        <text x="248" y="235" fill={INK_MUTE} fontSize="11">
           →
         </text>
         <rect x="268" y="228" width="180" height="8" rx="2" fill={WELL} />
@@ -264,7 +269,7 @@ function RagPipeline() {
           x="454"
           y="235"
           fill={SIGNAL}
-          fontSize="9"
+          fontSize="11"
           fontFamily="monospace"
           textAnchor="end"
         >
@@ -305,7 +310,7 @@ function VerificationGate() {
         fill={WELL}
         stroke={LINE}
       />
-      <text x="63" y="127" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
+      <text x="63" y="127" fill={INK_MUTE} fontSize="11.5" textAnchor="middle">
         Erasure request
       </text>
 
@@ -320,13 +325,13 @@ function VerificationGate() {
         fill={WELL}
         stroke={LINE}
       />
-      <text x="173" y="116" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
+      <text x="173" y="116" fill={INK_MUTE} fontSize="11.5" textAnchor="middle">
         Provenance
       </text>
-      <text x="173" y="130" fill={INK_MUTE} fontSize="8" textAnchor="middle">
+      <text x="173" y="130" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
         lookup, not search
       </text>
-      <text x="173" y="143" fill={INK_MUTE} fontSize="8" textAnchor="middle">
+      <text x="173" y="143" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
         exact target set
       </text>
 
@@ -341,16 +346,16 @@ function VerificationGate() {
         fill={WELL}
         stroke={LINE}
       />
-      <text x="283" y="107" fill={INK_MUTE} fontSize="9.5" textAnchor="middle">
+      <text x="283" y="107" fill={INK_MUTE} fontSize="11.5" textAnchor="middle">
         Unlearn
       </text>
-      <text x="283" y="122" fill={INK_MUTE} fontSize="8" textAnchor="middle">
+      <text x="283" y="122" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
         behavioural audit
       </text>
-      <text x="283" y="135" fill={INK_MUTE} fontSize="8" textAnchor="middle">
+      <text x="283" y="135" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
         relearning attack
       </text>
-      <text x="283" y="148" fill={INK_MUTE} fontSize="8" textAnchor="middle">
+      <text x="283" y="148" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
         membership inference
       </text>
 
@@ -373,7 +378,7 @@ function VerificationGate() {
           x="357"
           y="72"
           fill={SIGNAL}
-          fontSize="8"
+          fontSize="10.5"
           letterSpacing="1.4"
           textAnchor="middle"
         >
@@ -404,7 +409,7 @@ function VerificationGate() {
         stroke={SIGNAL}
         strokeOpacity="0.5"
       />
-      <text x="426" y="95" fill={SIGNAL} fontSize="9.5" textAnchor="middle">
+      <text x="426" y="95" fill={SIGNAL} fontSize="11.5" textAnchor="middle">
         Deploy
       </text>
 
@@ -418,11 +423,11 @@ function VerificationGate() {
         stroke={AMBER}
         strokeOpacity="0.4"
       />
-      <text x="426" y="159" fill={AMBER} fontSize="9.5" textAnchor="middle">
+      <text x="426" y="159" fill={AMBER} fontSize="11.5" textAnchor="middle">
         Withheld
       </text>
 
-      <text x="20" y="212" fill={INK_MUTE} fontSize="9" letterSpacing="1.2">
+      <text x="20" y="212" fill={INK_MUTE} fontSize="11" letterSpacing="1.2">
         FLEET MONITORING NEVER PAUSES · ~1/10 OF RETRAINING TIME
       </text>
       <line
@@ -433,7 +438,7 @@ function VerificationGate() {
         stroke={LINE}
         strokeDasharray="2 3"
       />
-      <text x="20" y="242" fill={AMBER} fontSize="9">
+      <text x="20" y="242" fill={AMBER} fontSize="11">
         Feasibility check refuses the request outright when the target set is
         indistinguishable.
       </text>
@@ -465,10 +470,10 @@ function AgentGraph() {
         stroke={SIGNAL}
         strokeOpacity="0.4"
       />
-      <text x="228" y="124" fill={SIGNAL} fontSize="9.5" textAnchor="middle">
+      <text x="228" y="124" fill={SIGNAL} fontSize="11.5" textAnchor="middle">
         Pydantic
       </text>
-      <text x="228" y="137" fill={SIGNAL} fontSize="9.5" textAnchor="middle">
+      <text x="228" y="137" fill={SIGNAL} fontSize="11.5" textAnchor="middle">
         state
       </text>
 
@@ -495,7 +500,7 @@ function AgentGraph() {
             x={a.x}
             y={a.y + 3.5}
             fill={INK_MUTE}
-            fontSize="9"
+            fontSize="11"
             textAnchor="middle"
           >
             {a.label}
@@ -518,7 +523,7 @@ function AgentGraph() {
           x="27"
           y="98"
           fill={AMBER}
-          fontSize="7.5"
+          fontSize="10"
           letterSpacing="1.2"
           textAnchor="middle"
         >
@@ -532,7 +537,7 @@ function AgentGraph() {
         />
       </g>
 
-      <text x="20" y="238" fill={INK_MUTE} fontSize="9">
+      <text x="20" y="238" fill={INK_MUTE} fontSize="11">
         A run that fails halfway resumes from the last good state.
       </text>
     </Frame>
@@ -551,7 +556,7 @@ function WalkForward() {
       viewBox="0 0 480 260"
       caption="Expanding-window validation · random k-fold leaks the future"
     >
-      <text x="20" y="28" fill={INK_MUTE} fontSize="9" letterSpacing="1.4">
+      <text x="20" y="28" fill={INK_MUTE} fontSize="11" letterSpacing="1.4">
         TIME →
       </text>
 
@@ -564,7 +569,7 @@ function WalkForward() {
               x={X - 10}
               y={y + 11}
               fill={INK_MUTE}
-              fontSize="9"
+              fontSize="11"
               textAnchor="end"
               fontFamily="monospace"
             >
@@ -595,7 +600,7 @@ function WalkForward() {
 
       <g transform="translate(56, 218)">
         <rect width="11" height="11" rx="2" fill={SIGNAL} fillOpacity="0.5" />
-        <text x="18" y="9" fill={INK_MUTE} fontSize="9.5">
+        <text x="18" y="9" fill={INK_MUTE} fontSize="11.5">
           Train
         </text>
         <rect
@@ -606,12 +611,12 @@ function WalkForward() {
           fill={AMBER}
           fillOpacity="0.55"
         />
-        <text x="88" y="9" fill={INK_MUTE} fontSize="9.5">
+        <text x="88" y="9" fill={INK_MUTE} fontSize="11.5">
           Validate, always after
         </text>
       </g>
 
-      <text x="20" y="245" fill={INK_MUTE} fontSize="9">
+      <text x="20" y="245" fill={INK_MUTE} fontSize="11">
         Nothing after the validation window ever enters training.
       </text>
     </Frame>
@@ -649,7 +654,7 @@ function GeoStack() {
               x="98"
               y={y + 8}
               fill={l.tone === LINE ? INK_MUTE : l.tone}
-              fontSize="9"
+              fontSize="11"
               textAnchor="end"
             >
               {l.label}
@@ -658,7 +663,7 @@ function GeoStack() {
         );
       })}
 
-      <text x="20" y="266" fill={INK_MUTE} fontSize="9">
+      <text x="20" y="266" fill={INK_MUTE} fontSize="11">
         Hindcast against a withheld epoch · run with and without the growth
         criterion.
       </text>

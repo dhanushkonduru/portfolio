@@ -19,6 +19,7 @@ import {
 } from "./parts";
 import { SUBSYSTEMS, type ModuleKey } from "./stages";
 import {
+  getFocus,
   getHover,
   makeConfig,
   projected,
@@ -26,6 +27,7 @@ import {
   pulse,
   sampleStage,
   setHover,
+  stageFocus,
 } from "./store";
 
 /* ============================================================================
@@ -120,7 +122,12 @@ export function VerificationEngine({
       strip: new THREE.BoxGeometry(0.012, 0.44, 0.012),
       junction: chamferBox(0.12, 0.1, 0.12, 0.015),
       chip: chamferBox(0.12, 0.12, 0.05, 0.015),
+      /* Connector sockets on the I/O face, sensor apertures on the array. */
+      socket: new THREE.CylinderGeometry(0.028, 0.028, 0.05, 10),
+      aperture: new THREE.TorusGeometry(0.046, 0.008, 6, 20),
     };
+    g.socket.rotateZ(Math.PI / 2);
+    g.aperture.rotateY(Math.PI / 2);
     g.drumSlit.rotateX(Math.PI / 2);
     g.capRing.rotateX(Math.PI / 2);
     g.scanner.rotateX(Math.PI / 2);
@@ -359,6 +366,7 @@ export function VerificationEngine({
   const px = useRef(0);
   const py = useRef(0);
   const openS = useRef(0);
+  const presentYaw = useRef(0);
 
   useFrame((state, rawDelta) => {
     const dt = Math.min(0.05, rawDelta);
@@ -378,6 +386,7 @@ export function VerificationEngine({
 
     const idle = reduced ? 0 : t;
     const hovered = getHover();
+    const focused = getFocus() ?? stageFocus(pulse.p);
 
     /* Mechanical state is itself damped: a stage boundary asks the machine to
        open, and the machine takes a moment to do it. */
@@ -386,9 +395,24 @@ export function VerificationEngine({
     const rev = cfg.reveal;
     const scan = cfg.scan;
 
+    /* ---- presentation ----
+       While docked against the reading lane the engine is cropped by the
+       frame, so a module that lights on the far side lights for nobody. When
+       the reader's focus is a docked module, the engine turns to present it —
+       slowly, the way a turntable does, and only by as much as it takes. */
+    const present = MODULES.find((m) => m.key && m.key === focused);
+    const wantYaw = present ? present.angle - 0.42 : 0;
+    presentYaw.current = damp(
+      presentYaw.current,
+      wantYaw * cfg.dock,
+      reduced ? 60 : 1.1,
+      dt,
+    );
+
     /* ---- the engine as a whole ---- */
     if (root.current) {
-      root.current.rotation.y = cfg.spin + px.current * 0.07 + pulse.dragYaw;
+      root.current.rotation.y =
+        cfg.spin + presentYaw.current + px.current * 0.07 + pulse.dragYaw;
       root.current.rotation.x = -py.current * 0.03;
     }
 
@@ -406,7 +430,9 @@ export function VerificationEngine({
 
     /* ---- the core ---- */
     if (core.current) {
-      core.current.rotation.y = idle * 0.06 + (hovered === "compute" ? 0.2 : 0);
+      core.current.rotation.y =
+        idle * 0.06 +
+        (hovered === "compute" ? 0.2 : focused === "compute" ? 0.1 : 0);
     }
     if (seedRef.current) {
       const breath = 1 + Math.sin(idle * 1.1) * 0.04;
@@ -430,7 +456,7 @@ export function VerificationEngine({
 
     /* ---- subsystem illumination ---- */
     const key = (k: ModuleKey | "aux", base: number) => {
-      const want = hovered === k ? 1 : 0;
+      const want = hovered === k ? 1 : focused === k ? 0.62 : 0;
       const cur = lift.current[k] ?? 0;
       const next = damp(cur, want, 6, dt);
       lift.current[k] = next;
@@ -905,6 +931,26 @@ export function VerificationEngine({
                 material={glow[m.key ?? "aux"]}
                 position={[0.66, 0.36, -0.14]}
               />
+              {m.key === "io"
+                ? [-0.16, -0.06, 0.04, 0.14].map((z) => (
+                    <mesh
+                      key={z}
+                      geometry={geo.socket}
+                      material={mats.anodized}
+                      position={[0.665, -0.3, z]}
+                    />
+                  ))
+                : null}
+              {m.key === "sensor"
+                ? [-0.17, -0.05].map((z) => (
+                    <mesh
+                      key={z}
+                      geometry={geo.aperture}
+                      material={mats.silver}
+                      position={[0.665, -0.3, z]}
+                    />
+                  ))
+                : null}
               {m.key ? (
                 <object3D
                   ref={anchor(anchorIndex(m.key))}
