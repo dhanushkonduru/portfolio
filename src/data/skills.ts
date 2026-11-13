@@ -1,18 +1,69 @@
 export type SkillGroup = {
   id: string;
   name: string;
-  /** What this cluster is actually used for, in his own work. */
-  context: string;
   items: string[];
+  /** Wider tile in the grid. */
+  wide?: boolean;
 };
 
-/** Verbatim from the résumé's technical skills section. No additions. */
+/**
+ * The short list the page shows: the tools behind the work above, the ones
+ * worth being asked about. Every name is taken from `skillGroups` as written.
+ */
+export const coreSkills: { id: string; name: string; items: string[] }[] = [
+  {
+    id: "llm",
+    name: "LLM systems",
+    items: [
+      "LangGraph",
+      "LangChain",
+      "RAG Systems",
+      "RAGAS Evaluation",
+      "Multi-Agent Orchestration",
+    ],
+  },
+  {
+    id: "ml",
+    name: "Machine learning",
+    items: [
+      "PyTorch",
+      "Hugging Face Transformers",
+      "LoRA Fine-Tuning",
+      "scikit-learn",
+      "Machine Unlearning",
+    ],
+  },
+  {
+    id: "backend",
+    name: "Backend",
+    items: [
+      "Python",
+      "Django REST Framework",
+      "FastAPI",
+      "PostgreSQL",
+      "Multi-Tenant Architecture",
+    ],
+  },
+  {
+    id: "shipping",
+    name: "Shipping",
+    items: [
+      "Docker",
+      "GitHub Actions",
+      "MLflow",
+      "AWS App Runner",
+      "GCP Cloud Run",
+    ],
+  },
+];
+
+/** The complete list, verbatim from the résumé's technical skills section.
+    No additions. The page shows `coreSkills`; this is the record. */
 export const skillGroups: SkillGroup[] = [
   {
     id: "llm",
     name: "LLM & Agentic Frameworks",
-    context:
-      "Where most of the recent work sits. Retrieval, orchestration, and the evaluation that decides whether either is actually working.",
+    wide: true,
     items: [
       "LangChain",
       "LangGraph",
@@ -21,6 +72,8 @@ export const skillGroups: SkillGroup[] = [
       "Groq API",
       "RAG Systems",
       "RAGAS Evaluation",
+      "LLM Evaluation",
+      "Multi-Agent Orchestration",
       "Prompt Engineering",
       "Function Calling",
       "Structured Outputs",
@@ -29,68 +82,52 @@ export const skillGroups: SkillGroup[] = [
   {
     id: "ml",
     name: "AI / Machine Learning",
-    context:
-      "From training a transformer from scratch to fine-tuning open checkpoints and benchmarking five models against each other.",
+    wide: true,
     items: [
       "PyTorch",
       "scikit-learn",
       "XGBoost",
       "pandas",
       "NumPy",
-      "Jupyter",
       "Deep Learning",
       "NLP",
       "Model Evaluation",
       "Hyperparameter Tuning",
       "Feature Engineering",
       "LoRA Fine-Tuning",
-      "HuggingFace Transformers",
+      "Hugging Face Transformers",
+      "Machine Unlearning",
     ],
   },
   {
     id: "backend",
     name: "Backend Development",
-    context:
-      "Production Django in a multi-tenant product, plus FastAPI for every model-serving surface.",
+    items: ["Django", "Django REST Framework", "FastAPI", "REST APIs"],
+  },
+  {
+    id: "auth",
+    name: "Auth & Architecture",
     items: [
-      "Django",
-      "Django REST Framework",
-      "FastAPI",
-      "Flask",
-      "REST APIs",
       "Multi-Tenant Architecture",
       "RBAC",
-      "JWT & OTP Auth",
-      "API Key Auth",
+      "JWT",
+      "OTP",
+      "API Key Authentication",
     ],
   },
   {
     id: "languages",
     name: "Languages",
-    context: "Python first; Java and C++ for data structures and coursework.",
-    items: ["Python", "SQL", "Java", "JavaScript", "C++ / C", "HTML/CSS"],
+    items: ["Python", "SQL", "Java", "JavaScript", "C/C++"],
   },
   {
     id: "data",
     name: "Databases",
-    context:
-      "Relational stores for products, vector stores for retrieval, Redis for agent state.",
-    items: [
-      "PostgreSQL",
-      "MongoDB",
-      "SQLite",
-      "Supabase",
-      "Redis",
-      "ChromaDB",
-      "Pinecone",
-      "FAISS",
-    ],
+    items: ["PostgreSQL", "Redis", "SQLite", "ChromaDB", "FAISS"],
   },
   {
     id: "mlops",
     name: "MLOps & DevOps",
-    context:
-      "Tracking, versioning and drift monitoring. This is the part that makes a model operable rather than only trained.",
     items: [
       "MLflow",
       "DVC",
@@ -105,7 +142,6 @@ export const skillGroups: SkillGroup[] = [
   {
     id: "cloud",
     name: "Cloud",
-    context: "Where the internship backends and the RAG service actually run.",
     items: [
       "AWS EC2",
       "AWS S3",
@@ -116,24 +152,20 @@ export const skillGroups: SkillGroup[] = [
   },
 ];
 
-/** Compact strip shown under the hero. */
-export const marqueeTech = [
+/** The short list that runs across the page as a marquee. */
+export const headlineSkills = [
+  "Python",
   "PyTorch",
   "LangGraph",
   "LangChain",
-  "FastAPI",
+  "RAG",
+  "RAGAS",
+  "LoRA",
   "Django",
+  "FastAPI",
   "PostgreSQL",
   "Docker",
   "MLflow",
-  "ChromaDB",
-  "XGBoost",
-  "HuggingFace",
-  "GCP Cloud Run",
   "AWS",
-  "Redis",
-  "DVC",
-  "RAGAS",
-  "LoRA",
-  "Evidently AI",
+  "GCP",
 ];

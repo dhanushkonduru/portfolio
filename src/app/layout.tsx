@@ -1,25 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { profile, seo } from "@/data/profile";
 import "./globals.css";
 
-/* Two voices, self-hosted by next/font at build time — no render-blocking
-   request to a font CDN.
-     · Inter Tight    — the whole typographic ramp, from the hero statement
-                        down to reading copy. Geometric, tight, engineered.
-     · JetBrains Mono — the measuring voice: indices, IDs, units, annotations
-                        and every reading the system reports about itself. */
-const interTight = Inter_Tight({
+/* Three voices, self-hosted by next/font at build time.
+     · Geist            — everything that is read, and the big statements.
+     · Instrument Serif — one italic word per statement. The accent voice.
+     · Geist Mono       — numbers, IDs, labels. */
+const geist = Geist({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter-tight",
+  variable: "--font-geist",
 });
 
-const jetbrains = JetBrains_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500"],
-  variable: "--font-jetbrains-mono",
+  variable: "--font-geist-mono",
+});
+
+const instrument = Instrument_Serif({
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
 });
 
 export const metadata: Metadata = {
@@ -54,7 +59,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#06070a",
+  themeColor: "#0a0a0b",
   colorScheme: "dark",
 };
 
@@ -89,6 +94,8 @@ const personSchema = {
     "PyTorch",
     "Django",
     "MLOps",
+    "LangGraph",
+    "Multi-Tenant Architecture",
   ],
 };
 
@@ -96,7 +103,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${interTight.variable} ${jetbrains.variable}`}>
+    <html
+      lang="en"
+      className={`${geist.variable} ${geistMono.variable} ${instrument.variable}`}
+    >
       <body className="antialiased">
         <script
           type="application/ld+json"

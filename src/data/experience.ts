@@ -71,7 +71,7 @@ export const experience: Role[] = [
     company: "Aapoon",
     title: "Python Intern",
     location: "Hyderabad, IN",
-    mode: "Offline",
+    mode: "On-site",
     start: "2024-05",
     end: "2024-06",
     period: "May 2024 to Jun 2024",
@@ -92,7 +92,7 @@ export const experience: Role[] = [
     end: "2027-05",
     period: "Expected 2027",
     points: [
-      "Five-year integrated master’s in Software Engineering. Coursework in machine learning, distributed systems, databases and software architecture, run alongside the applied research that produced both invention disclosures.",
+      "Five-year integrated master’s in Software Engineering. Coursework in machine learning, distributed systems, databases and software architecture, run alongside the applied research behind five published patent applications.",
     ],
     stack: ["Software Engineering", "Machine Learning", "Systems"],
   },

@@ -20,7 +20,7 @@ export default function OpengraphImage() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        background: "#06070a",
+        background: "#0a0a0b",
         padding: "72px 80px",
         fontFamily: "sans-serif",
       }}
@@ -34,8 +34,8 @@ export default function OpengraphImage() {
             width: 44,
             height: 44,
             borderRadius: 10,
-            border: "1px solid #333a47",
-            color: "#bcd8f2",
+            border: "1px solid #47474e",
+            color: "#c8f53c",
             fontSize: 18,
             fontWeight: 600,
           }}
@@ -45,7 +45,7 @@ export default function OpengraphImage() {
         <div
           style={{
             display: "flex",
-            color: "#9ba4b0",
+            color: "#bcbbb5",
             fontSize: 20,
             letterSpacing: 3,
           }}
@@ -58,26 +58,26 @@ export default function OpengraphImage() {
         <div
           style={{
             display: "flex",
-            color: "#eef1f5",
+            color: "#f4f3ee",
             fontSize: 86,
             fontWeight: 700,
             letterSpacing: -3,
             lineHeight: 1.02,
           }}
         >
-          Systems that prove what they claim.
+          AI systems that prove what they claim.
         </div>
         <div
           style={{
             display: "flex",
-            color: "#9ba4b0",
+            color: "#bcbbb5",
             fontSize: 27,
             lineHeight: 1.4,
             maxWidth: 900,
           }}
         >
-          {profile.role}. RAG with traceable citations, agent pipelines that
-          recover, and machine-unlearning verification.
+          {profile.role}. Multi-tenant Django backends, RAG and agent
+          systems scored with real evals, and machine-unlearning research.
         </div>
       </div>
 
@@ -86,19 +86,19 @@ export default function OpengraphImage() {
           display: "flex",
           alignItems: "center",
           gap: 28,
-          borderTop: "1px solid #202530",
+          borderTop: "1px solid #2b2b30",
           paddingTop: 26,
-          color: "#bcd8f2",
+          color: "#c8f53c",
           fontSize: 20,
         }}
       >
-        <div style={{ display: "flex" }}>2 invention disclosures</div>
-        <div style={{ display: "flex", color: "#333a47" }}>/</div>
-        <div style={{ display: "flex", color: "#9ba4b0" }}>
+        <div style={{ display: "flex" }}>5 published patent applications</div>
+        <div style={{ display: "flex", color: "#47474e" }}>/</div>
+        <div style={{ display: "flex", color: "#bcbbb5" }}>
           3 engineering internships
         </div>
-        <div style={{ display: "flex", color: "#333a47" }}>/</div>
-        <div style={{ display: "flex", color: "#9ba4b0" }}>
+        <div style={{ display: "flex", color: "#47474e" }}>/</div>
+        <div style={{ display: "flex", color: "#bcbbb5" }}>
           Integrated M.Tech, VIT Vellore
         </div>
       </div>

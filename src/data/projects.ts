@@ -144,7 +144,7 @@ export const projects: Project[] = [
     solution:
       "Ownership is stamped onto every telemetry reading as it arrives, so an erasure request resolves to an exact target set by indexed lookup rather than similarity search. The influence is removed without retraining, the result is attacked to check the knowledge was erased rather than hidden, and a deployment gate holds the model out of service until it passes.",
     contribution:
-      "First-named inventor on the disclosure and sole engineer on both implementations: turbofan fleet prognostics (twin-forget), then a port to a second domain, 12-lead diagnostic ECG across four hospital sites (heart-forget).",
+      "Co-inventor on the published patent application and sole engineer on both implementations: turbofan fleet prognostics (twin-forget), then a port to a second domain, 12-lead diagnostic ECG across four hospital sites (heart-forget).",
     technical: [
       "Provenance indexing means an erasure request is resolved by lookup rather than similarity search. That distinction decides whether the target set is exact or approximate.",
       "A feasibility check refuses the request outright when the departing operator’s engines turn out to be statistically indistinguishable from the rest of the fleet on the same contract, because in that case no honest erasure claim can be made.",

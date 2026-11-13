@@ -1,58 +1,115 @@
 export type Patent = {
   id: string;
+  /** Title as it reads on the résumé. */
   title: string;
-  ipr: string;
-  status: string;
-  statusTone: "cleared" | "pending";
-  authors: string;
-  authorNote: string;
-  area: string;
+  /** Two or three words for tight layouts. */
+  short: string;
+  application: string;
+  filed: string;
+  published: string;
+  /** Anything past publication, e.g. a request for examination. */
+  extra?: string;
+  applicant: string;
+  /** In the order they appear on the published application. */
+  inventors: string[];
+  domain: string;
   summary: string;
-  contribution: string;
-  finding: string;
-  searchReport: string;
+  /** Measured results stated in the filing. Empty where none are claimed. */
+  figures: { value: string; label: string }[];
 };
 
-/** Both filings are invention disclosures with patentability cleared after
- *  formal prior-art search. Wording follows the résumé exactly. */
+/**
+ * Five Indian patent applications, all published. Numbers, dates and inventor
+ * order are taken from the front page of each published application; the
+ * summaries and results follow the résumé.
+ */
 export const patents: Patent[] = [
   {
     id: "patent-unlearning",
     title:
-      "Trustworthy Machine Unlearning Through Multi-Prompt Behavioural Assessment for Large Language Models",
-    ipr: "VIT IPR ID IPR0005034P",
-    status: "Patentability cleared",
-    statusTone: "cleared",
-    authors: "Dhanush Konduru, Rajasekhar Babu M, Nirmala M",
-    authorNote: "First-named inventor",
-    area: "Machine unlearning · LLM verification",
+      "Verification-Gated Machine Unlearning for Language Model Synchronization",
+    short: "LLM unlearning",
+    application: "202641110058",
+    filed: "14 Sep 2026",
+    published: "18 Sep 2026",
+    applicant: "Vellore Institute of Technology",
+    inventors: ["Dr M Rajasekhara Babu", "Dhanush Konduru", "Dr Nirmala M"],
+    domain: "Machine unlearning · Language models",
     summary:
-      "A verification-gated engine that diffs two dataset versions, unlearns the removed records and learns the added ones on one model without retraining, then withholds it until a multi-probe behavioural audit and an adversarial relearning test both pass.",
-    contribution:
-      "Conceived the multi-prompt behavioural assessment, built the reference implementation and ran the evaluation that produced the filing’s central result.",
-    finding:
-      "Fine-tuning an unlearned model on a few deleted records brought back 56 to 97 percent of the knowledge that was meant to be gone, against 22 percent for a from-scratch retrain. Every method tested would have certified itself had it not been challenged.",
-    searchReport:
-      "Patentability search report PAT/2026/1217, issued August 2026. Cleared on novelty, inventive step and the Section 3(k) software exclusion.",
+      "An engine that keeps a language model in sync with a versioned dataset: it learns the records that were added and unlearns the ones that were removed, without retraining from scratch. The model is released only after a behavioral audit, a trust score and a relearning-resistance test against a retrained oracle all pass, with a forgetting verdict reported for every removed record set.",
+    figures: [
+      {
+        value: "56–97%",
+        label: "knowledge recovered from loss-certified baselines",
+      },
+      { value: "22%", label: "recovered after retraining from scratch" },
+    ],
   },
   {
     id: "patent-aeroforge",
     title:
-      "AeroForge: Rapid-Unlearning Digital Twin System for Continuous Fleet Governance and Adversarial Verification",
-    ipr: "VIT IPR ID IPR0005230P",
-    status: "Patentability cleared",
-    statusTone: "cleared",
-    authors: "Dhanush Konduru, Rajasekhar Babu M",
-    authorNote: "First-named inventor",
-    area: "Digital twins · Fleet prognostics",
+      "Rapid Machine Unlearning in Digital Twins for Continuous Fleet Governance and Adversarial Verification",
+    short: "Fleet digital twins",
+    application: "202641110298",
+    filed: "14 Sep 2026",
+    published: "18 Sep 2026",
+    extra: "Examination requested 16 Sep 2026",
+    applicant: "Vellore Institute of Technology",
+    inventors: ["Dr M Rajasekhara Babu", "Dhanush Konduru"],
+    domain: "Machine unlearning · Turbofan prognostics",
     summary:
-      "Carries the verification-gated approach into turbofan fleet prognostics: a departing operator’s telemetry is stripped out of a remaining-life model in roughly a tenth of the retraining time the previously approved route required, while the model stays in service so fleet monitoring never pauses.",
-    contribution:
-      "Designed the provenance-indexed erasure path and the feasibility check, and built both domain implementations: turbofan prognostics, then a second-domain port to diagnostic ECG.",
-    finding:
-      "Provenance indexing resolves an erasure request by lookup rather than similarity search, and a feasibility check refuses the request outright when the departing operator’s engines are statistically indistinguishable from the rest of the aircraft on the same monitoring contract.",
-    searchReport:
-      "Prior-art search report issued August 2026; assessed patentable on both novelty and inventive step.",
+      "A system that removes one contributor’s telemetry from turbofan remaining-useful-life models while the fleet stays monitored. Scope is resolved by provenance lookup instead of similarity search, and a retrained-oracle recovery attack withholds any model that only hides the data. Validated on a 460-engine NASA C-MAPSS fleet.",
+    figures: [
+      { value: "10.9×", label: "faster than retraining (4.5 s vs 48.9 s)" },
+      { value: "7.2 ms", label: "to resolve what must be forgotten" },
+    ],
+  },
+  {
+    id: "patent-diagnostic",
+    title:
+      "System and Method for Governing a Diagnostic Network with Verified Selective Unlearning",
+    short: "ECG diagnostics",
+    application: "202641126815",
+    filed: "24 Oct 2026",
+    published: "30 Oct 2026",
+    applicant: "Vellore Institute of Technology",
+    inventors: ["Dr M Rajasekhara Babu", "Dhanush Konduru"],
+    domain: "Machine unlearning · Clinical ECG",
+    summary:
+      "A system that removes a withdrawn party’s ECG recordings from a diagnostic network by indexed provenance lookup. A separability probe refuses requests that cannot be honoured, and the updated model is withheld unless an oracle-calibrated relearning attack passes, while inference stays online.",
+    figures: [
+      { value: "3.0–9.5×", label: "faster removal than retraining" },
+    ],
+  },
+  {
+    id: "patent-geospatial",
+    title:
+      "Evidence-Gated Geospatial Decision-Control System for Predictive Urban-Growth-Aware Facility Planning",
+    short: "Facility siting",
+    application: "202641116651",
+    filed: "29 Sep 2026",
+    published: "09 Oct 2026",
+    applicant: "Vellore Institute of Technology",
+    inventors: ["Sushanth Sj", "Dhanush Konduru", "Anusha Buchupalli"],
+    domain: "Geospatial ML · Urban planning",
+    summary:
+      "A facility-siting system that lets a predicted urban-growth layer into site scoring only when a withheld-year replay beats a no-change benchmark. Candidate zones are then ranked by counterfactual impact and by how stable the ranking is.",
+    figures: [],
+  },
+  {
+    id: "patent-coronary",
+    title:
+      "System for Linkage-Conditioned Multimodal Fusion and Capability-Gated Coronary Anatomical Assertion Control",
+    short: "Coronary digital twin",
+    application: "202641131068",
+    filed: "02 Nov 2026",
+    published: "06 Nov 2026",
+    applicant: "Vellore Institute of Technology",
+    inventors: ["Dr M Rajasekhara Babu", "Dhanush Konduru"],
+    domain: "Multimodal ML · Cardiology",
+    summary:
+      "A system that applies trained multimodal fusion only when the cardiac evidence is verified to come from the same subject, and otherwise falls back to reliability-weighted aggregation flagged as unvalidated. Coronary findings are authorised at subject, vessel or segment level only when capability and consistency conditions are met, then shown on a 3D digital twin.",
+    figures: [],
   },
 ];
 
@@ -79,7 +136,7 @@ export const papers: Paper[] = [
     position: "First author",
     area: "Trustworthy machine learning",
     summary:
-      "The study behind the first invention disclosure: a five-probe behavioural audit and a value-based leak detector combined into an unlearning effectiveness score, a knowledge retention ratio, a behavioural consistency measure and a single trustworthiness score. That verdict is then attacked with membership inference and a relearning attempt, graded against a retrained reference model.",
+      "A five-probe behavioural audit and a value-based leak detector combined into a single trustworthiness score, which is then attacked with membership inference and a relearning attempt and graded against a retrained reference model.",
     contribution:
       "Designed the framework, built the pipeline, ran every experiment across three seeds and wrote the manuscript.",
   },
@@ -93,7 +150,7 @@ export const papers: Paper[] = [
     position: "Co-author",
     area: "Geospatial modelling · Urban health",
     summary:
-      "Identifies where Vellore should add hospital capacity for its 2030–2035 growth horizon by treating predicted urban growth as a weighted siting criterion, validated by hindcasting a withheld epoch and by running the siting analysis with and without the growth criterion.",
+      "Identifies where Vellore should add hospital capacity for its 2030–2035 growth horizon by treating predicted urban growth as a weighted siting criterion, validated by hindcasting a withheld epoch.",
     contribution:
       "Built the reproducible geospatial pipeline: LULC classification, the CA-ANN growth model, the AHP analysis and both validation stages.",
   },
@@ -108,7 +165,7 @@ export const papers: Paper[] = [
     position: "Co-author",
     area: "Decentralised storage · Access control",
     summary:
-      "Combines JPEG XL compression, IPFS distribution, BLAKE3 content hashing and smart-contract RBAC so high-resolution image collections can be stored cheaply, verified independently and gated by role. Compression ratios between 3:1 and 5:1 were measured, and retrieval times fell by roughly a third against older formats.",
+      "Combines JPEG XL compression, IPFS distribution, BLAKE3 content hashing and smart-contract RBAC so high-resolution image collections can be stored cheaply, verified independently and gated by role.",
     contribution: "Contributing author on the system design and evaluation.",
   },
 ];
