@@ -1,49 +1,33 @@
-import { TopNav } from "@/components/TopNav";
-import { SectionNavigator } from "@/components/SectionNavigator";
-import { TechnicalCallouts } from "@/components/TechnicalCallouts";
-import { HUD } from "@/components/HUD";
-import { Pointer } from "@/components/Cursor";
-import { Boot } from "@/components/Boot";
-import { ScrollController } from "@/core/ScrollController";
-import { Hero } from "@/sections/Hero";
-import { Approach } from "@/sections/Approach";
-import { Stack } from "@/sections/Stack";
-import { Work } from "@/sections/Work";
-import { Research } from "@/sections/Research";
-import { Journey } from "@/sections/Journey";
-import { Contact, Footer } from "@/sections/Contact";
+import { ParticleStage } from "@/components/site/ParticleStage";
+import { Nav } from "@/components/site/Nav";
+import { Hero, Marquee } from "@/components/site/Hero";
+import { About } from "@/components/site/About";
+import { Work } from "@/components/site/Work";
+import { Research } from "@/components/site/Research";
+import { Experience, Skills } from "@/components/site/Experience";
+import { Contact } from "@/components/site/Contact";
+import { Finish } from "@/components/site/Finish";
 
 /**
- * One machine, seven views.
- *
- * The scroll controller owns the single timeline: it drives the camera through
- * the assembly, the navigation state, the callout presence and the HUD from
- * one continuous position. Every layer below reads that position; none of them
- * animate on their own schedule.
+ * One page. The particle model is fixed behind all of it and changes form as
+ * the sections go by; everything in <main> is ordinary document flow on top.
  */
 export default function Page() {
   return (
     <>
-      <ScrollController />
-
-      <TechnicalCallouts />
-      <HUD />
-      <Pointer />
-      <TopNav />
-      <SectionNavigator />
-
+      <ParticleStage />
+      <Finish />
+      <Nav />
       <main className="relative z-10">
         <Hero />
-        <Approach />
-        <Stack />
+        <Marquee />
+        <About />
         <Work />
         <Research />
-        <Journey />
+        <Experience />
+        <Skills />
         <Contact />
       </main>
-
-      <Footer />
-      <Boot />
     </>
   );
 }

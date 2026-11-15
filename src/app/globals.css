@@ -1,67 +1,63 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   SYSTEM CORE — design system
-   ----------------------------------------------------------------------------
-   One machine, inspected. The page is a dark instrument bay: near-black
-   ground, restrained white/grey type, a single cool blue-white illumination
-   that belongs to the system rather than to the branding.
+   Design system
 
-   Rules of the sheet:
-     · Colour is illumination, not decoration. One accent, one muted second.
-     · Type is geometric sans throughout. Mono carries technical metadata.
-     · Nothing translates horizontally. Sections emerge in place.
+   Near-black ground, warm white type, one acid-lime accent. Statements are
+   set big in a tight grotesk with a single word in a serif italic; mono is
+   kept for numbers, IDs and labels. Everything else gets out of the way.
    ========================================================================= */
 
 @theme {
-  /* ---- ground: almost black, never flat ---- */
-  --color-void: #06070a;
-  --color-pit: #010203;
-  --color-panel: #0a0c10;
-  --color-panel-2: #0f1217;
+  /* ---- ground ---- */
+  --color-void: #0a0a0b;
+  --color-pit: #050506;
+  --color-panel: #121214;
+  --color-panel-2: #19191c;
 
-  /* ---- rules: three weights, used deliberately ---- */
-  --color-rule: #14171c; /* structural division */
-  --color-rule-2: #202530; /* active / emphasised */
-  --color-rule-3: #333a47; /* interactive boundary */
+  /* ---- rules ---- */
+  --color-rule: #1f1f23;
+  --color-rule-2: #2b2b30;
+  --color-rule-3: #47474e;
 
-  /* ---- type ramp ----
-     Every step clears WCAG AA against the ground: 17.8 / 8.0 / 5.5 / 4.8.
-     ink-4 carries the smallest type on the page — 11px uppercase mono — so it
-     is the step that has to be checked, not the one that can be eyeballed. */
-  --color-ink: #eef1f5;
-  --color-ink-2: #9ba4b0;
-  --color-ink-3: #7d8793;
-  --color-ink-4: #737d8a;
+  /* ---- type ramp: every step clears AA on the ground and on both panels ---- */
+  --color-ink: #f4f3ee;
+  --color-ink-2: #bcbbb5;
+  --color-ink-3: #94938d;
+  --color-ink-4: #8a8983;
 
-  /* ---- illumination ----
-     One accent. Cool blue-white, the colour of the light inside the machine.
-     `signal` is text-safe on the dark grounds; `beam` is the graphics-only
-     hue used in the 3D and in fills, and `warn` is the one muted second —
-     it appears only where a diagram has to distinguish a failing case from a
-     passing one, and nowhere else on the page. */
-  --color-signal: #bcd8f2;
-  --color-beam: #6ba8e6;
-  --color-warn: #d8a26a;
+  /* ---- accent ----
+     One colour. It marks what can be acted on and what was measured. `warn`
+     exists only for diagrams that have to tell a failing case from a passing
+     one. */
+  --color-signal: #c8f53c;
+  --color-accent: #c8f53c;
+  --color-link: #c8f53c;
+  --color-beam: #c8f53c;
+  --color-warn: #ff8a5c;
 
   /* ---- type ---- */
-  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
-  --font-mono:
-    var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* ---- motion ---- */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --animate-marquee: marquee 38s linear infinite;
 }
+
+/* The project deck only pins where there is room for a whole card: a wide
+   screen that is also tall enough. Anywhere else the cards simply stack. */
+@custom-variant deck (@media (min-width: 64rem) and (min-height: 48rem));
 
 /* ============================ base ============================ */
 
 html {
-  /* No scroll-behavior. The inertial smoother in src/core/scroll.ts animates
-     anchors itself; leaving this on made the browser run a second, competing
-     animation on every frame. */
+  /* No scroll-behavior: the smoother in src/lib/scroll.ts animates anchors
+     itself, and the two would fight. */
   -webkit-text-size-adjust: 100%;
-  overflow-x: hidden;
   background: var(--color-void);
 }
 
@@ -71,59 +67,43 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--color-void);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
-/* Atmosphere, in three almost-invisible layers, fixed behind everything.
-
-   1. the engineering grid — a 92px construction lattice, vignetted so it
-      only reads near the centre of the bay;
-   2. a soft radial lift behind the machine, so the ground has depth
-      instead of being one flat value;
-   3. grain, because a large near-black field bands visibly on 8-bit panels.
-
-   None of them should register on the first look. */
+/* Ambient light. One soft source above the page and a slow falloff to the
+   corners, so the ground reads as a lit surface instead of a flat fill. It
+   sits under the particle canvas and never moves. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(120, 150, 190, 0.055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(120, 150, 190, 0.055) 1px, transparent 1px);
-  background-size: 92px 92px;
-  -webkit-mask-image: radial-gradient(
-    ellipse 78% 62% at 50% 42%,
-    black 0%,
-    transparent 78%
-  );
-  mask-image: radial-gradient(
-    ellipse 78% 62% at 50% 42%,
-    black 0%,
-    transparent 78%
-  );
+  background:
+    radial-gradient(90% 55% at 50% -12%, rgb(244 243 238 / 0.07), transparent 70%),
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.45));
 }
 
+/* Grain. A large near-black field bands on 8-bit panels without it. */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 60;
   pointer-events: none;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::selection {
-  background: var(--color-signal);
+  background: var(--color-accent);
   color: var(--color-void);
 }
 
 :focus-visible {
-  outline: 1px solid var(--color-signal);
+  outline: 2px solid var(--color-accent);
   outline-offset: 4px;
-  border-radius: 1px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar {
@@ -134,164 +114,115 @@ body::after {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-rule-2);
-  border: 3px solid var(--color-void);
+  border: 2px solid var(--color-void);
   border-radius: 99px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-rule-3);
-}
 
-/* ========================= typography =========================
-   Sizes are named by ROLE, not by measurement, so a section can only
-   reach for the voice appropriate to what it is saying. */
+/* ========================= typography ========================= */
 
 /* The hero statement. Used once. */
-@utility t-monument {
-  font-family: var(--font-sans);
+@utility t-hero {
   font-weight: 500;
-  font-size: clamp(2.75rem, 6.1vw, 5.75rem);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-  font-feature-settings:
-    "kern" 1,
-    "liga" 1,
-    "calt" 1;
+  font-size: clamp(2.9rem, 8.1vw, 8.25rem);
+  line-height: 0.92;
+  letter-spacing: -0.052em;
 }
 
-/* Section openers and project theses. */
-@utility t-statement {
-  font-family: var(--font-sans);
+/* Section statements. */
+@utility t-display {
   font-weight: 500;
-  font-size: clamp(1.9rem, 3.5vw, 3.25rem);
-  line-height: 1.06;
+  font-size: clamp(2.2rem, 5.2vw, 4.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+/* The accent voice: one word in a statement, set in the serif italic. */
+@utility t-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* The long statement in About, and project theses. */
+@utility t-lead {
+  font-weight: 500;
+  font-size: clamp(1.5rem, 3vw, 2.75rem);
+  line-height: 1.16;
+  letter-spacing: -0.032em;
+}
+
+@utility t-title {
+  font-weight: 500;
+  font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+  line-height: 1.14;
   letter-spacing: -0.028em;
   text-wrap: balance;
 }
 
-@utility t-title {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: clamp(1.3rem, 1.9vw, 1.75rem);
-  line-height: 1.18;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-
-/* Measured numbers. The instrument speaking. */
 @utility t-figure {
-  font-family: var(--font-mono);
   font-weight: 500;
-  font-size: clamp(2rem, 4.2vw, 3.5rem);
-  line-height: 0.94;
-  letter-spacing: -0.055em;
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
 }
 
 @utility t-figure-sm {
-  font-family: var(--font-mono);
   font-weight: 500;
-  font-size: clamp(1.4rem, 2.1vw, 1.9rem);
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
 }
 
 @utility t-read {
-  font-size: clamp(1.0625rem, 1.1vw, 1.1875rem);
-  line-height: 1.68;
-  letter-spacing: -0.008em;
+  font-size: clamp(1.0625rem, 1.15vw, 1.1875rem);
+  line-height: 1.62;
+  letter-spacing: -0.011em;
   text-wrap: pretty;
 }
 
-/* Carries most of the reading on the page — project records, research
-   dossiers, timeline entries — so it is set at a real reading size rather
-   than as small print. */
 @utility t-read-sm {
-  font-size: 1rem;
-  line-height: 1.72;
-  letter-spacing: -0.005em;
+  font-size: 0.9688rem;
+  line-height: 1.66;
+  letter-spacing: -0.006em;
   text-wrap: pretty;
 }
 
-/* The system's small voice: indices, IDs, units, annotations. */
+/* Labels, indices, IDs. */
 @utility t-mark {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 500;
-  letter-spacing: 0.17em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 @utility t-meta {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
 
+/* Captions and small print. Set in the sans: mono is for IDs and figures
+   only, so the page reads as writing and not as a readout. */
 @utility t-note {
-  font-family: var(--font-mono);
-  font-size: 0.78125rem;
-  line-height: 1.7;
-  letter-spacing: 0.02em;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  letter-spacing: -0.004em;
   color: var(--color-ink-3);
 }
 
-/* ========================== layout ==========================
-   A page gutter, a 12-column grid sections opt into, and the reading lane.
-   The desktop composition needs two margins at once — one for the machine on
-   the left, one for the navigator on the right — so it starts at xl rather
-   than lg. Between 1024 and 1280 there is room for neither, and the page runs
-   as a single column with the machine behind it. */
+/* =========================== layout =========================== */
 
-@utility rail {
+@utility shell {
   width: 100%;
-  max-width: 100rem;
+  max-width: 92rem;
   margin-inline: auto;
-}
-
-@utility grid-12 {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: clamp(1rem, 2vw, 2rem);
-}
-
-/* The reading lane.
-   While the page is being read the assembly is cropped against the LEFT edge
-   of the bay, so every reading section holds its column on the right. The
-   width is capped rather than fluid: past about 54rem the measure gets long
-   and the machine starts arriving underneath the first few words. */
-@utility lane {
-  @media (width >= 80rem) {
-    margin-left: auto;
-    max-width: 54rem;
-  }
-}
-
-/* ========================== detail ========================== */
-
-/* A section is marked by its edges, never by a plane laid over the machine.
-   The core has to run continuously behind the whole page. */
-@utility stratum {
-  position: relative;
-  background: transparent;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: 1px;
-    pointer-events: none;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-rule-2) 10%,
-      var(--color-rule-2) 90%,
-      transparent
-    );
-  }
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
 }
 
 @utility link-rule {
@@ -300,7 +231,7 @@ body::after {
     content: "";
     position: absolute;
     left: 0;
-    bottom: -3px;
+    bottom: -2px;
     width: 100%;
     height: 1px;
     background: currentColor;
@@ -315,163 +246,196 @@ body::after {
   }
 }
 
-/* The one button shape on the site: a hairline box that fills on hover. */
-@utility control {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
+/* Pills. The quiet one is glass; the filled one is the primary action, set
+   in the type colour, and turns to the accent only when it is touched. */
+@utility pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1.35rem;
-  border: 1px solid var(--color-rule-3);
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background-color: rgb(255 255 255 / 0.035);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
+  backdrop-filter: blur(14px);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--color-ink);
-  background: color-mix(in oklab, var(--color-panel) 40%, transparent);
+  white-space: nowrap;
   transition:
-    border-color 0.4s var(--ease-out-expo),
-    background-color 0.4s var(--ease-out-expo),
-    color 0.4s var(--ease-out-expo);
+    background-color 0.45s var(--ease-out-expo),
+    border-color 0.45s var(--ease-out-expo),
+    box-shadow 0.45s var(--ease-out-expo),
+    color 0.45s var(--ease-out-expo),
+    scale 0.25s var(--ease-out-expo);
 
   &:hover,
   &:focus-visible {
-    border-color: var(--color-signal);
-    background: var(--color-signal);
-    color: var(--color-void);
+    border-color: rgb(255 255 255 / 0.34);
+    background-color: rgb(255 255 255 / 0.1);
+  }
+
+  &:active {
+    scale: 0.97;
+  }
+
+  /* The icon leans the way the action goes. Set --nx / --ny / --nr on the
+     icon's pill to aim it. */
+  & > svg {
+    transition: transform 0.5s var(--ease-out-expo);
+  }
+  &:hover > svg,
+  &:focus-visible > svg {
+    transform: translate(var(--nx, 2px), var(--ny, -2px)) rotate(var(--nr, 0deg));
   }
 }
 
-/* While a record sheet is open, the fixed chrome is removed rather than
-   dimmed — at 95% opacity it still reads through the backdrop. */
-[data-overlay] header,
-[data-overlay] nav[aria-label="Sections"],
-[data-overlay] [data-hud],
-[data-overlay] [data-callouts] {
+@utility pill-solid {
+  border-color: transparent;
+  background-color: var(--color-ink);
+  color: var(--color-void);
+  backdrop-filter: none;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 0 rgb(0 0 0 / 0.14),
+    0 12px 32px -14px rgb(244 243 238 / 0.45);
+
+  &:hover,
+  &:focus-visible {
+    border-color: transparent;
+    background-color: var(--color-accent);
+    color: var(--color-void);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.55),
+      inset 0 -1px 0 rgb(0 0 0 / 0.14),
+      0 14px 36px -12px rgb(200 245 60 / 0.55);
+  }
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  height: 1.875rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.09);
+  background-color: rgb(255 255 255 / 0.025);
+  font-size: 0.78125rem;
+  letter-spacing: -0.005em;
+  color: var(--color-ink-2);
+  white-space: nowrap;
+}
+
+/* ========================== material ========================== */
+
+/* A raised panel: lit along its top edge, falling into shadow underneath. */
+@utility surface {
+  border: 1px solid var(--color-rule-2);
+  background-color: var(--color-panel);
+  background-image: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.028) 0%,
+    transparent 42%
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.065),
+    0 34px 70px -34px rgb(0 0 0 / 0.95);
+}
+
+/* A light that follows the cursor across a panel. The position comes from
+   --mx / --my, set by the one pointer listener in Finish.tsx. */
+@utility spot {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      30rem circle at var(--mx, 50%) var(--my, 0%),
+      rgb(244 243 238 / 0.065),
+      transparent 62%
+    );
+    transition: opacity 0.6s var(--ease-out-expo);
+  }
+
+  @media (hover: hover) {
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+}
+
+/* Fades a strip out at both ends instead of cutting it at the edge. */
+@utility fade-x {
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+}
+
+/* While a project sheet is open the fixed header is taken out. */
+[data-overlay] header {
   display: none;
 }
 
-/* ========================= entrances =========================
-   Content emerges by CSS animation, not by a JavaScript-driven one.
-
-   The difference matters more than it looks. A JS entrance holds its element
-   at opacity 0 until a frame budget arrives to move it, so a tab that loads
-   in the background, or a device having a bad moment, can leave the page
-   blank. A CSS animation is time-based and driven by the compositor: it
-   finishes on schedule whether or not the main thread is keeping up, and
-   `both` fill means the element is at its final state either way.
-
-   Nothing here translates horizontally. Vertical settle, opacity, and a blur
-   resolving to sharp — the content comes into focus in the bay rather than
-   arriving from somewhere off-screen. */
-
-@keyframes settle {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 9px, 0);
-    filter: blur(5px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: blur(0);
-  }
-}
-
-@keyframes rise {
-  from {
-    transform: translate3d(0, 108%, 0);
-  }
-  to {
-    transform: none;
-  }
-}
-
-@keyframes draw {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-/* Applied on mount for above-the-fold content. */
-@utility settle {
-  animation: settle 0.95s var(--ease-out-expo) both;
-}
-
-/* Applied by an observer once the element is in view. */
-@utility settle-armed {
-  opacity: 0;
-}
-@utility settle-on {
-  animation: settle 0.85s var(--ease-out-expo) both;
-}
-
-/* A headline's line breaks are drawn for a wide measure. On a narrow screen
-   they are wrong — they re-wrap into a ragged mess and run the end of one
-   line into the start of the next — so below sm the breaks are dropped, the
-   sentence flows, and the reveal is a fade rather than a rise. A rise needs a
-   block box to transform and a mask to rise out of; inline text has neither. */
-@utility mask-lines {
-  & > span {
-    display: inline;
-  }
-  & > span > span {
-    display: inline;
-    animation: settle 0.95s var(--ease-out-expo) both;
-  }
-
-  @media (width >= 40rem) {
-    & > span {
-      display: block;
-      overflow: hidden;
-      padding-bottom: 0.06em;
-    }
-    & > span > span {
-      display: block;
-      animation-name: rise;
-    }
-  }
-}
-
-@utility draw-rule {
-  transform-origin: left;
-  animation: draw 1.1s var(--ease-out-expo) both;
+.diagram-track {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rule-3) var(--color-panel-2);
 }
 
 /* ========================= keyframes ========================= */
 
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
 @keyframes pulse-soft {
   0%,
   100% {
-    opacity: 0.3;
+    opacity: 0.35;
   }
   50% {
     opacity: 1;
   }
 }
 
-@keyframes scan-y {
-  from {
-    transform: translateY(0);
+/* A ring leaving a live dot: the availability marker in the hero. */
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
   }
-  to {
-    transform: translateY(100%);
+  70%,
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
   }
+}
+
+.animate-ping-soft {
+  animation: ping-soft 2.4s var(--ease-out-expo) infinite;
 }
 
 .animate-pulse-soft {
-  animation: pulse-soft 3.4s var(--ease-inout) infinite;
+  animation: pulse-soft 2.6s var(--ease-inout) infinite;
 }
 
-/* ====================== reduced motion ====================== */
-
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   *,
   *::before,
   *::after {
