@@ -1,5 +1,8 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
+import { motionTokens } from "@/lib/motion-tokens";
+
 /* ============================================================================
  * PROJECT VISUALS
  *
@@ -14,14 +17,17 @@
 /* The diagrams read from the design tokens rather than carrying their own
    palette, so they follow the sheet instead of having to be re-drawn whenever
    the ground changes. Inline SVG resolves CSS custom properties normally. */
-const SIGNAL = "var(--color-signal)";
-const IRIS = "var(--color-beam)";
+const SIGNAL = "var(--color-link)";
+const IRIS = "var(--color-accent)";
 const AMBER = "var(--color-warn)";
-const LINE = "var(--color-rule-2)";
-const INK_MUTE = "var(--color-ink-3)";
+/* Edges and wells are light laid on the ground, not greys cut into it, so
+   they hold on the card and on the sheet alike. */
+const LINE = "rgb(255 255 255 / 0.17)";
+/* Labels on the drawing, and the quieter line that annotates it. */
+const INK_MUTE = "var(--color-ink-2)";
+const NOTE = "var(--color-ink-3)";
 
-/* A track or well is paper pressed deeper, never a dark box cut into it. */
-const WELL = "var(--color-panel-2)";
+const WELL = "rgb(255 255 255 / 0.05)";
 const WELL_SIGNAL =
   "color-mix(in oklab, var(--color-signal) 14%, var(--color-pit))";
 const WELL_AMBER =
@@ -38,23 +44,72 @@ function Frame({
 }) {
   return (
     <figure className="w-full">
-      <div className="h-px w-full bg-rule" aria-hidden="true" />
       {/* A diagram is wide by nature. It takes the whole reading lane, and on
-          a screen narrower than the drawing it scrolls in its own track
-          rather than shrinking its labels below legibility. */}
-      <div className="overflow-x-auto" data-scroll-ignore>
+          a phone, where it would shrink its labels below legibility, it
+          scrolls in its own track instead. Everywhere else it fits. */}
+      <p className="t-note py-3 sm:hidden">Scroll diagram horizontally ↔</p>
+      <div
+        className="diagram-track"
+        data-scroll-ignore
+        tabIndex={0}
+        role="region"
+        aria-label={`${caption}. Scrollable diagram`}
+      >
         <svg
           viewBox={viewBox}
-          className="block w-full min-w-[34rem]"
+          className="block w-full min-w-[34rem] font-medium sm:min-w-0"
           role="img"
           aria-label={caption}
         >
           {children}
         </svg>
       </div>
-      <div className="h-px w-full bg-rule" aria-hidden="true" />
-      <figcaption className="t-note pt-3">{caption}</figcaption>
+      <figcaption className="t-note mt-4 flex gap-3 border-t border-white/[0.08] pt-4">
+        <span className="mt-[0.62em] h-px w-4 shrink-0 bg-accent" aria-hidden="true" />
+        {caption}
+      </figcaption>
     </figure>
+  );
+}
+
+/** A measured bar. It fills from zero the first time it is seen. */
+function Bar({
+  x,
+  y,
+  width,
+  height = 14,
+  fill,
+  opacity = 1,
+  delay = 0,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height?: number;
+  fill: string;
+  opacity?: number;
+  delay?: number;
+}) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      rx={height / 2}
+      fill={fill}
+      fillOpacity={opacity}
+      style={{ originX: 0 }}
+      initial={reduced ? false : { scaleX: 0 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{
+        duration: motionTokens.duration.reveal,
+        ease: motionTokens.easing.out,
+        delay,
+      }}
+    />
   );
 }
 
@@ -77,8 +132,8 @@ function UnlearningChart() {
       viewBox="0 0 480 260"
       caption="Knowledge recovered by a relearning attack · 3 seeds, mean"
     >
-      <text x="24" y="30" fill={INK_MUTE} fontSize="11" letterSpacing="1.4">
-        RECOVERED AFTER &quot;FORGETTING&quot;
+      <text x="24" y="30" fill={NOTE} fontSize="11.5" fontWeight="400">
+        Recovered after &quot;forgetting&quot;
       </text>
 
       {rows.map((r, i) => {
@@ -94,29 +149,21 @@ function UnlearningChart() {
             >
               {r.label}
             </text>
-            <rect x={X} y={y} width={W} height="15" fill={WELL} rx="2" />
-            <rect
+            <rect x={X} y={y} width={W} height="14" fill={WELL} rx="7" />
+            <Bar
               x={X}
               y={y}
               width={(r.value / 100) * W}
-              height="15"
               fill={r.tone}
-              fillOpacity={r.tone === SIGNAL ? 0.9 : 0.34}
-              rx="2"
-            />
-            <rect
-              x={X + (r.value / 100) * W - 1.5}
-              y={y}
-              width="1.5"
-              height="15"
-              fill={r.tone}
+              opacity={r.tone === SIGNAL ? 0.95 : 0.5}
+              delay={i * motionTokens.stagger}
             />
             <text
               x={X + (r.value / 100) * W + 8}
               y={y + 11}
               fill={r.tone}
               fontSize="12"
-              fontFamily="monospace"
+              className="font-mono"
             >
               {r.value}%
             </text>
@@ -132,7 +179,7 @@ function UnlearningChart() {
         stroke={LINE}
         strokeDasharray="2 3"
       />
-      <text x="24" y="243" fill={INK_MUTE} fontSize="11">
+      <text x="24" y="243" fill={NOTE} fontSize="11.5" fontWeight="400">
         A loss curve reports none of this.
       </text>
     </Frame>
@@ -156,10 +203,10 @@ function RagPipeline() {
         y={y}
         width={w}
         height={h}
-        rx="4"
+        rx="8"
         fill={accent ? WELL_SIGNAL : WELL}
         stroke={accent ? SIGNAL : LINE}
-        strokeOpacity={accent ? 0.5 : 1}
+        strokeOpacity={accent ? 0.6 : 1}
       />
       <text
         x={x + w / 2}
@@ -209,11 +256,25 @@ function RagPipeline() {
       {box(108, 82, 78, 28, "Dense · vectors")}
       {box(108, 126, 78, 28, "BM25 · exact")}
 
-      <text x="147" y="72" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
-        TICKERS AND FIGURES RANK
+      <text
+        x="147"
+        y="70"
+        fill={NOTE}
+        fontSize="11"
+        fontWeight="400"
+        textAnchor="middle"
+      >
+        Tickers and figures rank
       </text>
-      <text x="147" y="171" fill={INK_MUTE} fontSize="10.5" textAnchor="middle">
-        POORLY UNDER VECTORS ALONE
+      <text
+        x="147"
+        y="173"
+        fill={NOTE}
+        fontSize="11"
+        fontWeight="400"
+        textAnchor="middle"
+      >
+        poorly under vectors alone
       </text>
 
       {arrow(188, 96, 210, 114)}
@@ -230,47 +291,46 @@ function RagPipeline() {
       </text>
 
       <g>
-        <text x="20" y="218" fill={INK_MUTE} fontSize="11" letterSpacing="1.2">
-          FAITHFULNESS · 50-QUESTION RAGAS SET
+        <text x="20" y="216" fill={NOTE} fontSize="11.5" fontWeight="400">
+          Faithfulness · 50-question RAGAS set
         </text>
-        <rect x="20" y="228" width="180" height="8" rx="2" fill={WELL} />
-        <rect
-          x="20"
-          y="228"
+        <rect x="20" y="228" width="180" height="8" rx="4" fill={WELL} />
+        <Bar
+          x={20}
+          y={228}
           width={180 * 0.71}
-          height="8"
-          rx="2"
+          height={8}
           fill={AMBER}
-          fillOpacity="0.35"
+          opacity={0.5}
         />
         <text
           x="210"
           y="235"
           fill={INK_MUTE}
           fontSize="11"
-          fontFamily="monospace"
+          className="font-mono"
         >
           0.71
         </text>
         <text x="248" y="235" fill={INK_MUTE} fontSize="11">
           →
         </text>
-        <rect x="268" y="228" width="180" height="8" rx="2" fill={WELL} />
-        <rect
-          x="268"
-          y="228"
+        <rect x="268" y="228" width="180" height="8" rx="4" fill={WELL} />
+        <Bar
+          x={268}
+          y={228}
           width={180 * 0.89}
-          height="8"
-          rx="2"
+          height={8}
           fill={SIGNAL}
-          fillOpacity="0.85"
+          opacity={0.95}
+          delay={motionTokens.stagger * 2}
         />
         <text
           x="454"
           y="235"
           fill={SIGNAL}
           fontSize="11"
-          fontFamily="monospace"
+          className="font-mono"
           textAnchor="end"
         >
           0.89
@@ -306,7 +366,7 @@ function VerificationGate() {
         y="106"
         width="86"
         height="34"
-        rx="4"
+        rx="8"
         fill={WELL}
         stroke={LINE}
       />
@@ -321,7 +381,7 @@ function VerificationGate() {
         y="96"
         width="86"
         height="54"
-        rx="4"
+        rx="8"
         fill={WELL}
         stroke={LINE}
       />
@@ -342,7 +402,7 @@ function VerificationGate() {
         y="88"
         width="86"
         height="70"
-        rx="4"
+        rx="8"
         fill={WELL}
         stroke={LINE}
       />
@@ -378,11 +438,10 @@ function VerificationGate() {
           x="357"
           y="72"
           fill={SIGNAL}
-          fontSize="10.5"
-          letterSpacing="1.4"
+          fontSize="11"
           textAnchor="middle"
         >
-          GATE
+          Gate
         </text>
       </g>
 
@@ -404,7 +463,7 @@ function VerificationGate() {
         y="76"
         width="68"
         height="30"
-        rx="4"
+        rx="8"
         fill={WELL_SIGNAL}
         stroke={SIGNAL}
         strokeOpacity="0.5"
@@ -418,7 +477,7 @@ function VerificationGate() {
         y="140"
         width="68"
         height="30"
-        rx="4"
+        rx="8"
         fill={WELL_AMBER}
         stroke={AMBER}
         strokeOpacity="0.4"
@@ -427,8 +486,8 @@ function VerificationGate() {
         Withheld
       </text>
 
-      <text x="20" y="212" fill={INK_MUTE} fontSize="11" letterSpacing="1.2">
-        FLEET MONITORING NEVER PAUSES · ~1/10 OF RETRAINING TIME
+      <text x="20" y="212" fill={NOTE} fontSize="11.5" fontWeight="400">
+        Fleet monitoring never pauses · ~1/10 of retraining time
       </text>
       <line
         x1="20"
@@ -523,11 +582,10 @@ function AgentGraph() {
           x="27"
           y="98"
           fill={AMBER}
-          fontSize="10"
-          letterSpacing="1.2"
+          fontSize="11"
           textAnchor="middle"
         >
-          CKPT
+          Ckpt
         </text>
         <path
           d="M36 128 L60 128"
@@ -537,7 +595,7 @@ function AgentGraph() {
         />
       </g>
 
-      <text x="20" y="238" fill={INK_MUTE} fontSize="11">
+      <text x="20" y="238" fill={NOTE} fontSize="11.5" fontWeight="400">
         A run that fails halfway resumes from the last good state.
       </text>
     </Frame>
@@ -556,8 +614,8 @@ function WalkForward() {
       viewBox="0 0 480 260"
       caption="Expanding-window validation · random k-fold leaks the future"
     >
-      <text x="20" y="28" fill={INK_MUTE} fontSize="11" letterSpacing="1.4">
-        TIME →
+      <text x="20" y="28" fill={NOTE} fontSize="11.5" fontWeight="400">
+        Time →
       </text>
 
       {folds.map((f) => {
@@ -571,35 +629,33 @@ function WalkForward() {
               fill={INK_MUTE}
               fontSize="11"
               textAnchor="end"
-              fontFamily="monospace"
+              className="font-mono"
             >
               {f + 1}
             </text>
-            <rect x={X} y={y} width={W} height="15" rx="2" fill={WELL} />
-            <rect
+            <rect x={X} y={y} width={W} height="14" rx="7" fill={WELL} />
+            <Bar
               x={X}
               y={y}
               width={trainW}
-              height="15"
-              rx="2"
               fill={SIGNAL}
-              fillOpacity="0.5"
+              opacity={0.6}
+              delay={f * motionTokens.stagger}
             />
-            <rect
+            <Bar
               x={X + trainW + 3}
               y={y}
               width={W * 0.14}
-              height="15"
-              rx="2"
               fill={AMBER}
-              fillOpacity="0.55"
+              opacity={0.65}
+              delay={f * motionTokens.stagger + 0.25}
             />
           </g>
         );
       })}
 
       <g transform="translate(56, 218)">
-        <rect width="11" height="11" rx="2" fill={SIGNAL} fillOpacity="0.5" />
+        <rect width="11" height="11" rx="5.5" fill={SIGNAL} fillOpacity="0.6" />
         <text x="18" y="9" fill={INK_MUTE} fontSize="11.5">
           Train
         </text>
@@ -607,16 +663,16 @@ function WalkForward() {
           x="70"
           width="11"
           height="11"
-          rx="2"
+          rx="5.5"
           fill={AMBER}
-          fillOpacity="0.55"
+          fillOpacity="0.65"
         />
         <text x="88" y="9" fill={INK_MUTE} fontSize="11.5">
           Validate, always after
         </text>
       </g>
 
-      <text x="20" y="245" fill={INK_MUTE} fontSize="11">
+      <text x="20" y="245" fill={NOTE} fontSize="11.5" fontWeight="400">
         Nothing after the validation window ever enters training.
       </text>
     </Frame>
@@ -663,7 +719,7 @@ function GeoStack() {
         );
       })}
 
-      <text x="20" y="266" fill={INK_MUTE} fontSize="11">
+      <text x="20" y="266" fill={NOTE} fontSize="11.5" fontWeight="400">
         Hindcast against a withheld epoch · run with and without the growth
         criterion.
       </text>

@@ -130,7 +130,7 @@ export function ProjectModal({
                 {project.associated ? (
                   <>
                     <span className="mx-2 text-rule-3">/</span>
-                    <span className="text-signal">Linked disclosure</span>
+                    <span className="text-signal">Linked patent application</span>
                   </>
                 ) : null}
               </p>
